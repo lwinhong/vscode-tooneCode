@@ -1,0 +1,275 @@
+{
+  "name": "toone-code",
+  "displayName": "toone-code",
+  "publisher": "Toone",
+  "description": "Toone vscode-chatgpt",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.87.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Machine Learning",
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "menus": {
+      "editor/context": [
+        {
+          "submenu": "vscode-toonecode-view-submenus",
+          "when": "editorHasSelection",
+          "group": "navigation"
+        }
+      ],
+      "vscode-toonecode-view-submenus": [
+        {
+          "command": "vscode-toonecode.generateCode",
+          "group": "tooneCode@1",
+          "when": "editorHasSelection && generateCode-enabled"
+        },
+        {
+          "command": "vscode-toonecode.addTests",
+          "group": "tooneCode@2",
+          "when": "editorHasSelection && addTests-enabled"
+        },
+        {
+          "command": "vscode-toonecode.findProblems",
+          "group": "tooneCode@3",
+          "when": "editorHasSelection && findProblems-enabled"
+        },
+        {
+          "command": "vscode-toonecode.optimize",
+          "group": "tooneCode@4",
+          "when": "editorHasSelection && optimize-enabled"
+        },
+        {
+          "command": "vscode-toonecode.explain",
+          "group": "tooneCode@5",
+          "when": "editorHasSelection && explain-enabled"
+        },
+        {
+          "command": "vscode-toonecode.addComments",
+          "group": "tooneCode@6",
+          "when": "editorHasSelection && addComments-enabled"
+        },
+        {
+          "command": "vscode-toonecode.completeCode",
+          "group": "tooneCode@7",
+          "when": "editorHasSelection && completeCode-enabled"
+        },
+        {
+          "command": "vscode-toonecode.adhoc",
+          "group": "tooneCode@8",
+          "when": "editorHasSelection && adhoc-enabled"
+        },
+        {
+          "command": "vscode-toonecode.customPrompt1",
+          "group": "tooneCode@9",
+          "when": "editorHasSelection && customPrompt1-enabled"
+        },
+        {
+          "command": "vscode-toonecode.customPrompt2",
+          "group": "tooneCode@10",
+          "when": "editorHasSelection && customPrompt2-enabled"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "vscode-toonecode-view-submenus",
+        "label": "TooneCode"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "vscode-toonecode.generateCode",
+        "key": "ctrl+shift+a",
+        "mac": "cmd+shift+a",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.addTests",
+        "key": "ctrl+k ctrl+shift+1",
+        "mac": "cmd+k cmd+shift+1",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.findProblems",
+        "key": "ctrl+k ctrl+shift+2",
+        "mac": "cmd+k cmd+shift+2",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.optimize",
+        "key": "ctrl+k ctrl+shift+3",
+        "mac": "cmd+k cmd+shift+3",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.explain",
+        "key": "ctrl+k ctrl+shift+4",
+        "mac": "cmd+k cmd+shift+4",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.addComments",
+        "key": "ctrl+k ctrl+shift+5",
+        "mac": "cmd+k cmd+shift+5",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.completeCode",
+        "key": "ctrl+k ctrl+shift+6",
+        "mac": "cmd+k cmd+shift+6",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.adhoc",
+        "key": "ctrl+k ctrl+shift+7",
+        "mac": "cmd+k cmd+shift+7",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.customPrompt1",
+        "key": "ctrl+k ctrl+shift+8",
+        "mac": "cmd+k cmd+shift+8",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.customPrompt2",
+        "key": "ctrl+k ctrl+shift+9",
+        "mac": "cmd+k cmd+shift+9",
+        "when": "editorHasSelection"
+      }
+    ],
+    "commands": [
+      {
+        "command": "vscode-toonecode.freeText",
+        "title": "TooneCode: Ask anything"
+      },
+      {
+        "command": "vscode-toonecode.clearSession",
+        "title": "TooneCode: Reset session"
+      },
+      {
+        "command": "vscode-toonecode.generateCode",
+        "title": "TooneCode: Generate code",
+        "enablement": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.addTests",
+        "title": "生成测试",
+        "enablement": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.findProblems",
+        "title": "TooneCode: Find bugs",
+        "enablement": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.optimize",
+        "title": "TooneCode: 优化",
+        "enablement": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.explain",
+        "title": "解析代码",
+        "enablement": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.addComments",
+        "title": "生成注释",
+        "enablement": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.completeCode",
+        "title": "TooneCode: Complete code",
+        "enablement": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.adhoc",
+        "title": "TooneCode: Ad-hoc prompt",
+        "enablement": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.customPrompt1",
+        "title": "TooneCode: Custom prompt 1",
+        "enablement": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.customPrompt2",
+        "title": "TooneCode: Custom prompt 2",
+        "enablement": "editorHasSelection"
+      },
+      {
+        "command": "vscode-toonecode.clearConversation",
+        "title": "TooneCode: Clear conversation"
+      },
+      {
+        "command": "vscode-toonecode.exportConversation",
+        "title": "TooneCode: Export conversation"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "vscode-toonecode-view-container",
+          "title": "TooneCode",
+          "icon": "images/ai-logo-in.png"
+        }
+      ]
+    },
+    "views": {
+      "vscode-toonecode-view-container": [
+        {
+          "type": "webview",
+          "id": "vscode-toonecode.view",
+          "name": ""
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/isomorphic-fetch": "^0.0.39",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@types/uuid": "^9.0.8",
+    "@types/vscode": "^1.87.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.2",
+    "@typescript-eslint/parser": "^7.0.2",
+    "@vscode/test-cli": "^0.0.6",
+    "@vscode/test-electron": "^2.3.9",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@types/axios": "^0.14.0",
+    "axios": "^1.6.7",
+    "delay": "^6.0.0",
+    "esbuild": "^0.20.1",
+    "eventsource-parser": "^1.1.2",
+    "glob": "^10.3.10",
+    "isomorphic-fetch": "^3.0.0",
+    "mocha": "^10.3.0",
+    "p-timeout": "^6.1.2",
+    "quick-lru": "^7.0.0",
+    "ts-loader": "^9.5.1",
+    "uuid": "^9.0.1"
+  },
+  "resolutions": {
+    "clone-deep": "^4.0.1"
+  }
+}
