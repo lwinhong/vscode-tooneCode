@@ -5,12 +5,13 @@ import ChatGptViewProvider from './toontcode-view-provider';
 import changeIconColor from "./utils/changeIconColor";
 import { isCurrentLanguageDisable } from "./utils/isCurrentLanguageDisable";
 import { enableExtension, onlyKeyControl } from "./param/configures";
+import getDocumentLanguage from "./utils/getDocumentLanguage";
 
 let g_isLoading = false;
 let originalColor: string | vscode.ThemeColor | undefined;
 let myStatusBarItem: vscode.StatusBarItem;
 let provider: ChatGptViewProvider | void;
-const menuCommands = ["addTests", "findProblems", "optimize", "explain", "addComments", "completeCode", "generateCode", "customPrompt1", "customPrompt2", "adhoc"];
+const menuCommands = ["addTests", "explain", "addComments", "completeCode", "generateCode"];
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -59,10 +60,6 @@ export function activate(context: vscode.ExtensionContext) {
 	 * 清理session
 	 */
 	const clearSession = vscode.commands.registerCommand("vscode-toonecode.clearSession", () => {
-		// context.globalState.update("chatgpt-session-token", null);
-		// context.globalState.update("chatgpt-clearance-token", null);
-		// context.globalState.update("chatgpt-user-agent", null);
-		// context.globalState.update("chatgpt-gpt3-apiKey", null);
 		provider?.clearSession();
 	});
 
@@ -123,7 +120,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		const selection = editor.document.getText(editor.selection);
 		if (selection) {
-			provider?.sendApiRequest(selection, { command: "generateCode", language: editor.document.languageId });
+			provider?.sendApiRequest(selection, { command: "generateCode", chatType: "code", code: " ", language: getDocumentLanguage(editor) });
 		}
 	});
 
@@ -172,12 +169,12 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 
 	vscode.commands.registerCommand("vscode-toonecode.new-completions", () => {
-        context.globalState.update("DisableInlineCompletion", false);
+		context.globalState.update("DisableInlineCompletion", false);
 		vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
 		setTimeout(() => {
 			context.globalState.update("DisableInlineCompletion", true);
 		}, 200);
-    });
+	});
 
 	// let inlineProvider2: vscode.InlineCompletionItemProvider;
 	// inlineProvider2 = provider.inlineCompletionProviderWithCommand(g_isLoading,
@@ -186,38 +183,47 @@ export function activate(context: vscode.ExtensionContext) {
 	// 	originalColor,
 	// 	context);
 	// let oneTimeDispo: vscode.Disposable;
-    // vscode.commands.registerCommand("vscode-toonecode.new-completions", () => {
-    //     if (oneTimeDispo) {
-    //         oneTimeDispo.dispose();
-    //     }
-    //     context.globalState.update("isOneCommand", true);
-    //     context.globalState.update("DisableInlineCompletion", true);
-    //     oneTimeDispo = vscode.languages.registerInlineCompletionItemProvider(
-    //         { pattern: "**" },
-    //         inlineProvider2
-    //     );
+	// vscode.commands.registerCommand("vscode-toonecode.new-completions", () => {
+	//     if (oneTimeDispo) {
+	//         oneTimeDispo.dispose();
+	//     }
+	//     context.globalState.update("isOneCommand", true);
+	//     context.globalState.update("DisableInlineCompletion", true);
+	//     oneTimeDispo = vscode.languages.registerInlineCompletionItemProvider(
+	//         { pattern: "**" },
+	//         inlineProvider2
+	//     );
 	// 	vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
-    // });
+	// });
 
 
 	//addComments
 	const addComments = vscode.commands.registerCommand(`vscode-toonecode.addComments`, () => {
-		const prompt = vscode.workspace.getConfiguration("chatgpt").get<string>(`promptPrefix.addComments`);
+		const prompt = vscode.workspace.getConfiguration("toonecode").get<string>(`promptPrefix.addComments`);
 		const editor = vscode.window.activeTextEditor;
 		if (prompt && editor) {
-			if (editor.document.languageId === "python") {
-				provider?.addCommnentGen(editor, myStatusBarItem);
-			} else {
-				provider?.sendApiRequest(prompt, { command: "addComments", code: editor.document.getText(editor.selection), language: editor.document.languageId });
+			const result = provider?.addCommnentGen(editor, myStatusBarItem);
+			if (!result) {
+				provider?.sendApiRequest(prompt, { command: "addComments", code: editor.document.getText(editor.selection), language: getDocumentLanguage(editor) });
 			}
 		}
 	});
-
+	const addTestsCommand = vscode.commands.registerCommand(`vscode-toonecode.addTests`, () => {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			return;
+		}
+		const selection = editor.document.getText(editor.selection);
+		if (selection) {
+			const prompt = vscode.workspace.getConfiguration("toonecode").get<string>(`promptPrefix.addTests`) || "";
+			provider?.sendApiRequest(prompt, { command: "addTests", /*chatType: "code",*/ code: selection, language: getDocumentLanguage(editor) });
+		}
+	});
 	// Skip AdHoc - as it was registered earlier
 	const registeredCommands = menuCommands.filter(command =>
-		command !== "addComments" && command !== "completeCode" && command !== "adhoc" && command !== "generateCode").map((command) =>
+		command !== "addComments" && command !== "completeCode" && command !== "addTests" && command !== "adhoc" && command !== "generateCode").map((command) =>
 			vscode.commands.registerCommand(`vscode-toonecode.${command}`, () => {
-				const prompt = vscode.workspace.getConfiguration("chatgpt").get<string>(`promptPrefix.${command}`);
+				const prompt = vscode.workspace.getConfiguration("toonecode").get<string>(`promptPrefix.${command}`);
 				const editor = vscode.window.activeTextEditor;
 
 				if (!editor) {
@@ -226,24 +232,25 @@ export function activate(context: vscode.ExtensionContext) {
 
 				const selection = editor.document.getText(editor.selection);
 				if (selection && prompt) {
-					provider?.sendApiRequest(prompt, { command, code: selection, language: editor.document.languageId });
+					provider?.sendApiRequest(prompt, { command, code: selection, language: getDocumentLanguage(editor) });
 				}
 			}));
 
-	context.subscriptions.push(view, freeText, resetThread, exportConversation, clearSession, configChanged, adhocCommand, addComments, generateCodeCommand, ...registeredCommands);
+	context.subscriptions.push(view, freeText, resetThread, exportConversation, clearSession, configChanged,
+		adhocCommand, addTestsCommand, addComments, generateCodeCommand, ...registeredCommands);
 
 	const setContext = () => {
 		menuCommands.forEach(command => {
-			if (command === "generateCode") {
-				let generateCodeEnabled = true;// !!vscode.workspace.getConfiguration("chatgpt").get<boolean>("gpt3.generateCode-enabled");
-				// const modelName = vscode.workspace.getConfiguration("chatgpt").get("gpt3.model") as string;
-				// const method = vscode.workspace.getConfiguration("chatgpt").get("method") as string;
-				// generateCodeEnabled = generateCodeEnabled && method === "GPT3 OpenAI API Key" && modelName.startsWith("code-");
-				vscode.commands.executeCommand('setContext', "generateCode-enabled", generateCodeEnabled);
-			} else {
-				const enabled = true;//!!vscode.workspace.getConfiguration("chatgpt.promptPrefix").get<boolean>(`${command}-enabled`);
-				vscode.commands.executeCommand('setContext', `${command}-enabled`, enabled);
-			}
+			// if (command === "generateCode") {
+			// 	let generateCodeEnabled = true;// !!vscode.workspace.getConfiguration("chatgpt").get<boolean>("gpt3.generateCode-enabled");
+			// 	// const modelName = vscode.workspace.getConfiguration("chatgpt").get("gpt3.model") as string;
+			// 	// const method = vscode.workspace.getConfiguration("chatgpt").get("method") as string;
+			// 	// generateCodeEnabled = generateCodeEnabled && method === "GPT3 OpenAI API Key" && modelName.startsWith("code-");
+			// 	vscode.commands.executeCommand('setContext', "generateCode-enabled", generateCodeEnabled);
+			// } else {
+			const enabled = !!vscode.workspace.getConfiguration("toonecode.promptPrefix").get<boolean>(`${command}-enabled`);
+			vscode.commands.executeCommand('setContext', `${command}-enabled`, enabled);
+			//}
 		});
 	};
 	setContext();

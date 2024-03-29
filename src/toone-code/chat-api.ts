@@ -104,7 +104,7 @@ export default class ChatApi {
 
             cacheHistory && await this._updateMessages(message);
 
-            const requestMsg = await this._buildMessages(text, opts);
+            const requestMsg = await this.buildMessages(text, opts);
             await this.doRequestPost(config, requestMsg).then((response) => {
                 if (onProgress) {
                     response.data.on('data', (chunk: any) => {
@@ -143,8 +143,15 @@ export default class ChatApi {
         return result;
     };
 
-    public async _buildMessages(text: string, opts: chatApiSendMessageOptions) {
+    public async buildMessages(text: string, opts: chatApiSendMessageOptions) {
         const { chatType = "chat", lang } = opts;
+       
+        if (chatType === "chat") {
+            text = this.combineMessageWithTAG(text);
+        }
+        return { lang, chatType, "prompt": text, };
+    };
+    public combineMessageWithTAG(text: string) {
         /**下面这拼接，可以根据历史上下文来不断地回答问题 */
         /*
             <s>system
@@ -180,11 +187,9 @@ export default class ChatApi {
         //     text = `${this.HUMAN_ROLE_START_TAG}${text}`;
         // }
         //text = `${text}\n${this.BOT_ROLE_START_TAG}`;
-        if (chatType === "chat") {
-            text = `${this.HUMAN_ROLE_START_TAG}${text}\n${this.BOT_ROLE_START_TAG}`;
-        }
-        return { lang, chatType, "prompt": text, };
-    };
+        text = `${this.HUMAN_ROLE_START_TAG}${text}\n${this.BOT_ROLE_START_TAG}`;
+        return text;
+    }
     private async _updateMessages(message: ChatMessage): Promise<any> {
         return new Promise((resolve, reject) => {
             if (!this._cacheChatMessage) {

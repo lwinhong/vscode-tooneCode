@@ -33,3 +33,52 @@ def sum_squares(lst):
     return sum
 # Explain the code line by line
 <INPUT:0,1>`;
+
+export const csTemplateExplanation=`
+# language: C#
+
+public void BubbleSort(int[] arr)
+{
+    int n = arr.Length;
+    for (int i = 0; i < n-1; i++)
+    {
+        for (int j = 0; j < n-i-1; j++)
+        {
+            if (arr[j] > arr[j+1])
+            {
+                int temp = arr[j];
+                arr[j] = arr[j+1];
+                arr[j+1] = temp;
+            }
+        }
+    }
+}
+
+<INPUT>
+
+# Explain the code line by line
+public void BubbleSort(int[] arr)
+{
+    //数组长度
+    int n = arr.Length;
+    //循环排序
+    for (int i = 0; i < n-1; i++)
+    {
+        for (int j = 0; j < n-i-1; j++)
+        {
+            //前面的大于后面的，前后交换
+            if (arr[j] > arr[j+1])
+            {
+                //前面的数据临时缓存
+                int temp = arr[j];
+                //后面的值给前面的赋值
+                arr[j] = arr[j+1];
+                //把前面的临时数据给后面赋值
+                arr[j+1] = temp;
+            }
+        }
+    }
+}
+# Explain the code line by line
+<INPUT:0,1>
+`;

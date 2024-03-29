@@ -24,7 +24,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 	 * @param context vscode上下文
 	 */
 	constructor(private context: vscode.ExtensionContext) {
-		this.autoScroll = true;//!!vscode.workspace.getConfiguration("chatgpt").get("response.autoScroll");
+		this.autoScroll = !!vscode.workspace.getConfiguration("toonecode").get("response.autoScroll");
 		this.setMethod();
 		this.login();
 	}
@@ -47,6 +47,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		webviewView.webview.onDidReceiveMessage(async data => {
 			switch (data.type) {
 				//插入代码
+
 				case 'editCode':
 					const escapedString = (data.value as string).replace(/\$/g, '\\$');;
 					vscode.window.activeTextEditor?.insertSnippet(new vscode.SnippetString(escapedString));
@@ -59,7 +60,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 				case 'openNew':
 					const document = await vscode.workspace.openTextDocument({
 						content: data.value,
-						language: data.language
+						language: data.language?.toLowerCase()
 					});
 					vscode.window.showTextDocument(document);
 
@@ -203,8 +204,11 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		let question = this.processQuestion(prompt, options.code, options.language);
 
 		// If the ChatGPT view is not in focus/visible; focus on it to render Q&A
-		if (this.webView === null) {
+		if (!this.webView) {
 			vscode.commands.executeCommand('vscode-toonecode.view.focus');
+			await new Promise((resole,reject)=> setTimeout(() => {
+				resole(true);
+			}, 800));
 		} else {
 			this.webView?.show?.(true);
 		}
@@ -261,7 +265,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		 */
 	public sendMessage(message: any, ignoreMessageIfNullWebView?: boolean) {
 		if (this.webView) {
-			this.webView?.webview.postMessage(message);
+			this.webView.webview?.postMessage(message);
 		} else if (!ignoreMessageIfNullWebView) {
 			this.leftOverMessage = message;
 		}
@@ -291,7 +295,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		if (code) {
 			// Add prompt prefix to the code if there was a code block selected
 			// question = `${question}${language ? ` (The following code is in ${language} programming language)` : ''}: ${code}`;
-			question = `${question}${language ? ` (当前代码使用的编程语言是${language})` : ''}: ${code}`;
+			question = `${question}${language ? ` (当前编程语言是${language})` : ''}: ${code}`;
 		}
 		return question + "\r\n";
 	}
@@ -300,18 +304,12 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		if (modelChanged && this.useAutoLogin) {
 			return false;
 		}
-		const configuration = vscode.workspace.getConfiguration("chatgpt");
-		// let apiKey = "";//configuration.get("gpt3.apiKey") as string || state.get("chatgpt-gpt3-apiKey") as string;
-		const organization = "";//configuration.get("gpt3.organization") as string;
-		// const max_tokens = 8000;// configuration.get("gpt3.maxTokens") as number;
-		// const temperature = 0.2;//configuration.get("gpt3.temperature") as number;
-		// const top_p = 0.95;//configuration.get("gpt3.top_p") as number;
-		// const top_k = 0; //configuration.get("gpt3.top_k") as number;
-		const apiBaseUrl = "";//"http://10.1.33.99:7860";//configuration.get("gpt3.apiBaseUrl") as string;
+		const configuration = vscode.workspace.getConfiguration("toonecode");
+		const apiBaseUrl = configuration.get("apiBaseUrl") as string;
 
 		this.chatCodeApi = new chatApi({
 			apiBaseUrl: apiBaseUrl?.trim() || undefined,
-			organization,
+			//organization,
 			//fetch: fetch,
 			// completionParams: {
 			// 	temperature: temperature,
@@ -327,13 +325,13 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		return true;
 	}
 
-	public async addCommnentGen(editor: vscode.TextEditor, myStatusBarItem: vscode.StatusBarItem) {
+	public addCommnentGen(editor: vscode.TextEditor, myStatusBarItem: vscode.StatusBarItem) {
 		if (!this.chatCodeApi) {
 			vscode.window.showWarningMessage("无法连接到远程服务器");
-			return;
+			return false;
 		}
 
-		await CodeGenByTemplateUtil(editor, "", myStatusBarItem, true, this.chatCodeApi, this);
+		return CodeGenByTemplateUtil(editor, myStatusBarItem, true, this.chatCodeApi, this);
 	}
 	
 	public inlineCompletionProviderWithCommand(

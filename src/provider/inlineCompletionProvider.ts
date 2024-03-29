@@ -363,12 +363,14 @@ export default function inlineCompletionProvider(
                     );
                     return { items: [] };
                 }
-                if (completion.startsWith("```")) {
-                    completion = completion.substring(3);
-                    if (completion.endsWith("```") && completion.length > 3) {
-                        completion = completion.substring(0, completion.length - 3);
-                    }
-                }
+                // let completionTrim =completion.trim();
+                // if (completionTrim.startsWith("```")) {
+                //     completionTrim = completionTrim.substring(3);
+                //     if (completionTrim.endsWith("```") && completionTrim.length > 3) {
+                //         completionTrim = completionTrim.substring(0, completionTrim.length - 3);
+                //     }
+                //     completion = completionTrim;
+                // }
                 if (isAtTheMiddleOfLine(editor, document)) {
                     const cursorPosition = editor.selection.active;
                     let currentLine = document?.lineAt(cursorPosition.line);

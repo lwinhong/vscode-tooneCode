@@ -1,6 +1,6 @@
 import { workspace } from "vscode";
 
-const configuration = workspace.getConfiguration("Codegeex", undefined);
+const configuration = workspace.getConfiguration("toonecode", undefined);
 
 export const generationPreference = configuration.get("GenerationPreference");
 export const disabledFor = configuration.get("DisabledFor", new Object());
