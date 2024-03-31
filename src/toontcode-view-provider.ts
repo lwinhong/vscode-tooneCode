@@ -94,6 +94,24 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		const vendorTurndownJs = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'vendor', 'turndown.js'));
 
 		const nonce = this.getRandomId();
+		const indexCss = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'vendor', 'index-jSTJY5En.css'));
+		const indexJs = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'vendor', 'index-D-e-Rpbb.js'));
+
+		// return `<!DOCTYPE html>
+		// <html lang="en">
+		//   <head>
+		// 	<meta charset="UTF-8">
+		// 	<link rel="icon" href="./favicon.ico">
+		// 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		// 	<title>TooneCode</title>
+		// 	<script src="${vendorTailwindJs}"></script>
+		// 	<script type="module" crossorigin src="${indexJs}"></script>
+		// 	<link rel="stylesheet" crossorigin href="${indexCss}">
+		//   </head>
+		//   <body class="overflow-hidden">
+		// 	<div id="app"></div>
+		//   </body>
+		// </html>`;
 
 		return `<!DOCTYPE html>
 			<html lang="zh-hans">
