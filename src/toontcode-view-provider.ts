@@ -55,7 +55,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 					break;
 				//自由问答
 				case 'addFreeTextQuestion':
-					this.sendApiRequest(data.value, { command: "freeText" });
+					this.sendApiRequest(data.value, { command: "freeText", messageId: data.messageId });
 					break;
 				case 'openNew':
 					const document = await vscode.workspace.openTextDocument({
@@ -94,24 +94,24 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		const vendorTurndownJs = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'vendor', 'turndown.js'));
 
 		const nonce = this.getRandomId();
-		const indexCss = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'vendor', 'index-jSTJY5En.css'));
-		const indexJs = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'vendor', 'index-D-e-Rpbb.js'));
+		const indexCss = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'index.css'));
+		const indexJs = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'index.js'));
 
-		// return `<!DOCTYPE html>
-		// <html lang="en">
-		//   <head>
-		// 	<meta charset="UTF-8">
-		// 	<link rel="icon" href="./favicon.ico">
-		// 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		// 	<title>TooneCode</title>
-		// 	<script src="${vendorTailwindJs}"></script>
-		// 	<script type="module" crossorigin src="${indexJs}"></script>
-		// 	<link rel="stylesheet" crossorigin href="${indexCss}">
-		//   </head>
-		//   <body class="overflow-hidden">
-		// 	<div id="app"></div>
-		//   </body>
-		// </html>`;
+		return `<!DOCTYPE html>
+		<html lang="en">
+		  <head>
+			<meta charset="UTF-8">
+			<link rel="icon" href="./favicon.ico">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>TooneCode</title>
+		
+			<script type="module" crossorigin src="${indexJs}"></script>
+			<link rel="stylesheet" crossorigin href="${indexCss}">
+		  </head>
+		  <body class="overflow-hidden">
+			<div id="app"></div>
+		  </body>
+		</html>`;
 
 		return `<!DOCTYPE html>
 			<html lang="zh-hans">
@@ -209,7 +209,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		});
 	}
 
-	public async sendApiRequest(prompt: string, options: { command: string, code?: string, previousAnswer?: string, language?: string, chatType?: string }) {
+	public async sendApiRequest(prompt: string, options: { command: string, code?: string, previousAnswer?: string, language?: string, chatType?: string, messageId?: string }) {
 		if (this.inProgress) {
 			// The AI is still thinking... Do not accept more questions.
 			return;
@@ -224,7 +224,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		// If the ChatGPT view is not in focus/visible; focus on it to render Q&A
 		if (!this.webView) {
 			vscode.commands.executeCommand('vscode-toonecode.view.focus');
-			await new Promise((resole,reject)=> setTimeout(() => {
+			await new Promise((resole, reject) => setTimeout(() => {
 				resole(true);
 			}, 800));
 		} else {
@@ -237,7 +237,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		this.sendMessage({ type: 'showInProgress', inProgress: this.inProgress, showStopButton: true });
 		this.currentMessageId = this.getRandomId();
 		//在视图添加一个问题框
-		this.sendMessage({ type: 'addQuestion', value: prompt, code: options.code, autoScroll: this.autoScroll });
+		this.sendMessage({ type: 'addQuestion', value: prompt, code: options.code, autoScroll: this.autoScroll, messageId: this.currentMessageId });
 
 		if (this.chatCodeApi) {
 			try {
@@ -250,10 +250,16 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 					chatType: chatType,
 					onProgress: (message) => {
 						this.response = message.text;
-						this.sendMessage({ type: 'addResponse', value: this.response, id: this.conversationId, autoScroll: this.autoScroll, responseInMarkdown });
+						this.sendMessage({
+							type: 'addResponse', value: this.response, id: this.conversationId,
+							autoScroll: this.autoScroll, responseInMarkdown, messageId: this.currentMessageId
+						});
 					},
 					onDone: (message) => {
-						this.sendMessage({ type: 'addResponse', value: this.response, done: true, id: this.conversationId, autoScroll: this.autoScroll, responseInMarkdown });
+						this.sendMessage({
+							type: 'addResponse', value: this.response, done: true, id: this.conversationId,
+							autoScroll: this.autoScroll, responseInMarkdown, messageId: this.currentMessageId
+						});
 						this.inProgress = false;
 						this.sendShowInProgress();
 					}
@@ -351,7 +357,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 
 		return CodeGenByTemplateUtil(editor, myStatusBarItem, true, this.chatCodeApi, this);
 	}
-	
+
 	public inlineCompletionProviderWithCommand(
 		g_isLoading: boolean,
 		myStatusBarItem: vscode.StatusBarItem,
