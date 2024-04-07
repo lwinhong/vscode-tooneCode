@@ -35,17 +35,22 @@ interface ChatMessage {
     parentMessageId?: string;
     conversationId?: string;
     error?: string;
+    history?: any;
 };
-type CacheChatMessage = {
-    messageId: string;
-    userMessage?: ChatMessage;
-    assistantMessage?: ChatMessage;
-}
+// type CacheChatMessage = {
+//     messageId: string;
+//     userMessage?: ChatMessage;
+//     assistantMessage?: ChatMessage;
+// };
+// type HistoryMessages = {
+//     history: Array<any>
+// };
 type Role = 'user' | 'assistant' | 'system';
 type ChatType = 'chat' | 'code' | any;
 
 export default class ChatApi {
-    private _cacheChatMessage?: CacheChatMessage[];
+    //private _cacheChatMessage?: CacheChatMessage[];
+    private _historyMessages?: Array<any>;
     private _historyCount: number = 3;
     private readonly HUMAN_ROLE_START_TAG: string = "<s>human\n";
     private readonly BOT_ROLE_START_TAG: string = "<s>bot\n";
@@ -53,7 +58,7 @@ export default class ChatApi {
 
     constructor(opt: chatApiOption) {
         const { apiBaseUrl } = opt;
-        this._cacheChatMessage = new Array();
+        //this._historyMessages = new Array();
         axios.defaults.baseURL = apiBaseUrl ?? 'http://codeserver.t.vtoone.com';
         axios.defaults.headers["Content-Type"] = "application/json";
     }
@@ -102,23 +107,31 @@ export default class ChatApi {
             config.responseType = "stream";
             config.url += "_stream_v1";
 
-            cacheHistory && await this._updateMessages(message);
+            // cacheHistory && await this._updateMessages2(message);
 
             const requestMsg = await this.buildMessages(text, opts);
-            await this.doRequestPost(config, requestMsg).then((response) => {
+            const handler = (response: axios.AxiosResponse<any, any>) => {
                 if (onProgress) {
                     response.data.on('data', (chunk: any) => {
                         // 处理流数据的逻辑
-                        result.text = chunk.toString();
-                        onProgress == null ? void 0 : onProgress(result);
+                        const json = JSON.parse(chunk.toString());
+                        if (json.error) {
+                            result.error = json.error;
+                        } else {
+                            result.text = json.anser;
+                            result.history = json.history;
+                        }
+                        onProgress?.(result);
                     });
                 }
                 if (onDone) {
                     response.data.on('end', async () => {
                         // 数据接收完成的逻辑
-                        let rs = onDone == null ? void 0 : onDone(result);
-                        if (rs === false) { return; }
-                        cacheHistory && await this._updateMessages(result);
+                        let rs = onDone?.(result);
+                        if (rs === false || result.error) {
+                            return;
+                        }
+                        cacheHistory && await this._updateMessages2(result);
                     });
                 }
                 response.data.on('error', (error: any) => {
@@ -128,28 +141,33 @@ export default class ChatApi {
                         console.log('请求出错', error.message);
                     }
                     result.error = "服务异常，请稍后再试 " + error;
-                    onDone == null ? void 0 : onDone(result);
+                    onDone?.(result);
                 });
-            }).catch(err => {
+            };
+            await this.doRequestPost(config, requestMsg).then(handler).catch(err => {
                 result.error = "服务异常，请稍后再试. " + err;
-                onDone == null ? void 0 : onDone(result);
+                onDone?.(result);
             });
         }
         else {
             const response = await this.doRequestPost(config, {});
             result.text = response.data;
-            onDone == null ? void 0 : onDone(result);
+            onDone?.(result);
         }
         return result;
     };
 
     public async buildMessages(text: string, opts: chatApiSendMessageOptions) {
         const { chatType = "chat", lang } = opts;
-       
+        let data = { chatType, prompt: text };
         if (chatType === "chat") {
             text = this.combineMessageWithTAG(text);
+            data.prompt = text;
+            if (this._historyMessages && this._historyMessages.length > 0) {
+                data = Object.assign(data, { history: this._historyMessages });
+            }
         }
-        return { lang, chatType, "prompt": text, };
+        return data;
     };
     public combineMessageWithTAG(text: string) {
         /**下面这拼接，可以根据历史上下文来不断地回答问题 */
@@ -190,40 +208,53 @@ export default class ChatApi {
         text = `${this.HUMAN_ROLE_START_TAG}${text}\n${this.BOT_ROLE_START_TAG}`;
         return text;
     }
-    private async _updateMessages(message: ChatMessage): Promise<any> {
+    private async _updateMessages2(message: ChatMessage): Promise<any> {
         return new Promise((resolve, reject) => {
-            if (!this._cacheChatMessage) {
-                return resolve(void 0);
-            }
-            try {
-                if (message.role === 'user') {
-                    //超出指定范围，需要清理掉一下
-                    if (this._cacheChatMessage.length >= this._historyCount) {
-                        while (this._cacheChatMessage.length >= this._historyCount) {
-                            this._cacheChatMessage.splice(0, 1);
-                        }
-                    }
-                    this._cacheChatMessage.push({
-                        messageId: message.id,
-                        userMessage: message
-                    });
+        
+            this._historyMessages = message.history;
+            //超出指定范围，需要清理掉一下
+            if (this._historyMessages && this._historyMessages.length > this._historyCount) {
+                while (this._historyMessages.length > this._historyCount) {
+                    this._historyMessages.splice(0, 1);
                 }
-                else {
-                    let exist = this._cacheChatMessage.find(f => f.messageId === message.parentMessageId);
-                    if (exist) {
-                        exist.assistantMessage = message;
-                    }
-                }
-                resolve(message);
-            } catch (err) {
-                reject(err);
             }
-        }).catch(err => {
-            console.error(err);
+            resolve(void 0);
         });
     }
+    // private async _updateMessages(message: ChatMessage): Promise<any> {
+    //     return new Promise((resolve, reject) => {
+    //         if (!this._cacheChatMessage) {
+    //             return resolve(void 0);
+    //         }
+    //         try {
+    //             if (message.role === 'user') {
+    //                 //超出指定范围，需要清理掉一下
+    //                 if (this._cacheChatMessage.length >= this._historyCount) {
+    //                     while (this._cacheChatMessage.length >= this._historyCount) {
+    //                         this._cacheChatMessage.splice(0, 1);
+    //                     }
+    //                 }
+    //                 this._cacheChatMessage.push({
+    //                     messageId: message.id,
+    //                     userMessage: message
+    //                 });
+    //             }
+    //             else {
+    //                 let exist = this._cacheChatMessage.find(f => f.messageId === message.parentMessageId);
+    //                 if (exist) {
+    //                     exist.assistantMessage = message;
+    //                 }
+    //             }
+    //             resolve(message);
+    //         } catch (err) {
+    //             reject(err);
+    //         }
+    //     }).catch(err => {
+    //         console.error(err);
+    //     });
+    // }
     public async clearCacheMessage(): Promise<any> {
-        this._cacheChatMessage = undefined;
+        this._historyMessages = undefined;
     }
     private doRequestPost(config: axios.AxiosRequestConfig<any>, data: any): Promise<axios.AxiosResponse<any, any>> {
         return axios.post(config.url || "", data, config);

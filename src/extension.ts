@@ -126,7 +126,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	vscode.window.onDidChangeTextEditorSelection(e => {
 		let text = e.textEditor.document.getText(e.textEditor.selection);
-		provider?.sendMessage({ type: 'textSelectionChanged', text }, true);
+		provider?.sendMessage({ type: 'textSelectionChanged', text, language: e.textEditor.document.languageId }, true);
 	});
 
 	if (enableExtension) {

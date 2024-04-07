@@ -73,6 +73,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 				case 'clearConversation':
 					this.messageId = undefined;
 					this.conversationId = undefined;
+					this.chatCodeApi?.clearCacheMessage();
 					this.logEvent("conversation-cleared");
 					break;
 				case 'login':
