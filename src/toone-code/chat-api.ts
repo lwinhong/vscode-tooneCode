@@ -59,7 +59,7 @@ export default class ChatApi {
     constructor(opt: chatApiOption) {
         const { apiBaseUrl } = opt;
         //this._historyMessages = new Array();
-        axios.defaults.baseURL = apiBaseUrl ?? 'http://codeserver.t.vtoone.com';
+        axios.defaults.baseURL = apiBaseUrl ?? 'http://codeserver.t.vtoone.com/v1';
         axios.defaults.headers["Content-Type"] = "application/json";
     }
 
@@ -96,20 +96,23 @@ export default class ChatApi {
             text: "",
             error: ""
         };
-
+        let url = '/chat';
+        if (chatType === "code") {
+            url = 'code_generate';
+        }
         let config: axios.AxiosRequestConfig<any> = {
             method: 'post',
-            url: '/chat',
+            url,
             timeout: timeoutMs,
             signal: abortSignal,
         };
         if (stream) {
             config.responseType = "stream";
-            config.url += "_stream_v1";
-
+            //config.url += "_stream";
             // cacheHistory && await this._updateMessages2(message);
 
             const requestMsg = await this.buildMessages(text, opts);
+
             const handler = (response: axios.AxiosResponse<any, any>) => {
                 if (onProgress) {
                     response.data.on('data', (chunk: any) => {
@@ -159,9 +162,10 @@ export default class ChatApi {
 
     public async buildMessages(text: string, opts: chatApiSendMessageOptions) {
         const { chatType = "chat", lang } = opts;
-        let data = { chatType, prompt: text };
+        // text+="\n使用中文回答问题";
+        let data = { chatType, prompt: text, stream: opts.stream };
         if (chatType === "chat") {
-            text = this.combineMessageWithTAG(text);
+            //text = this.combineMessageWithTAG(text);
             data.prompt = text;
             if (this._historyMessages && this._historyMessages.length > 0) {
                 data = Object.assign(data, { history: this._historyMessages });
@@ -210,7 +214,7 @@ export default class ChatApi {
     }
     private async _updateMessages2(message: ChatMessage): Promise<any> {
         return new Promise((resolve, reject) => {
-        
+
             this._historyMessages = message.history;
             //超出指定范围，需要清理掉一下
             if (this._historyMessages && this._historyMessages.length > this._historyCount) {

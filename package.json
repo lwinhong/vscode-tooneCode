@@ -195,7 +195,7 @@
         
         "toonecode.apiBaseUrl": {
           "type": "string",
-          "default": "http://codeserver.t.vtoone.com",
+          "default": "http://codeserver.t.vtoone.com/v1",
           "markdownDescription": "服务地址",
           "order": 31
         },
