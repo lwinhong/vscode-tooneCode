@@ -9,6 +9,7 @@ import { updateStatusBarItem } from "../utils/updateStatusBarItem";
 import { Trie } from "../trie";
 import ChatGptViewProvider from '../toontcode-view-provider';
 import chatApi from '../toone-code/chat-api';
+import Path from 'path';
 
 let lastRequest = null;
 let delay: number = completionDelay * 1000;
@@ -129,8 +130,11 @@ async function completetionEnabled(
     return true;
 }
 
-function requestApi(question: string, lang?: string, chatCodeApi?: chatApi,): Promise<any> {
+function requestApi(question: string, lang?: string, chatCodeApi?: chatApi, filePath?: string, laterCode?: string): Promise<any> {
     abortController = new AbortController();
+    if (filePath) {
+        filePath = Path.basename(filePath);
+    }
     return new Promise(async (resolve, reject) => {
         try {
             if (!chatCodeApi) {
@@ -146,6 +150,8 @@ function requestApi(question: string, lang?: string, chatCodeApi?: chatApi,): Pr
                 lang,
                 max_length: 512,
                 timeoutMs: 40 * 1000,
+                filePath,
+                laterCode,
                 onProgress: (message) => {
                     //response = message.text;
                 },
@@ -342,7 +348,7 @@ export default function inlineCompletionProvider(
                 lastRequest = requestId;
                 await new Promise((f) => setTimeout(f, delay));
                 if (lastRequest !== requestId) {
-                    console.log("来太块了");
+                    console.log("来太快了");
                     return { items: [] };
                 }
                 console.log("real to get");
@@ -352,7 +358,7 @@ export default function inlineCompletionProvider(
                 updateStatusBarItem(myStatusBarItem, g_isLoading, true, "");
 
                 abortController?.abort();
-                let completion = await requestApi(textBeforeCursor, lang, chatCodeApi);
+                let completion = await requestApi(textBeforeCursor, lang, chatCodeApi, editor.document.fileName);
 
                 if (!completion) {
                     updateStatusBarItem(

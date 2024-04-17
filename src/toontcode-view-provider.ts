@@ -3,6 +3,8 @@ import CodeGenByTemplateUtil from './utils/codeGenByTemplateUtil';
 import chatApi from './toone-code/chat-api';
 import inlineCompletionProvider from "./provider/inlineCompletionProvider";
 import inlineCompletionProviderWithCommand from "./provider/inlineCompletionProviderWithCommand";
+import { useModel } from "./param/configures";
+import Path from 'path';
 
 export default class ToontCodeViewProvider implements vscode.WebviewViewProvider {
 	private webView?: vscode.WebviewView;
@@ -210,12 +212,15 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		});
 	}
 
-	public async sendApiRequest(prompt: string, options: { command: string, code?: string, previousAnswer?: string, language?: string, chatType?: string, messageId?: string }) {
+	public async sendApiRequest(prompt: string, options: {
+		command: string, code?: string, previousAnswer?: string,
+		language?: string, chatType?: string, messageId?: string, filePath?: string, laterCode?: string
+	}) {
 		if (this.inProgress) {
 			// The AI is still thinking... Do not accept more questions.
 			return;
 		}
-		let { chatType } = options;
+		let { chatType, filePath, laterCode } = options;
 		this.questionCounter++;
 		const responseInMarkdown = true;
 
@@ -240,6 +245,10 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		//在视图添加一个问题框
 		this.sendMessage({ type: 'addQuestion', value: prompt, code: options.code, autoScroll: this.autoScroll, messageId: this.currentMessageId });
 
+		if (filePath) {
+			filePath = Path.basename(filePath);
+		}
+
 		if (this.chatCodeApi) {
 			try {
 				const chatResponse = await this.chatCodeApi.sendMessage(question, {
@@ -249,6 +258,8 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 					abortSignal: this.abortController.signal,
 					stream: true,
 					chatType: chatType,
+					filePath,
+					laterCode,
 					onProgress: (message) => {
 						this.response = message.text;
 						this.sendMessage({
@@ -319,8 +330,12 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 	public processQuestion(question: string, code?: string, language?: string) {
 		if (code) {
 			// Add prompt prefix to the code if there was a code block selected
-			// question = `${question}${language ? ` (The following code is in ${language} programming language)` : ''}: ${code}`;
-			question = `${question}${language ? ` (当前编程语言是${language})` : ''}: ${code}`;
+			//question = `${question}${language ? ` (The following code is in ${language} programming language)` : ''}: ${code}`;
+			if (useModel === "aix") {
+				question = `${code}\n${question}`;
+			} else {
+				question = `${question}${language ? ` (当前编程语言是${language})` : ''}: ${code}`;
+			}
 		}
 		return question + "\r\n";
 	}

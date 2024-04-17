@@ -73413,7 +73413,7 @@ class ChatApi {
       //parentMessageId,
       messageId = v4(),
       timeoutMs = 40 * 1e3,
-      //chatType = "chat",
+      chatType = "chat",
       historyCount = 3,
       cacheHistory = true
     } = opts;
@@ -73437,25 +73437,28 @@ class ChatApi {
       text: "",
       error: ""
     };
+    let url = "/chat";
+    if (chatType === "code") {
+      url = "/code_generate";
+    }
     let config = {
       method: "post",
-      url: "/chat",
+      url,
       timeout: timeoutMs,
       signal: abortSignal
     };
     if (stream) {
       config.responseType = "stream";
-      config.url += "_stream_v1";
       cacheHistory && await this._updateMessages(message);
       const requestMsg = await this.buildMessages(text, opts);
       config.data = requestMsg;
       try {
-        let url = "/api" + config.url;
+        let url2 = "/api" + config.url;
         if (true) {
-          url = "http://localhost/api" + config.url;
+          url2 = "http://localhost:8090/api" + config.url;
         }
         let response = await fetch(
-          url,
+          url2,
           {
             method: "post",
             body: JSON.stringify(requestMsg),
@@ -73560,10 +73563,7 @@ class ChatApi {
   }
   async buildMessages(text, opts) {
     const { chatType = "chat", lang } = opts;
-    if (chatType === "chat") {
-      text = this.combineMessageWithTAG(text);
-    }
-    return { lang, chatType, "prompt": text };
+    return { lang, chatType, "prompt": text, stream: true };
   }
   combineMessageWithTAG(text) {
     text = `${HUMAN_ROLE_START_TAG}${text}
@@ -74277,7 +74277,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
             message.anser ? (openBlock(), createElementBlock("div", _hoisted_17, [
               createBaseVNode("h2", _hoisted_18, [
                 createVNode(_component_IconAiSvg),
-                createTextVNode("TooneCode ")
+                createTextVNode("AI ")
               ]),
               createBaseVNode("div", {
                 class: normalizeClass({ "result-streaming": message.done !== true }),
@@ -74289,7 +74289,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
             message.error ? (openBlock(), createElementBlock("div", _hoisted_21, [
               createBaseVNode("h2", _hoisted_22, [
                 createVNode(_component_IconAiSvg),
-                createTextVNode("TooneCode ")
+                createTextVNode("AI ")
               ]),
               createBaseVNode("div", _hoisted_23, toDisplayString(message.error), 1)
             ])) : createCommentVNode("", true)

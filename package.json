@@ -146,31 +146,31 @@
         },
         "toonecode.promptPrefix.addTests": {
           "type": "string",
-          "default": "测试以下代码功能",
+          "default": "为以上代码生成单元测试",
           "description": "允许您选中代码后，让 GPT 针对此代码提供测试的快速 Prompt 前缀。",
           "order": 8
         },
         "toonecode.promptPrefix.addTests-enabled": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "选中代码后，是否在上下文菜单选项显示[添加测试]",
           "order": 9
         },
         "toonecode.promptPrefix.explain": {
           "type": "string",
-          "default": "解释以下代码作用",
+          "default": "解析以上代码",
           "description": "允许您选中代码后，让 GPT 针对此代码分析功能的快速 Prompt 前缀。",
           "order": 14
         },
         "toonecode.promptPrefix.explain-enabled": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "选中代码后，是否在上下文菜单选项显示[解释代码]",
           "order": 15
         },
         "toonecode.promptPrefix.addComments": {
           "type": "string",
-          "default": "为以下代码添加注释",
+          "default": "为以上代码每一行加上注释，并markdown包装生成的新代码",
           "description": "允许您选中代码后，让 GPT 针对此代码添加注释的快速 Prompt 前缀。",
           "order": 16
         },
@@ -209,6 +209,11 @@
         "toonecode.OnlyKeyControl": {
           "type": "boolean",
           "default": null,
+          "description": "如果您只想在隐身模式下按 alt/option+\\ 来获取需要的建议，请选中此选项"
+        },
+        "toonecode.useModel": {
+          "type": "string",
+          "default": "aix",
           "description": "如果您只想在隐身模式下按 alt/option+\\ 来获取需要的建议，请选中此选项"
         }
       }

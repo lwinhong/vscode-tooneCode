@@ -23,7 +23,9 @@ type chatApiSendMessageOptions = {
     historyCount?: number,
     lang?: string,
     max_length?: number,
-    cacheHistory?: boolean
+    cacheHistory?: boolean,
+    filePath?: string,
+    laterCode?: string,
 };
 interface ChatMessage {
     id: string;
@@ -98,7 +100,7 @@ export default class ChatApi {
         };
         let url = '/chat';
         if (chatType === "code") {
-            url = 'code_generate';
+            url = '/code_generate';
         }
         let config: axios.AxiosRequestConfig<any> = {
             method: 'post',
@@ -163,7 +165,7 @@ export default class ChatApi {
     public async buildMessages(text: string, opts: chatApiSendMessageOptions) {
         const { chatType = "chat", lang } = opts;
         // text+="\n使用中文回答问题";
-        let data = { chatType, prompt: text, stream: opts.stream };
+        let data = { chatType, prompt: text, stream: opts.stream, filePath: opts.filePath, laterCode: opts.laterCode };
         if (chatType === "chat") {
             //text = this.combineMessageWithTAG(text);
             data.prompt = text;

@@ -6,6 +6,7 @@ import { disabledFor, enableExtension } from "../param/configures";
 import { Trie } from "../trie";
 import ChatGptViewProvider from '../toontcode-view-provider';
 import chatApi from '../toone-code/chat-api';
+import Path from 'path';
 
 let lastRequest = null;
 let someTrackingIdCounter = 0;
@@ -51,8 +52,11 @@ async function completetionEnabled(
     return true;
 }
 
-function requestApi(question: string, lang?: string, chatCodeApi?: chatApi,): Promise<any> {
+function requestApi(question: string, lang?: string, chatCodeApi?: chatApi, filePath?: string, laterCode?: string): Promise<any> {
     abortController = new AbortController();
+    if (filePath) {
+        filePath = Path.basename(filePath);
+    }
     return new Promise(async (resolve, reject) => {
         try {
             if (!chatCodeApi) {
@@ -68,6 +72,8 @@ function requestApi(question: string, lang?: string, chatCodeApi?: chatApi,): Pr
                 lang,
                 max_length: 512,
                 timeoutMs: 40 * 1000,
+                filePath,
+                laterCode,
                 onProgress: (message) => {
                     //response = message.text;
                 },
@@ -168,7 +174,7 @@ export default function inlineCompletionProviderWithCommand(
                 updateStatusBarItem(myStatusBarItem, g_isLoading, true, "");
 
                 abortController?.abort();
-                let completion = await requestApi(textBeforeCursor, lang, chatCodeApi);
+                let completion = await requestApi(textBeforeCursor, lang, chatCodeApi, document.fileName);
 
                 if (!completion) {
                     return updateStatusBarItemSuggestion();

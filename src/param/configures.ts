@@ -40,6 +40,7 @@ export const acceptedsurvey = configuration.get("Survey", null);
 export const completionDelay = configuration.get("CompletionDelay", 0.5);
 export const templates = configuration.get("PromptTemplates(Experimental)", {});
 export const onlyKeyControl = configuration.get("OnlyKeyControl");
+export const useModel = String(configuration.get("useModel", ""));
 export const controls = {
     interactiveMode: {
         mac: "Control + Enter",

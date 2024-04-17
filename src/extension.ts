@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import ChatGptViewProvider from './toontcode-view-provider';
 import changeIconColor from "./utils/changeIconColor";
 import { isCurrentLanguageDisable } from "./utils/isCurrentLanguageDisable";
-import { enableExtension, onlyKeyControl } from "./param/configures";
+import { enableExtension, onlyKeyControl, useModel } from "./param/configures";
 import getDocumentLanguage from "./utils/getDocumentLanguage";
 
 let g_isLoading = false;
@@ -202,9 +202,15 @@ export function activate(context: vscode.ExtensionContext) {
 		const prompt = vscode.workspace.getConfiguration("toonecode").get<string>(`promptPrefix.addComments`);
 		const editor = vscode.window.activeTextEditor;
 		if (prompt && editor) {
-			const result = provider?.addCommnentGen(editor, myStatusBarItem);
+			//先试着执行，如果执行过了就不再往下了
+			const result = false;// provider?.addCommnentGen(editor, myStatusBarItem);
 			if (!result) {
-				provider?.sendApiRequest(prompt, { command: "addComments", code: editor.document.getText(editor.selection), language: getDocumentLanguage(editor) });
+				provider?.sendApiRequest(prompt, {
+					command: "addComments", code: editor.document.getText(editor.selection),
+					chatType: useModel === "aix" ? "code" : "",
+					filePath: editor.document.fileName,
+					language: getDocumentLanguage(editor)
+				});
 			}
 		}
 	});
@@ -216,7 +222,11 @@ export function activate(context: vscode.ExtensionContext) {
 		const selection = editor.document.getText(editor.selection);
 		if (selection) {
 			const prompt = vscode.workspace.getConfiguration("toonecode").get<string>(`promptPrefix.addTests`) || "";
-			provider?.sendApiRequest(prompt, { command: "addTests", /*chatType: "code",*/ code: selection, language: getDocumentLanguage(editor) });
+			provider?.sendApiRequest(prompt, {
+				command: "addTests", chatType: useModel === "aix" ? "codeChat" : "", code: selection,
+				language: getDocumentLanguage(editor),
+				filePath: editor.document.fileName
+			});
 		}
 	});
 	// Skip AdHoc - as it was registered earlier
@@ -232,7 +242,10 @@ export function activate(context: vscode.ExtensionContext) {
 
 				const selection = editor.document.getText(editor.selection);
 				if (selection && prompt) {
-					provider?.sendApiRequest(prompt, { command, code: selection, language: getDocumentLanguage(editor) });
+					provider?.sendApiRequest(prompt, {
+						command, code: selection, language: getDocumentLanguage(editor),
+						chatType: useModel === "aix" ? "codeChat" : "", filePath: editor.document.fileName
+					});
 				}
 			}));
 
