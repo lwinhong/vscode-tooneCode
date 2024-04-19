@@ -73499,7 +73499,7 @@ class ChatApi {
       //conversationId = uuidv4(),
       //parentMessageId,
       messageId = v4(),
-      timeoutMs = 40 * 1e3,
+      timeoutMs = 60 * 1e3,
       //chatType = "chat",
       historyCount = 3,
       cacheHistory = true
@@ -73633,8 +73633,8 @@ const chatUtil = {
           stream: true,
           chatType: "chat",
           onProgress: (message) => {
-            const { anser } = JSON.parse(message.text);
-            this.response = anser;
+            const { answer } = JSON.parse(message.text);
+            this.response = answer;
             onProgress == null ? void 0 : onProgress({
               type: "addResponse",
               value: this.response,
@@ -73816,7 +73816,7 @@ const _sfc_main$1 = {
           existingMessageData = this.qaData.list[this.qaData.list.length - 1];
         }
         this.addResponse({
-          value: existingMessageData.anser,
+          value: existingMessageData.answer,
           done: true,
           id: (existingMessageData == null ? void 0 : existingMessageData.id) ?? this.lastQuestionId,
           autoScroll: true,
@@ -73887,7 +73887,7 @@ const _sfc_main$1 = {
         question: util.escapeHtml(message.value),
         id: this.lastQuestionId,
         messageId: "",
-        anser: "",
+        answer: "",
         error: "",
         done: false
       });
@@ -73915,7 +73915,7 @@ const _sfc_main$1 = {
         updatedValue = message.value.split("```").length % 2 === 1 ? message.value : message.value + "\n\n```\n\n";
       }
       const markedResponse = util.markedParser(updatedValue);
-      existingMessageData.anser = markedResponse;
+      existingMessageData.answer = markedResponse;
       if (message.done) {
         this.message = null;
         existingMessageData.done = true;
@@ -73968,7 +73968,7 @@ const _sfc_main$1 = {
         return;
       }
       const messageValue = message.value || "An error occurred. If this issue persists please clear your session token with `ChatGPT: Reset session` command and/or restart your Visual Studio Code. If you still experience issues, it may be due to outage on https://openai.com services.";
-      existingMessageData.anser = "";
+      existingMessageData.answer = "";
       existingMessageData.error = util.markedParser(messageValue);
       if (message.autoScroll) {
         util.autoScrollToBottom(this.qaElementList);
@@ -74274,7 +74274,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
             ])
           ]),
           createBaseVNode("div", _hoisted_16, [
-            message.anser ? (openBlock(), createElementBlock("div", _hoisted_17, [
+            message.answer ? (openBlock(), createElementBlock("div", _hoisted_17, [
               createBaseVNode("h2", _hoisted_18, [
                 createVNode(_component_IconAiSvg),
                 createTextVNode("AI ")
@@ -74282,7 +74282,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
               createBaseVNode("div", {
                 class: normalizeClass({ "result-streaming": message.done !== true }),
                 onId: message.id,
-                innerHTML: message.anser
+                innerHTML: message.answer
               }, null, 42, _hoisted_19),
               _hoisted_20
             ])) : createCommentVNode("", true),

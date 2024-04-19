@@ -119,14 +119,20 @@ export default class ChatApi {
                 if (onProgress) {
                     response.data.on('data', (chunk: any) => {
                         // 处理流数据的逻辑
-                        const json = JSON.parse(chunk.toString());
-                        if (json.error) {
-                            result.error = json.error;
-                        } else {
-                            result.text = json.anser;
-                            result.history = json.history;
+                        try {
+                            const json = JSON.parse(chunk.toString());
+                            if (json.error) {
+                                result.error = json.error;
+                            } else {
+                                result.text = json.answer;
+                                if (json.done) {
+                                    result.history = json.history;
+                                }
+                            }
+                            onProgress?.(result);
+                        } catch (error) {
+                            console.error(error);
                         }
-                        onProgress?.(result);
                     });
                 }
                 if (onDone) {
