@@ -70,8 +70,6 @@ export default class ChatApi {
             stream,
             onProgress,
             onDone,
-            //conversationId = uuidv4(),
-            //parentMessageId,
             messageId = uuidv4(),
             timeoutMs = 40 * 1000,
             chatType = "chat",
@@ -111,7 +109,7 @@ export default class ChatApi {
         if (stream) {
             config.responseType = "stream";
             //config.url += "_stream";
-            // cacheHistory && await this._updateMessages2(message);
+            //cacheHistory && await this._updateMessages2(message);
 
             const requestMsg = await this.buildMessages(text, opts);
 
@@ -174,10 +172,8 @@ export default class ChatApi {
         let data = { chatType, prompt: text, stream: opts.stream, filePath: opts.filePath, laterCode: opts.laterCode };
         if (chatType === "chat") {
             //text = this.combineMessageWithTAG(text);
-            data.prompt = text;
-            if (this._historyMessages && this._historyMessages.length > 0) {
-                data = Object.assign(data, { history: this._historyMessages });
-            }
+            //data.prompt = text;
+            data = Object.assign(data, { history: this._historyMessages || [] });
         }
         return data;
     };

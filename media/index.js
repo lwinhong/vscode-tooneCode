@@ -18154,7 +18154,6 @@ const useStore = defineStore("useStore", {
       this.isVsCodeMode = mode;
     },
     postMessageToVsCode(data) {
-      console.log(data);
       if (this.isVsCodeMode && window.vscodeInstance) {
         window.vscodeInstance.postMessage(data);
         return true;
@@ -73396,44 +73395,31 @@ axios.formToJSON = (thing) => formDataToJSON(utils$1.isHTMLForm(thing) ? new For
 axios.getAdapter = adapters.getAdapter;
 axios.HttpStatusCode = HttpStatusCode$1;
 axios.default = axios;
-let _historyCount = 3;
 const HUMAN_ROLE_START_TAG = "<s>human\n";
 const BOT_ROLE_START_TAG = "<s>bot\n";
 class ChatApi {
   constructor(opt) {
-    this._cacheChatMessage = new Array();
-    this._cacheChatMessage = [];
   }
   async sendMessage(text, opts) {
     const {
       stream,
       onProgress,
       onDone,
-      //conversationId = uuidv4(),
-      //parentMessageId,
-      messageId = v4(),
+      //messageId = uuidv4(),
       timeoutMs = 40 * 1e3,
-      chatType = "chat",
-      historyCount = 3,
-      cacheHistory = true
+      chatType = "chat"
+      //historyCount = 3,
+      //cacheHistory = true
     } = opts;
-    this._historyCount = historyCount;
     let { abortSignal } = opts;
     let abortController = null;
     if (timeoutMs && !abortSignal) {
       abortController = new AbortController();
       abortSignal = abortController.signal;
     }
-    const message = {
-      role: "user",
-      id: messageId,
-      parentMessageId: messageId,
-      text
-    };
     const result = {
       role: "assistant",
       id: v4(),
-      parentMessageId: messageId,
       text: "",
       error: ""
     };
@@ -73449,7 +73435,6 @@ class ChatApi {
     };
     if (stream) {
       config.responseType = "stream";
-      cacheHistory && await this._updateMessages(message);
       const requestMsg = await this.buildMessages(text, opts);
       config.data = requestMsg;
       try {
@@ -73491,118 +73476,50 @@ class ChatApi {
     }
     return result;
   }
-  async sendMessagebak(text, opts) {
-    const {
-      stream,
-      onProgress,
-      onDone,
-      //conversationId = uuidv4(),
-      //parentMessageId,
-      messageId = v4(),
-      timeoutMs = 60 * 1e3,
-      //chatType = "chat",
-      historyCount = 3,
-      cacheHistory = true
-    } = opts;
-    this._historyCount = historyCount;
-    let { abortSignal } = opts;
-    let abortController = null;
-    if (timeoutMs && !abortSignal) {
-      abortController = new AbortController();
-      abortSignal = abortController.signal;
-    }
-    const message = {
-      role: "user",
-      id: messageId,
-      parentMessageId: messageId,
-      text
-    };
-    const result = {
-      role: "assistant",
-      id: v4(),
-      parentMessageId: messageId,
-      text: "",
-      error: ""
-    };
-    let config = {
-      method: "post",
-      url: "/chat",
-      timeout: timeoutMs,
-      signal: abortSignal
-    };
-    if (stream) {
-      config.responseType = "stream";
-      config.url += "_stream_v1";
-      cacheHistory && await this._updateMessages(message);
-      const requestMsg = await this.buildMessages(text, opts);
-      config.data = requestMsg;
-      await this.doRequestPost(config, requestMsg).then((response) => {
-        if (onProgress) {
-          result.text = response.data;
-          onProgress(result);
-        }
-        if (onDone) {
-          result.text = response.data;
-          onDone(result);
-        }
-      }).catch((error2) => {
-        if (axios.isCancel(error2)) {
-          console.log("请求被取消", error2.message);
-        } else {
-          console.log("请求出错", error2.message);
-        }
-        result.error = "服务异常，请稍后再试 " + error2;
-        onDone == null ? void 0 : onDone(result);
-      });
-    } else {
-      const response = await this.doRequestPost(config, {});
-      result.text = response.data;
-      onDone == null ? void 0 : onDone(result);
-    }
-    return result;
-  }
   async buildMessages(text, opts) {
     const { chatType = "chat", lang } = opts;
-    return { lang, chatType, "prompt": text, stream: true };
+    return { lang, chatType, "prompt": text, stream: true, history: opts.history };
   }
   combineMessageWithTAG(text) {
     text = `${HUMAN_ROLE_START_TAG}${text}
 ${BOT_ROLE_START_TAG}`;
     return text;
   }
-  async _updateMessages(message) {
-    return new Promise((resolve2, reject) => {
-      if (!this._cacheChatMessage) {
-        return resolve2(void 0);
-      }
-      try {
-        if (message.role === "user") {
-          if (this._cacheChatMessage.length >= _historyCount) {
-            while (this._cacheChatMessage.length >= _historyCount) {
-              this._cacheChatMessage.splice(0, 1);
-            }
-          }
-          this._cacheChatMessage.push({
-            messageId: message.id,
-            userMessage: message
-          });
-        } else {
-          let exist = this._cacheChatMessage.find((f) => f.messageId === message.parentMessageId);
-          if (exist) {
-            exist.assistantMessage = message;
-          }
-        }
-        resolve2(message);
-      } catch (err) {
-        reject(err);
-      }
-    }).catch((err) => {
-      console.error(err);
-    });
-  }
-  async clearCacheMessage() {
-    this._cacheChatMessage = void 0;
-  }
+  // async _updateMessages(message) {
+  //     return new Promise((resolve, reject) => {
+  //         if (!this._cacheChatMessage) {
+  //             return resolve(void 0);
+  //         }
+  //         try {
+  //             if (message.role === 'user') {
+  //                 //超出指定范围，需要清理掉一下
+  //                 if (this._cacheChatMessage.length >= _historyCount) {
+  //                     while (this._cacheChatMessage.length >= _historyCount) {
+  //                         this._cacheChatMessage.splice(0, 1);
+  //                     }
+  //                 }
+  //                 this._cacheChatMessage.push({
+  //                     messageId: message.id,
+  //                     userMessage: message
+  //                 });
+  //             }
+  //             else {
+  //                 let exist = this._cacheChatMessage.find(f => f.messageId === message.parentMessageId);
+  //                 if (exist) {
+  //                     exist.assistantMessage = message;
+  //                 }
+  //             }
+  //             resolve(message);
+  //         } catch (err) {
+  //             reject(err);
+  //         }
+  //     }).catch(err => {
+  //         console.error(err);
+  //     });
+  // }
+  // async clearCacheMessage() {
+  //     this._cacheChatMessage = undefined;
+  // }
   doRequestPost(config, data) {
     return axios.post(config.url || "", data, config);
   }
@@ -73613,52 +73530,45 @@ const chatUtil = {
     if (this.inProgress) {
       return;
     }
-    let { questionId, abortController } = options || {};
-    this.questionCounter++;
-    const responseInMarkdown = true;
-    this.response = "";
+    let { conversationId, abortController } = options || {};
     let question = chatUtil.processQuestion(prompt);
     this.inProgress = true;
     if (!abortController)
       abortController = new AbortController();
-    this.currentMessageId = chatUtil.getRandomId();
+    this.currentMessageId = v4();
     let err;
+    let responseResult = {
+      type: "addResponse",
+      value: "",
+      conversationId,
+      done: false,
+      currentMessageId: this.currentMessageId,
+      autoScroll: true,
+      responseInMarkdown: true
+    };
     if (chatApi) {
       try {
-        const chatResponse = await chatApi.sendMessage(question, {
-          systemMessage: this.systemContext,
-          messageId: this.conversationId,
-          parentMessageId: this.messageId,
+        await chatApi.sendMessage(question, {
+          messageId: conversationId,
           abortSignal: abortController.signal,
           stream: true,
           chatType: "chat",
           onProgress: (message) => {
-            const { answer } = JSON.parse(message.text);
-            this.response = answer;
-            onProgress == null ? void 0 : onProgress({
-              type: "addResponse",
-              value: this.response,
-              messageId: questionId,
-              id: this.conversationId,
-              autoScroll: true,
-              responseInMarkdown
-            });
+            try {
+              const { answer } = JSON.parse(message.text);
+              responseResult.value = answer;
+              onProgress == null ? void 0 : onProgress(responseResult);
+            } catch (error2) {
+              console.error(error2);
+            }
           },
           onDone: (message) => {
             this.inProgress = false;
-            onDone == null ? void 0 : onDone({
-              type: "addResponse",
-              value: this.response,
-              done: true,
-              id: this.conversationId,
-              messageId: questionId,
-              autoScroll: true,
-              responseInMarkdown
-            });
+            responseResult.done = true;
+            onDone == null ? void 0 : onDone(responseResult);
             this.inProgress = false;
           }
         });
-        ({ text: this.response, id: this.conversationId, parentMessageId: this.messageId } = chatResponse);
         return;
       } catch (error2) {
         err = error2;
@@ -73666,21 +73576,14 @@ const chatUtil = {
     }
     this.inProgress = false;
     onError == null ? void 0 : onError(err ?? "没有api");
-    onDone == null ? void 0 : onDone({ type: "addResponse", value: this.response, done: true, id: this.conversationId, autoScroll: this.autoScroll, responseInMarkdown });
+    responseResult.done = true;
+    onDone == null ? void 0 : onDone(responseResult);
   },
   processQuestion(question, code, language) {
     if (code) {
       question = `${question}${language ? ` (当前编程语言是${language})` : ""}: ${code}`;
     }
     return question + "\r\n";
-  },
-  getRandomId() {
-    let text = "";
-    const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    for (let i = 0; i < 32; i++) {
-      text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
   }
 };
 const _export_sfc = (sfc, props) => {
@@ -73774,7 +73677,6 @@ const _sfc_main$1 = {
       questionInputDisabled: false,
       showStopButton: false,
       questionInputButtonsVisible: true,
-      lastQuestionId: "",
       questionInputButtonsMoreVisible: false
     };
   },
@@ -73811,14 +73713,14 @@ const _sfc_main$1 = {
       if (result !== true) {
         (_a = this.abortController) == null ? void 0 : _a.abort();
         this.showInProgress({ inProgress: false });
-        let existingMessageData = this.qaData.list.find((f) => f.id === this.lastQuestionId);
+        let existingMessageData = this.qaData.list.find((f) => f.conversationId === this.conversationId);
         if (!existingMessageData && this.qaData.list.length > 0) {
           existingMessageData = this.qaData.list[this.qaData.list.length - 1];
         }
         this.addResponse({
           value: existingMessageData.answer,
           done: true,
-          id: (existingMessageData == null ? void 0 : existingMessageData.id) ?? this.lastQuestionId,
+          id: (existingMessageData == null ? void 0 : existingMessageData.id) ?? this.conversationId,
           autoScroll: true,
           responseInMarkdown: true
         });
@@ -73848,18 +73750,23 @@ const _sfc_main$1 = {
       const input = this.questionInput;
       this.questionInput = "";
       if ((input == null ? void 0 : input.length) > 0) {
+        this.conversationId = v4();
         const result = util.postMessageToVsCode({
           type: "addFreeTextQuestion",
-          value: input
+          value: input,
+          conversationId: this.conversationId
         });
         if (result !== true) {
           this.showInProgress({ showStopButton: true, inProgress: true });
-          this.addQuestion({ value: input, messageId: v4() });
+          this.addQuestion({ value: input, conversationId: this.conversationId });
           (_a = this.abortController) == null ? void 0 : _a.abort();
           this.abortController = new AbortController();
           await chatUtil.sendApiRequest(
             input,
-            { questionId: this.lastQuestionId, abortController: this.abortController },
+            {
+              conversationId: this.conversationId,
+              abortController: this.abortController
+            },
             (progress) => {
               this.addResponse(progress);
             },
@@ -73877,16 +73784,15 @@ const _sfc_main$1 = {
       this.questionInputDisabled = message.inProgress;
       this.questionInputButtonsVisible = !message.inProgress;
       if (!message.inProgress) {
-        this.lastQuestionId = "";
+        this.conversationId = "";
       }
     },
     addQuestion(message) {
       this.currentViewType = viewType.qa;
-      this.lastQuestionId = message.messageId ?? v4();
+      this.conversationId = message.conversationId ?? v4();
       this.qaData.list.push({
         question: util.escapeHtml(message.value),
-        id: this.lastQuestionId,
-        messageId: "",
+        conversationId: this.conversationId,
         answer: "",
         error: "",
         done: false
@@ -73894,17 +73800,12 @@ const _sfc_main$1 = {
       util.autoScrollToBottom(this.qaElementList);
     },
     addResponse(message) {
-      if (this.isVsCodeMode)
-        this.addResponseCore(message);
-      else {
-        this.message = message;
-        util.throttle(() => this.addResponseCore(this.message), 300);
-      }
+      this.addResponseCore(message);
     },
     addResponseCore(message) {
-      const questionId = message.messageId ?? this.lastQuestionId;
+      const conversationId = message.conversationId ?? this.conversationId;
       const list2 = this.qaElementList;
-      let existingMessageData = this.qaData.list.find((f) => f.id === questionId);
+      let existingMessageData = this.qaData.list.find((f) => f.conversationId === conversationId);
       if (!existingMessageData) {
         return;
       }
@@ -73917,6 +73818,7 @@ const _sfc_main$1 = {
       const markedResponse = util.markedParser(updatedValue);
       existingMessageData.answer = markedResponse;
       if (message.done) {
+        this.conversationId = "";
         this.message = null;
         existingMessageData.done = true;
         this.showInProgress({ inProgress: false });
@@ -73962,8 +73864,8 @@ const _sfc_main$1 = {
       }
     },
     addError(message) {
-      const questionId = message.messageId ?? this.lastQuestionId;
-      let existingMessageData = this.qaData.list.find((f) => f.id === questionId);
+      const conversationId = message.conversationId ?? this.conversationId;
+      let existingMessageData = this.qaData.list.find((f) => f.conversationId === conversationId);
       if (!existingMessageData) {
         return;
       }
@@ -74281,7 +74183,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
               ]),
               createBaseVNode("div", {
                 class: normalizeClass({ "result-streaming": message.done !== true }),
-                onId: message.id,
+                onId: message.conversationId,
                 innerHTML: message.answer
               }, null, 42, _hoisted_19),
               _hoisted_20

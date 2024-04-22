@@ -57,7 +57,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 					break;
 				//自由问答
 				case 'addFreeTextQuestion':
-					this.sendApiRequest(data.value, { command: "freeText", messageId: data.messageId });
+					this.sendApiRequest(data.value, { command: "freeText", conversationId: data.conversationId });
 					break;
 				case 'openNew':
 					const document = await vscode.workspace.openTextDocument({
@@ -214,14 +214,15 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 
 	public async sendApiRequest(prompt: string, options: {
 		command: string, code?: string, previousAnswer?: string,
-		language?: string, chatType?: string, messageId?: string, filePath?: string, laterCode?: string
+		language?: string, chatType?: string, conversationId?: string, filePath?: string, laterCode?: string
 	}) {
 		if (this.inProgress) {
 			// The AI is still thinking... Do not accept more questions.
 			return;
 		}
-		let { chatType, filePath, laterCode } = options;
+		let { chatType, filePath, laterCode, conversationId } = options;
 		this.questionCounter++;
+		this.conversationId = conversationId;
 		const responseInMarkdown = true;
 
 		this.response = '';
@@ -243,7 +244,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		this.sendMessage({ type: 'showInProgress', inProgress: this.inProgress, showStopButton: true });
 		this.currentMessageId = this.getRandomId();
 		//在视图添加一个问题框
-		this.sendMessage({ type: 'addQuestion', value: prompt, code: options.code, autoScroll: this.autoScroll, messageId: this.currentMessageId });
+		this.sendMessage({ type: 'addQuestion', value: prompt, code: options.code, autoScroll: this.autoScroll, conversationId });
 
 		if (filePath) {
 			filePath = Path.basename(filePath);
@@ -251,10 +252,14 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 
 		if (this.chatCodeApi) {
 			try {
-				const chatResponse = await this.chatCodeApi.sendMessage(question, {
+				this.response = "";
+				let responseResult = {
+					type: 'addResponse', value: "", conversationId, done: false,
+					autoScroll: this.autoScroll, responseInMarkdown, currentMessageId: this.currentMessageId
+				};
+				await this.chatCodeApi.sendMessage(question, {
 					systemMessage: this.systemContext,
 					messageId: this.conversationId,
-					parentMessageId: this.messageId,
 					abortSignal: this.abortController.signal,
 					stream: true,
 					chatType: chatType,
@@ -262,21 +267,16 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 					laterCode,
 					onProgress: (message) => {
 						this.response = message.text;
-						this.sendMessage({
-							type: 'addResponse', value: this.response, id: this.conversationId,
-							autoScroll: this.autoScroll, responseInMarkdown, messageId: this.currentMessageId
-						});
+						responseResult.value = message.text;
+						this.sendMessage(responseResult);
 					},
 					onDone: (message) => {
-						this.sendMessage({
-							type: 'addResponse', value: this.response, done: true, id: this.conversationId,
-							autoScroll: this.autoScroll, responseInMarkdown, messageId: this.currentMessageId
-						});
+						responseResult.done = true;
+						this.sendMessage(responseResult);
 						this.inProgress = false;
 						this.sendShowInProgress();
 					}
 				});
-				({ text: this.response, id: this.conversationId, parentMessageId: this.messageId } = chatResponse);
 
 				return;
 			} catch (error) {
@@ -312,7 +312,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		this.inProgress = false;
 		this.sendMessage({ type: 'showInProgress', inProgress: this.inProgress });
 		const responseInMarkdown = true;//!this.isCodexModel;
-		this.sendMessage({ type: 'addResponse', value: this.response, done: true, id: this.conversationId, autoScroll: this.autoScroll, responseInMarkdown });
+		this.sendMessage({ type: 'addResponse', value: this.response, done: true, conversationId: this.conversationId, autoScroll: this.autoScroll, responseInMarkdown });
 		this.logEvent("stopped-generating");
 	}
 

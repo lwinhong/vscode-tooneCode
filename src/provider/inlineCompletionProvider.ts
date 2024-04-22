@@ -188,7 +188,6 @@ export default function inlineCompletionProvider(
             if (!editor || !(await completetionEnabled(extensionContext, editor))) {
                 return;
             }
-
             const cursorPosition = editor.selection.active;
 
             let selection: vscode.Selection;
@@ -358,7 +357,15 @@ export default function inlineCompletionProvider(
                 updateStatusBarItem(myStatusBarItem, g_isLoading, true, "");
 
                 abortController?.abort();
-                let completion = await requestApi(textBeforeCursor, lang, chatCodeApi, editor.document.fileName);
+
+                const totalLines = editor.document.lineCount - 1;
+                // 获取最后一行的文本,获取最后一行文本的长度（即最后一个字符的索引）
+                const lastLineText = editor.document.lineAt(totalLines).text;
+                const lastCharacterIndex = lastLineText.length;
+                // 获取光标后的文本
+                const textAfterCursor = document.getText(new vscode.Range(cursorPosition.line, cursorPosition.character, totalLines, lastCharacterIndex));
+
+                let completion = await requestApi(textBeforeCursor, lang, chatCodeApi, editor.document.fileName, textAfterCursor);
 
                 if (!completion) {
                     updateStatusBarItem(
