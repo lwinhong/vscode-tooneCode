@@ -75,10 +75,10 @@ function requestApi(question: string, lang?: string, chatCodeApi?: chatApi, file
                 filePath,
                 laterCode,
                 onProgress: (message) => {
-                    //response = message.text;
+                    response += message.text;
                 },
                 onDone: (message) => {
-                    response = message.text;
+                    //response = message.text;
                     resolve(response);
                     return false;
                 }

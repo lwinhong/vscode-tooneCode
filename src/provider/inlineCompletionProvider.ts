@@ -130,7 +130,7 @@ async function completetionEnabled(
     return true;
 }
 
-function requestApi(question: string, lang?: string, chatCodeApi?: chatApi, filePath?: string, laterCode?: string): Promise<any> {
+function requestApi(question: string, lang?: string, chatCodeApi?: chatApi, filePath?: string, laterCode?: string, fim?: boolean): Promise<any> {
     abortController = new AbortController();
     if (filePath) {
         filePath = Path.basename(filePath);
@@ -152,11 +152,12 @@ function requestApi(question: string, lang?: string, chatCodeApi?: chatApi, file
                 timeoutMs: 40 * 1000,
                 filePath,
                 laterCode,
+                url: "/code_generate" + (fim ? "_fim" : ""),
                 onProgress: (message) => {
-                    //response = message.text;
+                    response += message.text;
                 },
                 onDone: (message) => {
-                    response = message.text;
+                    //response = message.text;
                     resolve(response);
                     return false;
                 }
@@ -363,9 +364,9 @@ export default function inlineCompletionProvider(
                 const lastLineText = editor.document.lineAt(totalLines).text;
                 const lastCharacterIndex = lastLineText.length;
                 // 获取光标后的文本
-                const textAfterCursor = document.getText(new vscode.Range(cursorPosition.line, cursorPosition.character, totalLines, lastCharacterIndex));
+                const textAfterCursor = document.getText(new vscode.Range(cursorPosition.line, cursorPosition.character, totalLines, lastCharacterIndex))?.trim();
 
-                let completion = await requestApi(textBeforeCursor, lang, chatCodeApi, editor.document.fileName, textAfterCursor);
+                let completion = await requestApi(textBeforeCursor, lang, chatCodeApi, editor.document.fileName, textAfterCursor, textAfterCursor ? true : false);
 
                 if (!completion) {
                     updateStatusBarItem(

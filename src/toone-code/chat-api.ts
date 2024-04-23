@@ -26,6 +26,7 @@ type chatApiSendMessageOptions = {
     cacheHistory?: boolean,
     filePath?: string,
     laterCode?: string,
+    url?: string,
 };
 interface ChatMessage {
     id: string;
@@ -54,10 +55,10 @@ export default class ChatApi {
     //private _cacheChatMessage?: CacheChatMessage[];
     private _historyMessages?: Array<any>;
     private _historyCount: number = 3;
-    private readonly HUMAN_ROLE_START_TAG: string = "<s>human\n";
-    private readonly BOT_ROLE_START_TAG: string = "<s>bot\n";
-    private readonly ENDOFTEXT: string = "<|endoftext|>";
-
+    // private readonly HUMAN_ROLE_START_TAG: string = "<s>human\n";
+    // private readonly BOT_ROLE_START_TAG: string = "<s>bot\n";
+    // private readonly ENDOFTEXT: string = "<|endoftext|>";
+    private readonly RESPONSE_RESULT_BASE64_SPLIT = "<|BASE64_SPLIT|>";
     constructor(opt: chatApiOption) {
         const { apiBaseUrl } = opt;
         //this._historyMessages = new Array();
@@ -66,7 +67,7 @@ export default class ChatApi {
     }
 
     async sendMessage(text: string, opts: chatApiSendMessageOptions): Promise<ChatMessage> {
-        const {
+        let {
             stream,
             onProgress,
             onDone,
@@ -74,7 +75,8 @@ export default class ChatApi {
             timeoutMs = 40 * 1000,
             chatType = "chat",
             historyCount = 3,
-            cacheHistory = true
+            cacheHistory = true,
+            url
         } = opts;
         this._historyCount = historyCount;
         let { abortSignal } = opts;
@@ -83,12 +85,12 @@ export default class ChatApi {
             abortController = new AbortController();
             abortSignal = abortController.signal;
         }
-        const message: ChatMessage = {
-            role: "user",
-            id: messageId,
-            parentMessageId: messageId,
-            text
-        };
+        // const message: ChatMessage = {
+        //     role: "user",
+        //     id: messageId,
+        //     parentMessageId: messageId,
+        //     text
+        // };
         const result: ChatMessage = {
             role: "assistant",
             id: uuidv4(),
@@ -96,9 +98,13 @@ export default class ChatApi {
             text: "",
             error: ""
         };
-        let url = '/chat';
-        if (chatType === "code") {
-            url = '/code_generate';
+        if (!url) {
+            if (chatType === "code") {
+                url = '/code_generate';
+            }
+            else {
+                url = "/chat";
+            }
         }
         let config: axios.AxiosRequestConfig<any> = {
             method: 'post',
@@ -118,15 +124,39 @@ export default class ChatApi {
                     response.data.on('data', (chunk: any) => {
                         // 处理流数据的逻辑
                         try {
-                            const json = JSON.parse(chunk.toString());
-                            if (json.error) {
-                                result.error = json.error;
-                            } else {
-                                result.text = json.answer;
-                                if (json.done) {
-                                    result.history = json.history;
-                                }
+                            let strSource = chunk.toString() || "";
+                            // if (strSource && strSource.indexOf(this.RESPONSE_RESULT_BASE64_SPLIT) >= 0) {
+                            //     let str = strSource;//Buffer.from(strSource, 'base64').toString('utf8');
+                            //     if (str) {
+                            //         let split = str.split(this.RESPONSE_RESULT_BASE64_SPLIT).filter((x: string) => {
+                            //             if (x.trim()) {
+                            //                 return true;
+                            //             }
+                            //             return false;
+                            //         });
+                            //         if (split.length > 0) {
+                            //             str = split[split.length - 1];
+                            //         }
+                            //     } if (!str) {
+                            //         str = strSource;
+                            //     }
+                            //     const json = JSON.parse(str);
+                            //     if (json.error) {
+                            //         result.error = json.error;
+                            //     } else {
+                            //         result.text = json.answer;
+                            //         if (json.done) {
+                            //             result.history = json.history;
+                            //         }
+                            //     }
+                            // } else {
+                            //     result.text = strSource;
+                            // }
+                            if (!strSource) {
+                                return;
                             }
+
+                            result.text = strSource;
                             onProgress?.(result);
                         } catch (error) {
                             console.error(error);
@@ -177,45 +207,46 @@ export default class ChatApi {
         }
         return data;
     };
-    public combineMessageWithTAG(text: string) {
-        /**下面这拼接，可以根据历史上下文来不断地回答问题 */
-        /*
-            <s>system
-            这是System指令
-            <s>human
-            这是第1轮用户输入的问题
-            <s>bot
-            这是第1轮模型生成的内容<|endoftext|>
-            <s>human
-            这是第2轮用户输入的问题
-            <s>bot
-            这是第2轮模型生成的内容<|endoftext|>
-            ...
-            <s>human
-            这是第n轮用户输入的问题
-            <s>bot
-            {模型现在要生成的内容}<|endoftext|>
-        */
-        // if (this._cacheChatMessage?.length > 0) {
-        //     let prompt = "";
-        //     this._cacheChatMessage.forEach((item, index) => {
-        //         if (item.userMessage?.text) {
-        //             prompt += `${this.HUMAN_ROLE_START_TAG}${item.userMessage?.text}`;
-        //         }
-        //         if (item.assistantMessage?.text) {
-        //             prompt += `${this.BOT_ROLE_START_TAG}${item.assistantMessage?.text}${this.ENDOFTEXT}\n`;
-        //         }
-        //     });
-        //     if (prompt) {
-        //         text = prompt;
-        //     }
-        // } else {
-        //     text = `${this.HUMAN_ROLE_START_TAG}${text}`;
-        // }
-        //text = `${text}\n${this.BOT_ROLE_START_TAG}`;
-        text = `${this.HUMAN_ROLE_START_TAG}${text}\n${this.BOT_ROLE_START_TAG}`;
-        return text;
-    }
+
+    // public combineMessageWithTAG(text: string) {
+    //     /**下面这拼接，可以根据历史上下文来不断地回答问题 */
+    //     /*
+    //         <s>system
+    //         这是System指令
+    //         <s>human
+    //         这是第1轮用户输入的问题
+    //         <s>bot
+    //         这是第1轮模型生成的内容<|endoftext|>
+    //         <s>human
+    //         这是第2轮用户输入的问题
+    //         <s>bot
+    //         这是第2轮模型生成的内容<|endoftext|>
+    //         ...
+    //         <s>human
+    //         这是第n轮用户输入的问题
+    //         <s>bot
+    //         {模型现在要生成的内容}<|endoftext|>
+    //     */
+    //     // if (this._cacheChatMessage?.length > 0) {
+    //     //     let prompt = "";
+    //     //     this._cacheChatMessage.forEach((item, index) => {
+    //     //         if (item.userMessage?.text) {
+    //     //             prompt += `${this.HUMAN_ROLE_START_TAG}${item.userMessage?.text}`;
+    //     //         }
+    //     //         if (item.assistantMessage?.text) {
+    //     //             prompt += `${this.BOT_ROLE_START_TAG}${item.assistantMessage?.text}${this.ENDOFTEXT}\n`;
+    //     //         }
+    //     //     });
+    //     //     if (prompt) {
+    //     //         text = prompt;
+    //     //     }
+    //     // } else {
+    //     //     text = `${this.HUMAN_ROLE_START_TAG}${text}`;
+    //     // }
+    //     //text = `${text}\n${this.BOT_ROLE_START_TAG}`;
+    //     text = `${this.HUMAN_ROLE_START_TAG}${text}\n${this.BOT_ROLE_START_TAG}`;
+    //     return text;
+    // }
     private async _updateMessages2(message: ChatMessage): Promise<any> {
         return new Promise((resolve, reject) => {
 
@@ -229,41 +260,11 @@ export default class ChatApi {
             resolve(void 0);
         });
     }
-    // private async _updateMessages(message: ChatMessage): Promise<any> {
-    //     return new Promise((resolve, reject) => {
-    //         if (!this._cacheChatMessage) {
-    //             return resolve(void 0);
-    //         }
-    //         try {
-    //             if (message.role === 'user') {
-    //                 //超出指定范围，需要清理掉一下
-    //                 if (this._cacheChatMessage.length >= this._historyCount) {
-    //                     while (this._cacheChatMessage.length >= this._historyCount) {
-    //                         this._cacheChatMessage.splice(0, 1);
-    //                     }
-    //                 }
-    //                 this._cacheChatMessage.push({
-    //                     messageId: message.id,
-    //                     userMessage: message
-    //                 });
-    //             }
-    //             else {
-    //                 let exist = this._cacheChatMessage.find(f => f.messageId === message.parentMessageId);
-    //                 if (exist) {
-    //                     exist.assistantMessage = message;
-    //                 }
-    //             }
-    //             resolve(message);
-    //         } catch (err) {
-    //             reject(err);
-    //         }
-    //     }).catch(err => {
-    //         console.error(err);
-    //     });
-    // }
+
     public async clearCacheMessage(): Promise<any> {
         this._historyMessages = undefined;
     }
+
     private doRequestPost(config: axios.AxiosRequestConfig<any>, data: any): Promise<axios.AxiosResponse<any, any>> {
         return axios.post(config.url || "", data, config);
     }
