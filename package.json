@@ -4,6 +4,7 @@
   "publisher": "Toone",
   "description": "Toone vscode-toonecode",
   "version": "0.0.1",
+  "icon": "images/ai-logo.png",
   "engines": {
     "vscode": "^1.87.0"
   },
@@ -121,7 +122,7 @@
         {
           "id": "vscode-toonecode-view-container",
           "title": "TooneCode",
-          "icon": "images/ai-logo-in.png"
+          "icon": "images/ai-logo-in.svg"
         }
       ]
     },
