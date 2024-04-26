@@ -20,7 +20,7 @@
 body {
     padding: 0 var(--container-padding);
     color: var(--vscode-foreground);
-    font-size: var(--vscode-editor-font-size);
+     font-size: 13px; /*var(--vscode-editor-font-size); */
     font-weight: var(--vscode-font-weight);
     font-family: var(--vscode-font-family);
     background-color: var(--vscode-editor-background);

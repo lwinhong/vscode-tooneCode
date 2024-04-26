@@ -214,7 +214,7 @@
         "toonecode.useModel": {
           "type": "string",
           "default": "aix",
-          "description": "如果您只想在隐身模式下按 alt/option+\\ 来获取需要的建议，请选中此选项"
+          "description": ""
         }
       }
     }

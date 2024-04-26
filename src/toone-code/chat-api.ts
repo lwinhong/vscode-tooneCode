@@ -197,9 +197,11 @@ export default class ChatApi {
     };
 
     public async buildMessages(text: string, opts: chatApiSendMessageOptions) {
-        const { chatType = "chat", lang } = opts;
+        const { chatType = "chat", lang, stream, filePath, laterCode, max_length } = opts;
         // text+="\n使用中文回答问题";
-        let data = { chatType, prompt: text, stream: opts.stream, filePath: opts.filePath, laterCode: opts.laterCode };
+        let data = {
+            chatType, prompt: text, stream, filePath, laterCode, max_length
+        };
         if (chatType === "chat") {
             //text = this.combineMessageWithTAG(text);
             //data.prompt = text;

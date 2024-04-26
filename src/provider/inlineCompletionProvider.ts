@@ -148,7 +148,7 @@ function requestApi(question: string, lang?: string, chatCodeApi?: chatApi, file
                 stream: true,
                 chatType: 'code',
                 lang,
-                max_length: 512,
+                max_length: 256,
                 timeoutMs: 40 * 1000,
                 filePath,
                 laterCode,
