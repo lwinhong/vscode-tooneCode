@@ -220,13 +220,13 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 			// The AI is still thinking... Do not accept more questions.
 			return;
 		}
-		let { chatType, filePath, laterCode, conversationId } = options;
+		let { chatType, filePath, laterCode, conversationId, language } = options;
 		this.questionCounter++;
 		this.conversationId = conversationId;
 		const responseInMarkdown = true;
 
 		this.response = '';
-		let question = this.processQuestion(prompt, options.code, options.language);
+		let question = this.processQuestion(prompt, options.code, language);
 
 		// If the ChatGPT view is not in focus/visible; focus on it to render Q&A
 		if (!this.webView) {
@@ -244,7 +244,10 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		this.sendMessage({ type: 'showInProgress', inProgress: this.inProgress, showStopButton: true });
 		this.currentMessageId = this.getRandomId();
 		//在视图添加一个问题框
-		this.sendMessage({ type: 'addQuestion', value: prompt, code: options.code, autoScroll: this.autoScroll, conversationId });
+		this.sendMessage({
+			type: 'addQuestion', value: prompt, code: options.code, autoScroll: this.autoScroll,
+			conversationId, filePath, language, chatType
+		});
 
 		if (filePath) {
 			filePath = Path.basename(filePath);

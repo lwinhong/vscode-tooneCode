@@ -1,20 +1,20 @@
 var __defProp = Object.defineProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => {
-  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+var __defNormalProp = (obj2, key, value) => key in obj2 ? __defProp(obj2, key, { enumerable: true, configurable: true, writable: true, value }) : obj2[key] = value;
+var __publicField = (obj2, key, value) => {
+  __defNormalProp(obj2, typeof key !== "symbol" ? key + "" : key, value);
   return value;
 };
-var __accessCheck = (obj, member, msg) => {
-  if (!member.has(obj))
+var __accessCheck = (obj2, member, msg) => {
+  if (!member.has(obj2))
     throw TypeError("Cannot " + msg);
 };
-var __privateAdd = (obj, member, value) => {
-  if (member.has(obj))
+var __privateAdd = (obj2, member, value) => {
+  if (member.has(obj2))
     throw TypeError("Cannot add the same private member more than once");
-  member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
+  member instanceof WeakSet ? member.add(obj2) : member.set(obj2, value);
 };
-var __privateMethod = (obj, member, method) => {
-  __accessCheck(obj, member, "access private method");
+var __privateMethod = (obj2, member, method) => {
+  __accessCheck(obj2, member, "access private method");
   return method;
 };
 var _parseMarkdown, parseMarkdown_fn, _onError, onError_fn;
@@ -10134,8 +10134,8 @@ const invokeArrayFns = (fns, arg) => {
     fns[i](arg);
   }
 };
-const def$1 = (obj, key, value) => {
-  Object.defineProperty(obj, key, {
+const def$1 = (obj2, key, value) => {
+  Object.defineProperty(obj2, key, {
     configurable: true,
     enumerable: false,
     value
@@ -10590,9 +10590,9 @@ function createArrayInstrumentations() {
   return instrumentations;
 }
 function hasOwnProperty$1(key) {
-  const obj = toRaw(this);
-  track(obj, "has", key);
-  return obj.hasOwnProperty(key);
+  const obj2 = toRaw(this);
+  track(obj2, "has", key);
+  return obj2.hasOwnProperty(key);
 }
 class BaseReactiveHandler {
   constructor(_isReadonly = false, _isShallow = false) {
@@ -16085,8 +16085,8 @@ const skipHydrateSymbol = (
   /* istanbul ignore next */
   Symbol()
 );
-function shouldHydrate(obj) {
-  return !isPlainObject$1(obj) || !obj.hasOwnProperty(skipHydrateSymbol);
+function shouldHydrate(obj2) {
+  return !isPlainObject$1(obj2) || !obj2.hasOwnProperty(skipHydrateSymbol);
 }
 const { assign: assign$1 } = Object;
 function isComputed(o) {
@@ -16350,8 +16350,8 @@ function mapState(useStore2, keysOrMapper) {
   * @license MIT
   */
 const isBrowser = typeof document !== "undefined";
-function isESModule(obj) {
-  return obj.__esModule || obj[Symbol.toStringTag] === "Module";
+function isESModule(obj2) {
+  return obj2.__esModule || obj2[Symbol.toStringTag] === "Module";
 }
 const assign = Object.assign;
 function applyToParams(fn, params) {
@@ -18172,6 +18172,8 @@ const useStore = defineStore("useStore", {
     },
     postMessageToIdeaEditor(data) {
       if (this.isIdeaMode && window.ideaCodeInstance) {
+        if (typeof obj !== "string")
+          data = JSON.stringify(data);
         window.ideaCodeInstance(data, (response) => {
           console.log(response);
         }, (error2) => {
@@ -19065,18 +19067,18 @@ const caret = /(^|[^\[])\^/g;
 function edit(regex, opt) {
   let source2 = typeof regex === "string" ? regex : regex.source;
   opt = opt || "";
-  const obj = {
+  const obj2 = {
     replace: (name, val) => {
       let valSource = typeof val === "string" ? val : val.source;
       valSource = valSource.replace(caret, "$1");
       source2 = source2.replace(name, valSource);
-      return obj;
+      return obj2;
     },
     getRegex: () => {
       return new RegExp(source2, opt);
     }
   };
-  return obj;
+  return obj2;
 }
 function cleanUrl(href) {
   try {
@@ -21023,25 +21025,25 @@ _Lexer.lex;
 function getDefaultExportFromCjs(x) {
   return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
 }
-function deepFreeze(obj) {
-  if (obj instanceof Map) {
-    obj.clear = obj.delete = obj.set = function() {
+function deepFreeze(obj2) {
+  if (obj2 instanceof Map) {
+    obj2.clear = obj2.delete = obj2.set = function() {
       throw new Error("map is read-only");
     };
-  } else if (obj instanceof Set) {
-    obj.add = obj.clear = obj.delete = function() {
+  } else if (obj2 instanceof Set) {
+    obj2.add = obj2.clear = obj2.delete = function() {
       throw new Error("set is read-only");
     };
   }
-  Object.freeze(obj);
-  Object.getOwnPropertyNames(obj).forEach((name) => {
-    const prop = obj[name];
+  Object.freeze(obj2);
+  Object.getOwnPropertyNames(obj2).forEach((name) => {
+    const prop = obj2[name];
     const type = typeof prop;
     if ((type === "object" || type === "function") && !Object.isFrozen(prop)) {
       deepFreeze(prop);
     }
   });
-  return obj;
+  return obj2;
 }
 class Response {
   /**
@@ -21065,9 +21067,9 @@ function inherit$1(original, ...objects) {
   for (const key in original) {
     result[key] = original[key];
   }
-  objects.forEach(function(obj) {
-    for (const key in obj) {
-      result[key] = obj[key];
+  objects.forEach(function(obj2) {
+    for (const key in obj2) {
+      result[key] = obj2[key];
     }
   });
   return (
@@ -39268,9 +39270,9 @@ function requireGroovy() {
   if (hasRequiredGroovy)
     return groovy_1;
   hasRequiredGroovy = 1;
-  function variants(variants2, obj = {}) {
-    obj.variants = variants2;
-    return obj;
+  function variants(variants2, obj2 = {}) {
+    obj2.variants = variants2;
+    return obj2;
   }
   function groovy(hljs2) {
     const regex = hljs2.regex;
@@ -71466,32 +71468,32 @@ const isFormData = (thing) => {
 };
 const isURLSearchParams = kindOfTest("URLSearchParams");
 const trim = (str) => str.trim ? str.trim() : str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
-function forEach(obj, fn, { allOwnKeys = false } = {}) {
-  if (obj === null || typeof obj === "undefined") {
+function forEach(obj2, fn, { allOwnKeys = false } = {}) {
+  if (obj2 === null || typeof obj2 === "undefined") {
     return;
   }
   let i;
   let l;
-  if (typeof obj !== "object") {
-    obj = [obj];
+  if (typeof obj2 !== "object") {
+    obj2 = [obj2];
   }
-  if (isArray(obj)) {
-    for (i = 0, l = obj.length; i < l; i++) {
-      fn.call(null, obj[i], i, obj);
+  if (isArray(obj2)) {
+    for (i = 0, l = obj2.length; i < l; i++) {
+      fn.call(null, obj2[i], i, obj2);
     }
   } else {
-    const keys = allOwnKeys ? Object.getOwnPropertyNames(obj) : Object.keys(obj);
+    const keys = allOwnKeys ? Object.getOwnPropertyNames(obj2) : Object.keys(obj2);
     const len = keys.length;
     let key;
     for (i = 0; i < len; i++) {
       key = keys[i];
-      fn.call(null, obj[key], key, obj);
+      fn.call(null, obj2[key], key, obj2);
     }
   }
 }
-function findKey(obj, key) {
+function findKey(obj2, key) {
   key = key.toLowerCase();
-  const keys = Object.keys(obj);
+  const keys = Object.keys(obj2);
   let i = keys.length;
   let _key;
   while (i-- > 0) {
@@ -71602,13 +71604,13 @@ const isTypedArray = /* @__PURE__ */ ((TypedArray) => {
     return TypedArray && thing instanceof TypedArray;
   };
 })(typeof Uint8Array !== "undefined" && getPrototypeOf(Uint8Array));
-const forEachEntry = (obj, fn) => {
-  const generator = obj && obj[Symbol.iterator];
-  const iterator = generator.call(obj);
+const forEachEntry = (obj2, fn) => {
+  const generator = obj2 && obj2[Symbol.iterator];
+  const iterator = generator.call(obj2);
   let result;
   while ((result = iterator.next()) && !result.done) {
     const pair = result.value;
-    fn.call(obj, pair[0], pair[1]);
+    fn.call(obj2, pair[0], pair[1]);
   }
 };
 const matchAll = (regExp, str) => {
@@ -71628,25 +71630,25 @@ const toCamelCase = (str) => {
     }
   );
 };
-const hasOwnProperty = (({ hasOwnProperty: hasOwnProperty2 }) => (obj, prop) => hasOwnProperty2.call(obj, prop))(Object.prototype);
+const hasOwnProperty = (({ hasOwnProperty: hasOwnProperty2 }) => (obj2, prop) => hasOwnProperty2.call(obj2, prop))(Object.prototype);
 const isRegExp = kindOfTest("RegExp");
-const reduceDescriptors = (obj, reducer) => {
-  const descriptors2 = Object.getOwnPropertyDescriptors(obj);
+const reduceDescriptors = (obj2, reducer) => {
+  const descriptors2 = Object.getOwnPropertyDescriptors(obj2);
   const reducedDescriptors = {};
   forEach(descriptors2, (descriptor, name) => {
     let ret;
-    if ((ret = reducer(descriptor, name, obj)) !== false) {
+    if ((ret = reducer(descriptor, name, obj2)) !== false) {
       reducedDescriptors[name] = ret || descriptor;
     }
   });
-  Object.defineProperties(obj, reducedDescriptors);
+  Object.defineProperties(obj2, reducedDescriptors);
 };
-const freezeMethods = (obj) => {
-  reduceDescriptors(obj, (descriptor, name) => {
-    if (isFunction(obj) && ["arguments", "caller", "callee"].indexOf(name) !== -1) {
+const freezeMethods = (obj2) => {
+  reduceDescriptors(obj2, (descriptor, name) => {
+    if (isFunction(obj2) && ["arguments", "caller", "callee"].indexOf(name) !== -1) {
       return false;
     }
-    const value = obj[name];
+    const value = obj2[name];
     if (!isFunction(value))
       return;
     descriptor.enumerable = false;
@@ -71662,14 +71664,14 @@ const freezeMethods = (obj) => {
   });
 };
 const toObjectSet = (arrayOrString, delimiter) => {
-  const obj = {};
+  const obj2 = {};
   const define = (arr) => {
     arr.forEach((value) => {
-      obj[value] = true;
+      obj2[value] = true;
     });
   };
   isArray(arrayOrString) ? define(arrayOrString) : define(String(arrayOrString).split(delimiter));
-  return obj;
+  return obj2;
 };
 const noop = () => {
 };
@@ -71695,7 +71697,7 @@ const generateString = (size2 = 16, alphabet = ALPHABET.ALPHA_DIGIT) => {
 function isSpecCompliantForm(thing) {
   return !!(thing && isFunction(thing.append) && thing[Symbol.toStringTag] === "FormData" && thing[Symbol.iterator]);
 }
-const toJSONObject = (obj) => {
+const toJSONObject = (obj2) => {
   const stack2 = new Array(10);
   const visit = (source2, i) => {
     if (isObject(source2)) {
@@ -71715,7 +71717,7 @@ const toJSONObject = (obj) => {
     }
     return source2;
   };
-  return visit(obj, 0);
+  return visit(obj2, 0);
 };
 const isAsyncFn = kindOfTest("AsyncFunction");
 const isThenable = (thing) => thing && (isObject(thing) || isFunction(thing)) && isFunction(thing.then) && isFunction(thing.catch);
@@ -71831,8 +71833,8 @@ Object.defineProperties(AxiosError, descriptors);
 Object.defineProperty(prototype$1, "isAxiosError", { value: true });
 AxiosError.from = (error2, code2, config, request, response, customProps) => {
   const axiosError = Object.create(prototype$1);
-  utils$1.toFlatObject(error2, axiosError, function filter2(obj) {
-    return obj !== Error.prototype;
+  utils$1.toFlatObject(error2, axiosError, function filter2(obj2) {
+    return obj2 !== Error.prototype;
   }, (prop) => {
     return prop !== "isAxiosError";
   });
@@ -71863,8 +71865,8 @@ function isFlatArray(arr) {
 const predicates = utils$1.toFlatObject(utils$1, {}, null, function filter(prop) {
   return /^is[A-Z]/.test(prop);
 });
-function toFormData(obj, formData, options) {
-  if (!utils$1.isObject(obj)) {
+function toFormData(obj2, formData, options) {
+  if (!utils$1.isObject(obj2)) {
     throw new TypeError("target must be an object");
   }
   formData = formData || new FormData();
@@ -71949,10 +71951,10 @@ function toFormData(obj, formData, options) {
     });
     stack2.pop();
   }
-  if (!utils$1.isObject(obj)) {
+  if (!utils$1.isObject(obj2)) {
     throw new TypeError("data must be an object");
   }
-  build(obj);
+  build(obj2);
   return formData;
 }
 function encode$1(str) {
@@ -72122,16 +72124,16 @@ function parsePropPath(name) {
   });
 }
 function arrayToObject(arr) {
-  const obj = {};
+  const obj2 = {};
   const keys = Object.keys(arr);
   let i;
   const len = keys.length;
   let key;
   for (i = 0; i < len; i++) {
     key = keys[i];
-    obj[key] = arr[key];
+    obj2[key] = arr[key];
   }
-  return obj;
+  return obj2;
 }
 function formDataToJSON(formData) {
   function buildPath(path, value, target, index) {
@@ -72159,11 +72161,11 @@ function formDataToJSON(formData) {
     return !isNumericKey;
   }
   if (utils$1.isFormData(formData) && utils$1.isFunction(formData.entries)) {
-    const obj = {};
+    const obj2 = {};
     utils$1.forEachEntry(formData, (name, value) => {
-      buildPath(parsePropPath(name), value, obj, 0);
+      buildPath(parsePropPath(name), value, obj2, 0);
     });
-    return obj;
+    return obj2;
   }
   return null;
 }
@@ -72355,10 +72357,10 @@ function formatHeader(header) {
     return char.toUpperCase() + str;
   });
 }
-function buildAccessors(obj, header) {
+function buildAccessors(obj2, header) {
   const accessorName = utils$1.toCamelCase(" " + header);
   ["get", "set", "has"].forEach((methodName) => {
-    Object.defineProperty(obj, methodName + accessorName, {
+    Object.defineProperty(obj2, methodName + accessorName, {
       value: function(arg1, arg2, arg3) {
         return this[methodName].call(this, header, arg1, arg2, arg3);
       },
@@ -72478,11 +72480,11 @@ class AxiosHeaders {
     return this.constructor.concat(this, ...targets);
   }
   toJSON(asStrings) {
-    const obj = /* @__PURE__ */ Object.create(null);
+    const obj2 = /* @__PURE__ */ Object.create(null);
     utils$1.forEach(this, (value, header) => {
-      value != null && value !== false && (obj[header] = asStrings && utils$1.isArray(value) ? value.join(", ") : value);
+      value != null && value !== false && (obj2[header] = asStrings && utils$1.isArray(value) ? value.join(", ") : value);
     });
-    return obj;
+    return obj2;
   }
   [Symbol.iterator]() {
     return Object.entries(this.toJSON())[Symbol.iterator]();
@@ -73882,24 +73884,24 @@ ieee754.write = function(buffer2, value, offset, isLE, mLen, nBytes) {
     Object.setPrototypeOf(buf, Buffer2.prototype);
     return buf;
   }
-  function fromObject(obj) {
-    if (Buffer2.isBuffer(obj)) {
-      const len = checked(obj.length) | 0;
+  function fromObject(obj2) {
+    if (Buffer2.isBuffer(obj2)) {
+      const len = checked(obj2.length) | 0;
       const buf = createBuffer(len);
       if (buf.length === 0) {
         return buf;
       }
-      obj.copy(buf, 0, 0, len);
+      obj2.copy(buf, 0, 0, len);
       return buf;
     }
-    if (obj.length !== void 0) {
-      if (typeof obj.length !== "number" || numberIsNaN(obj.length)) {
+    if (obj2.length !== void 0) {
+      if (typeof obj2.length !== "number" || numberIsNaN(obj2.length)) {
         return createBuffer(0);
       }
-      return fromArrayLike(obj);
+      return fromArrayLike(obj2);
     }
-    if (obj.type === "Buffer" && Array.isArray(obj.data)) {
-      return fromArrayLike(obj.data);
+    if (obj2.type === "Buffer" && Array.isArray(obj2.data)) {
+      return fromArrayLike(obj2.data);
     }
   }
   function checked(length) {
@@ -75364,11 +75366,11 @@ ieee754.write = function(buffer2, value, offset, isLE, mLen, nBytes) {
     }
     return i;
   }
-  function isInstance(obj, type) {
-    return obj instanceof type || obj != null && obj.constructor != null && obj.constructor.name != null && obj.constructor.name === type.name;
+  function isInstance(obj2, type) {
+    return obj2 instanceof type || obj2 != null && obj2.constructor != null && obj2.constructor.name != null && obj2.constructor.name === type.name;
   }
-  function numberIsNaN(obj) {
-    return obj !== obj;
+  function numberIsNaN(obj2) {
+    return obj2 !== obj2;
   }
   const hexSliceLookupTable = function() {
     const alphabet = "0123456789abcdef";
@@ -75528,6 +75530,884 @@ function _sfc_render$1(_ctx, _cache) {
   return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_3$1);
 }
 const IconAiSvg = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render$1]]);
+const getLanguageExtByFilePath = (filePath) => {
+  if (!filePath)
+    return "";
+  const fileExt = filePath.split(".").pop().toLowerCase();
+  return EXT2LANG["." + fileExt] || "";
+};
+const EXT2LANG = {
+  ".abap": "abap",
+  ".ash": "ags script",
+  ".ampl": "ampl",
+  ".g4": "antlr",
+  ".apib": "api blueprint",
+  ".apl": "apl",
+  ".dyalog": "apl",
+  ".asp": "asp",
+  ".asax": "asp",
+  ".ascx": "asp",
+  ".ashx": "asp",
+  ".asmx": "asp",
+  ".aspx": "asp",
+  ".axd": "asp",
+  ".dats": "ats",
+  ".hats": "ats",
+  ".sats": "ats",
+  ".as": "actionscript",
+  ".adb": "ada",
+  ".ada": "ada",
+  ".ads": "ada",
+  ".agda": "agda",
+  ".als": "alloy",
+  ".apacheconf": "apacheconf",
+  ".vhost": "apacheconf",
+  ".applescript": "applescript",
+  ".scpt": "applescript",
+  ".arc": "arc",
+  ".ino": "arduino",
+  ".asciidoc": "asciidoc",
+  ".adoc": "asciidoc",
+  ".aj": "aspectj",
+  ".asm": "assembly",
+  ".a51": "assembly",
+  ".nasm": "assembly",
+  ".aug": "augeas",
+  ".ahk": "autohotkey",
+  ".ahkl": "autohotkey",
+  ".au3": "autoit",
+  ".awk": "awk",
+  ".auk": "awk",
+  ".gawk": "awk",
+  ".mawk": "awk",
+  ".nawk": "awk",
+  ".bat": "batchfile",
+  ".cmd": "batchfile",
+  ".befunge": "befunge",
+  ".bison": "bison",
+  ".bb": "bitbake",
+  ".decls": "blitzbasic",
+  ".bmx": "blitzmax",
+  ".bsv": "bluespec",
+  ".boo": "boo",
+  ".bf": "brainfuck",
+  ".brs": "brightscript",
+  ".bro": "bro",
+  ".c": "c",
+  ".cats": "c",
+  ".h": "c++",
+  ".idc": "c",
+  ".w": "c",
+  ".cs": "c#",
+  ".cake": "c#",
+  ".cshtml": "c#",
+  ".csx": "c#",
+  ".cpp": "c++",
+  ".c++": "c++",
+  ".cc": "c++",
+  ".cp": "c++",
+  ".cxx": "c++",
+  ".h++": "c++",
+  ".hh": "c++",
+  ".hpp": "c++",
+  ".hxx": "c++",
+  ".inl": "c++",
+  ".ipp": "c++",
+  ".tcc": "c++",
+  ".tpp": "c++",
+  ".C": "c++",
+  ".H": "c++",
+  ".c-objdump": "c-objdump",
+  ".chs": "c2hs haskell",
+  ".clp": "clips",
+  ".cmake": "cmake",
+  ".cmake.in": "cmake",
+  ".cob": "cobol",
+  ".cbl": "cobol",
+  ".ccp": "cobol",
+  ".cobol": "cobol",
+  ".cpy": "cobol",
+  ".css": "css",
+  ".csv": "csv",
+  ".capnp": "cap'n proto",
+  ".mss": "cartocss",
+  ".ceylon": "ceylon",
+  ".chpl": "chapel",
+  ".ck": "chuck",
+  ".cirru": "cirru",
+  ".clw": "clarion",
+  ".icl": "clean",
+  ".dcl": "clean",
+  ".click": "click",
+  ".clj": "clojure",
+  ".boot": "clojure",
+  ".cl2": "clojure",
+  ".cljc": "clojure",
+  ".cljs": "clojure",
+  ".cljs.hl": "clojure",
+  ".cljscm": "clojure",
+  ".cljx": "clojure",
+  ".hic": "clojure",
+  ".coffee": "coffeescript",
+  "._coffee": "coffeescript",
+  ".cjsx": "coffeescript",
+  ".cson": "coffeescript",
+  ".iced": "coffeescript",
+  ".cfm": "coldfusion",
+  ".cfml": "coldfusion",
+  ".cfc": "coldfusion cfc",
+  ".lisp": "common lisp",
+  ".asd": "common lisp",
+  ".lsp": "common lisp",
+  ".ny": "common lisp",
+  ".podsl": "common lisp",
+  ".sexp": "common lisp",
+  ".cps": "component pascal",
+  ".coq": "coq",
+  ".cppobjdump": "cpp-objdump",
+  ".c++-objdump": "cpp-objdump",
+  ".c++objdump": "cpp-objdump",
+  ".cpp-objdump": "cpp-objdump",
+  ".cxx-objdump": "cpp-objdump",
+  ".creole": "creole",
+  ".cr": "crystal",
+  ".csd": "csound",
+  ".feature": "cucumber",
+  ".cu": "cuda",
+  ".cuh": "cuda",
+  ".cy": "cycript",
+  ".pyx": "cython",
+  ".pxd": "cython",
+  ".pxi": "cython",
+  ".di": "d",
+  ".d-objdump": "d-objdump",
+  ".com": "digital command language",
+  ".dm": "dm",
+  ".zone": "dns zone",
+  ".arpa": "dns zone",
+  ".darcspatch": "darcs patch",
+  ".dpatch": "darcs patch",
+  ".dart": "dart",
+  ".diff": "diff",
+  ".patch": "diff",
+  ".dockerfile": "dockerfile",
+  "Dockerfile": "dockerfile",
+  ".djs": "dogescript",
+  ".dylan": "dylan",
+  ".dyl": "dylan",
+  ".intr": "dylan",
+  ".lid": "dylan",
+  ".E": "e",
+  ".ecl": "ecl",
+  ".eclxml": "ecl",
+  ".sch": "eagle",
+  ".brd": "eagle",
+  ".epj": "ecere projects",
+  ".e": "eiffel",
+  ".ex": "elixir",
+  ".exs": "elixir",
+  ".elm": "elm",
+  ".el": "emacs lisp",
+  ".emacs": "emacs lisp",
+  ".emacs.desktop": "emacs lisp",
+  ".em": "emberscript",
+  ".emberscript": "emberscript",
+  ".erl": "erlang",
+  ".escript": "erlang",
+  ".hrl": "erlang",
+  ".xrl": "erlang",
+  ".yrl": "erlang",
+  ".fs": "f#",
+  ".fsi": "f#",
+  ".fsx": "f#",
+  ".flux": "flux",
+  ".f90": "fortran",
+  ".f": "fortran",
+  ".f03": "fortran",
+  ".f08": "fortran",
+  ".f77": "fortran",
+  ".f95": "fortran",
+  ".for": "fortran",
+  ".fpp": "fortran",
+  ".factor": "factor",
+  ".fy": "fancy",
+  ".fancypack": "fancy",
+  ".fan": "fantom",
+  ".eam.fs": "formatted",
+  ".fth": "forth",
+  ".4th": "forth",
+  ".forth": "forth",
+  ".frt": "forth",
+  ".ftl": "freemarker",
+  ".g": "g-code",
+  ".gco": "g-code",
+  ".gcode": "g-code",
+  ".gms": "gams",
+  ".gap": "gap",
+  ".gi": "gap",
+  ".s": "gas",
+  ".gd": "gdscript",
+  ".glsl": "glsl",
+  ".fp": "glsl",
+  ".frag": "glsl",
+  ".frg": "glsl",
+  ".fsh": "glsl",
+  ".fshader": "glsl",
+  ".geo": "glsl",
+  ".geom": "glsl",
+  ".glslv": "glsl",
+  ".gshader": "glsl",
+  ".shader": "glsl",
+  ".vert": "glsl",
+  ".vrx": "glsl",
+  ".vsh": "glsl",
+  ".vshader": "glsl",
+  ".kid": "genshi",
+  ".ebuild": "gentoo ebuild",
+  ".eclass": "gentoo eclass",
+  ".po": "gettext catalog",
+  ".pot": "gettext catalog",
+  ".glf": "glyph",
+  ".gp": "gnuplot",
+  ".gnu": "gnuplot",
+  ".gnuplot": "gnuplot",
+  ".plot": "gnuplot",
+  ".plt": "gnuplot",
+  ".go": "go",
+  ".golo": "golo",
+  ".gst": "gosu",
+  ".gsx": "gosu",
+  ".vark": "gosu",
+  ".grace": "grace",
+  ".gradle": "gradle",
+  ".gf": "grammatical framework",
+  ".graphql": "graphql",
+  ".dot": "graphviz (dot)",
+  ".gv": "graphviz (dot)",
+  ".man": "groff",
+  ".1": "groff",
+  ".1in": "groff",
+  ".1m": "groff",
+  ".1x": "groff",
+  ".2": "groff",
+  ".3": "groff",
+  ".3in": "groff",
+  ".3m": "groff",
+  ".3qt": "groff",
+  ".3x": "groff",
+  ".4": "groff",
+  ".5": "groff",
+  ".6": "groff",
+  ".7": "groff",
+  ".8": "groff",
+  ".9": "groff",
+  ".me": "groff",
+  ".rno": "groff",
+  ".roff": "groff",
+  ".groovy": "groovy",
+  ".grt": "groovy",
+  ".gtpl": "groovy",
+  ".gvy": "groovy",
+  ".gsp": "groovy server pages",
+  ".hcl": "hcl",
+  ".tf": "hcl",
+  ".hlsl": "hlsl",
+  ".fxh": "hlsl",
+  ".hlsli": "hlsl",
+  ".html": "html",
+  ".htm": "html",
+  ".html.hl": "html",
+  ".xht": "html",
+  ".xhtml": "html",
+  ".mustache": "html+django",
+  ".jinja": "html+django",
+  ".eex": "html+eex",
+  ".erb": "html+erb",
+  ".erb.deface": "html+erb",
+  ".phtml": "html+php",
+  ".http": "http",
+  ".haml": "haml",
+  ".haml.deface": "haml",
+  ".handlebars": "handlebars",
+  ".hbs": "handlebars",
+  ".hb": "harbour",
+  ".hs": "haskell",
+  ".hsc": "haskell",
+  ".hx": "haxe",
+  ".hxsl": "haxe",
+  ".hy": "hy",
+  ".dlm": "idl",
+  ".ipf": "igor pro",
+  ".ini": "ini",
+  ".cfg": "ini",
+  ".prefs": "ini",
+  ".properties": "ini",
+  ".irclog": "irc log",
+  ".weechatlog": "irc log",
+  ".idr": "idris",
+  ".lidr": "idris",
+  ".ni": "inform 7",
+  ".i7x": "inform 7",
+  ".iss": "inno setup",
+  ".io": "io",
+  ".ik": "ioke",
+  ".thy": "isabelle",
+  ".ijs": "j",
+  ".flex": "jflex",
+  ".jflex": "jflex",
+  ".json": "json",
+  ".geojson": "json",
+  ".lock": "json",
+  ".topojson": "json",
+  ".json5": "json5",
+  ".jsonld": "jsonld",
+  ".jq": "jsoniq",
+  ".jsx": "jsx",
+  ".jade": "jade",
+  ".j": "jasmin",
+  ".java": "java",
+  ".jsp": "java server pages",
+  ".js": "javascript",
+  "._js": "javascript",
+  ".bones": "javascript",
+  ".es6": "javascript",
+  ".jake": "javascript",
+  ".jsb": "javascript",
+  ".jscad": "javascript",
+  ".jsfl": "javascript",
+  ".jsm": "javascript",
+  ".jss": "javascript",
+  ".njs": "javascript",
+  ".pac": "javascript",
+  ".sjs": "javascript",
+  ".ssjs": "javascript",
+  ".xsjs": "javascript",
+  ".xsjslib": "javascript",
+  ".jl": "julia",
+  ".ipynb": "jupyter notebook",
+  ".krl": "krl",
+  ".kicad_pcb": "kicad",
+  ".kit": "kit",
+  ".kt": "kotlin",
+  ".ktm": "kotlin",
+  ".kts": "kotlin",
+  ".lfe": "lfe",
+  ".ll": "llvm",
+  ".lol": "lolcode",
+  ".lsl": "lsl",
+  ".lslp": "lsl",
+  ".lvproj": "labview",
+  ".lasso": "lasso",
+  ".las": "lasso",
+  ".lasso8": "lasso",
+  ".lasso9": "lasso",
+  ".ldml": "lasso",
+  ".latte": "latte",
+  ".lean": "lean",
+  ".hlean": "lean",
+  ".less": "less",
+  ".lex": "lex",
+  ".ly": "lilypond",
+  ".ily": "lilypond",
+  ".ld": "linker script",
+  ".lds": "linker script",
+  ".liquid": "liquid",
+  ".lagda": "literate agda",
+  ".litcoffee": "literate coffeescript",
+  ".lhs": "literate haskell",
+  ".ls": "livescript",
+  "._ls": "livescript",
+  ".xm": "logos",
+  ".x": "logos",
+  ".xi": "logos",
+  ".lgt": "logtalk",
+  ".logtalk": "logtalk",
+  ".lookml": "lookml",
+  ".lua": "lua",
+  ".nse": "lua",
+  ".pd_lua": "lua",
+  ".rbxs": "lua",
+  ".wlua": "lua",
+  ".mumps": "m",
+  ".m4": "m4",
+  ".mcr": "maxscript",
+  ".mtml": "mtml",
+  ".muf": "muf",
+  ".mak": "makefile",
+  ".mk": "makefile",
+  ".mkfile": "makefile",
+  "Makefile": "makefile",
+  ".mako": "mako",
+  ".mao": "mako",
+  ".mpl": "maple",
+  ".md": "markdown",
+  ".markdown": "markdown",
+  ".mkd": "markdown",
+  ".mkdn": "markdown",
+  ".mkdown": "markdown",
+  ".ron": "markdown",
+  ".mask": "mask",
+  ".mathematica": "mathematica",
+  ".cdf": "mathematica",
+  ".ma": "mathematica",
+  ".mt": "mathematica",
+  ".nb": "mathematica",
+  ".nbp": "mathematica",
+  ".wl": "mathematica",
+  ".wlt": "mathematica",
+  ".matlab": "matlab",
+  ".maxpat": "max",
+  ".maxhelp": "max",
+  ".maxproj": "max",
+  ".mxt": "max",
+  ".pat": "max",
+  ".mediawiki": "mediawiki",
+  ".wiki": "mediawiki",
+  ".metal": "metal",
+  ".minid": "minid",
+  ".druby": "mirah",
+  ".duby": "mirah",
+  ".mir": "mirah",
+  ".mirah": "mirah",
+  ".mo": "modelica",
+  ".mms": "module management system",
+  ".mmk": "module management system",
+  ".monkey": "monkey",
+  ".moon": "moonscript",
+  ".myt": "myghty",
+  ".nsi": "nsis",
+  ".nsh": "nsis",
+  ".axs": "netlinx",
+  ".axi": "netlinx",
+  ".axs.erb": "netlinx+erb",
+  ".axi.erb": "netlinx+erb",
+  ".nlogo": "netlogo",
+  ".nginxconf": "nginx",
+  ".nim": "nimrod",
+  ".nimrod": "nimrod",
+  ".ninja": "ninja",
+  ".nit": "nit",
+  ".nix": "nix",
+  ".nu": "nu",
+  ".numpy": "numpy",
+  ".numpyw": "numpy",
+  ".numsc": "numpy",
+  ".ml": "ocaml",
+  ".eliom": "ocaml",
+  ".eliomi": "ocaml",
+  ".ml4": "ocaml",
+  ".mli": "ocaml",
+  ".mll": "ocaml",
+  ".mly": "ocaml",
+  ".objdump": "objdump",
+  ".mm": "objective-c++",
+  ".sj": "objective-j",
+  ".oct": "octave",
+  ".omgrofl": "omgrofl",
+  ".opa": "opa",
+  ".opal": "opal",
+  ".cl": "opencl",
+  ".opencl": "opencl",
+  ".p": "openedge abl",
+  ".scad": "openscad",
+  ".org": "org",
+  ".ox": "ox",
+  ".oxh": "ox",
+  ".oxo": "ox",
+  ".oxygene": "oxygene",
+  ".oz": "oz",
+  ".pwn": "pawn",
+  ".php": "php",
+  ".aw": "php",
+  ".ctp": "php",
+  ".php3": "php",
+  ".php4": "php",
+  ".php5": "php",
+  ".phps": "php",
+  ".phpt": "php",
+  ".pov": "pov-ray sdl",
+  ".pan": "pan",
+  ".psc": "papyrus",
+  ".parrot": "parrot",
+  ".pasm": "parrot assembly",
+  ".pir": "parrot internal representation",
+  ".pas": "pascal",
+  ".dfm": "pascal",
+  ".dpr": "pascal",
+  ".lpr": "pascal",
+  ".pl": "perl",
+  ".al": "perl",
+  ".perl": "perl",
+  ".ph": "perl",
+  ".plx": "perl",
+  ".pm": "perl",
+  ".psgi": "perl",
+  ".t": "perl",
+  ".6pl": "perl6",
+  ".6pm": "perl6",
+  ".nqp": "perl6",
+  ".p6": "perl6",
+  ".p6l": "perl6",
+  ".p6m": "perl6",
+  ".pl6": "perl6",
+  ".pm6": "perl6",
+  ".pkl": "pickle",
+  ".pig": "piglatin",
+  ".pike": "pike",
+  ".pmod": "pike",
+  ".pod": "pod",
+  ".pogo": "pogoscript",
+  ".pony": "pony",
+  ".ps": "postscript",
+  ".eps": "postscript",
+  ".ps1": "powershell",
+  ".psd1": "powershell",
+  ".psm1": "powershell",
+  ".pde": "processing",
+  ".prolog": "prolog",
+  ".yap": "prolog",
+  ".spin": "propeller spin",
+  ".proto": "protocol buffer",
+  ".pub": "public key",
+  ".pd": "pure data",
+  ".pb": "purebasic",
+  ".pbi": "purebasic",
+  ".purs": "purescript",
+  ".py": "python",
+  ".bzl": "python",
+  ".gyp": "python",
+  ".lmi": "python",
+  ".pyde": "python",
+  ".pyp": "python",
+  ".pyt": "python",
+  ".pyw": "python",
+  ".tac": "python",
+  ".wsgi": "python",
+  ".xpy": "python",
+  ".pytb": "python traceback",
+  ".qml": "qml",
+  ".qbs": "qml",
+  ".pri": "qmake",
+  ".r": "r",
+  ".rd": "r",
+  ".rsx": "r",
+  ".raml": "raml",
+  ".rdoc": "rdoc",
+  ".rbbas": "realbasic",
+  ".rbfrm": "realbasic",
+  ".rbmnu": "realbasic",
+  ".rbres": "realbasic",
+  ".rbtbar": "realbasic",
+  ".rbuistate": "realbasic",
+  ".rhtml": "rhtml",
+  ".rmd": "rmarkdown",
+  ".rkt": "racket",
+  ".rktd": "racket",
+  ".rktl": "racket",
+  ".scrbl": "racket",
+  ".rl": "ragel in ruby host",
+  ".raw": "raw token data",
+  ".reb": "rebol",
+  ".r2": "rebol",
+  ".r3": "rebol",
+  ".rebol": "rebol",
+  ".red": "red",
+  ".reds": "red",
+  ".cw": "redcode",
+  ".rpy": "ren'py",
+  ".rsh": "renderscript",
+  ".robot": "robotframework",
+  ".rg": "rouge",
+  ".rb": "ruby",
+  ".builder": "ruby",
+  ".gemspec": "ruby",
+  ".god": "ruby",
+  ".irbrc": "ruby",
+  ".jbuilder": "ruby",
+  ".mspec": "ruby",
+  ".podspec": "ruby",
+  ".rabl": "ruby",
+  ".rake": "ruby",
+  ".rbuild": "ruby",
+  ".rbw": "ruby",
+  ".rbx": "ruby",
+  ".ru": "ruby",
+  ".ruby": "ruby",
+  ".thor": "ruby",
+  ".watchr": "ruby",
+  ".rs": "rust",
+  ".rs.in": "rust",
+  ".sas": "sas",
+  ".scss": "scss",
+  ".smt2": "smt",
+  ".smt": "smt",
+  ".sparql": "sparql",
+  ".rq": "sparql",
+  ".sqf": "sqf",
+  ".hqf": "sqf",
+  ".pls": "sql",
+  ".pck": "sql",
+  ".pkb": "sql",
+  ".pks": "sql",
+  ".plb": "sql",
+  ".plsql": "sql",
+  ".sql": "sql",
+  ".cql": "sql",
+  ".ddl": "sql",
+  ".prc": "sql",
+  ".tab": "sql",
+  ".udf": "sql",
+  ".viw": "sql",
+  ".db2": "sql",
+  ".ston": "ston",
+  ".svg": "svg",
+  ".sage": "sage",
+  ".sagews": "sage",
+  ".sls": "saltstack",
+  ".sass": "sass",
+  ".scala": "scala",
+  ".sbt": "scala",
+  ".scaml": "scaml",
+  ".scm": "scheme",
+  ".sld": "scheme",
+  ".sps": "scheme",
+  ".ss": "scheme",
+  ".sci": "scilab",
+  ".sce": "scilab",
+  ".self": "self",
+  ".sh": "shell",
+  ".bash": "shell",
+  ".bats": "shell",
+  ".command": "shell",
+  ".ksh": "shell",
+  ".sh.in": "shell",
+  ".tmux": "shell",
+  ".tool": "shell",
+  ".zsh": "shell",
+  ".sh-session": "shellsession",
+  ".shen": "shen",
+  ".sl": "slash",
+  ".slim": "slim",
+  ".smali": "smali",
+  ".st": "smalltalk",
+  ".tpl": "smarty",
+  ".sol": "solidity",
+  ".sp": "sourcepawn",
+  ".sma": "sourcepawn",
+  ".nut": "squirrel",
+  ".stan": "stan",
+  ".ML": "standard ml",
+  ".fun": "standard ml",
+  ".sig": "standard ml",
+  ".sml": "standard ml",
+  ".do": "stata",
+  ".ado": "stata",
+  ".doh": "stata",
+  ".ihlp": "stata",
+  ".mata": "stata",
+  ".matah": "stata",
+  ".sthlp": "stata",
+  ".styl": "stylus",
+  ".scd": "supercollider",
+  ".swift": "swift",
+  ".sv": "systemverilog",
+  ".svh": "systemverilog",
+  ".vh": "systemverilog",
+  ".toml": "toml",
+  ".txl": "txl",
+  ".tcl": "tcl",
+  ".adp": "tcl",
+  ".tm": "tcl",
+  ".tcsh": "tcsh",
+  ".csh": "tcsh",
+  ".tex": "tex",
+  ".aux": "tex",
+  ".bbx": "tex",
+  ".bib": "tex",
+  ".cbx": "tex",
+  ".dtx": "tex",
+  ".ins": "tex",
+  ".lbx": "tex",
+  ".ltx": "tex",
+  ".mkii": "tex",
+  ".mkiv": "tex",
+  ".mkvi": "tex",
+  ".sty": "tex",
+  ".toc": "tex",
+  ".tea": "tea",
+  ".txt": "text",
+  ".no": "text",
+  ".textile": "textile",
+  ".thrift": "thrift",
+  ".tu": "turing",
+  ".ttl": "turtle",
+  ".twig": "twig",
+  ".ts": "typescript",
+  ".tsx": "tsx",
+  ".upc": "unified parallel c",
+  ".anim": "unity3d asset",
+  ".asset": "unity3d asset",
+  ".mat": "unity3d asset",
+  ".meta": "unity3d asset",
+  ".prefab": "unity3d asset",
+  ".unity": "unity3d asset",
+  ".uno": "uno",
+  ".uc": "unrealscript",
+  ".ur": "urweb",
+  ".urs": "urweb",
+  ".vcl": "vcl",
+  ".vhdl": "vhdl",
+  ".vhd": "vhdl",
+  ".vhf": "vhdl",
+  ".vhi": "vhdl",
+  ".vho": "vhdl",
+  ".vhs": "vhdl",
+  ".vht": "vhdl",
+  ".vhw": "vhdl",
+  ".vala": "vala",
+  ".vapi": "vala",
+  ".veo": "verilog",
+  ".vim": "viml",
+  ".vb": "visual basic",
+  ".bas": "visual basic",
+  ".frm": "visual basic",
+  ".frx": "visual basic",
+  ".vba": "visual basic",
+  ".vbhtml": "visual basic",
+  ".vbs": "visual basic",
+  ".volt": "volt",
+  ".vue": "vue",
+  ".owl": "web ontology language",
+  ".wat": "webassembly",
+  ".webidl": "webidl",
+  ".x10": "x10",
+  ".xc": "xc",
+  ".xml": "xml",
+  ".ant": "xml",
+  ".axml": "xml",
+  ".ccxml": "xml",
+  ".clixml": "xml",
+  ".cproject": "xml",
+  ".csl": "xml",
+  ".csproj": "xml",
+  ".ct": "xml",
+  ".dita": "xml",
+  ".ditamap": "xml",
+  ".ditaval": "xml",
+  ".dll.config": "xml",
+  ".dotsettings": "xml",
+  ".filters": "xml",
+  ".fsproj": "xml",
+  ".fxml": "xml",
+  ".glade": "xml",
+  ".grxml": "xml",
+  ".iml": "xml",
+  ".ivy": "xml",
+  ".jelly": "xml",
+  ".jsproj": "xml",
+  ".kml": "xml",
+  ".launch": "xml",
+  ".mdpolicy": "xml",
+  ".mxml": "xml",
+  ".nproj": "xml",
+  ".nuspec": "xml",
+  ".odd": "xml",
+  ".osm": "xml",
+  ".plist": "xml",
+  ".props": "xml",
+  ".ps1xml": "xml",
+  ".psc1": "xml",
+  ".pt": "xml",
+  ".rdf": "xml",
+  ".rss": "xml",
+  ".scxml": "xml",
+  ".srdf": "xml",
+  ".storyboard": "xml",
+  ".stTheme": "xml",
+  ".sublime-snippet": "xml",
+  ".targets": "xml",
+  ".tmCommand": "xml",
+  ".tml": "xml",
+  ".tmLanguage": "xml",
+  ".tmPreferences": "xml",
+  ".tmSnippet": "xml",
+  ".tmTheme": "xml",
+  ".ui": "xml",
+  ".urdf": "xml",
+  ".ux": "xml",
+  ".vbproj": "xml",
+  ".vcxproj": "xml",
+  ".vssettings": "xml",
+  ".vxml": "xml",
+  ".wsdl": "xml",
+  ".wsf": "xml",
+  ".wxi": "xml",
+  ".wxl": "xml",
+  ".wxs": "xml",
+  ".x3d": "xml",
+  ".xacro": "xml",
+  ".xaml": "xml",
+  ".xib": "xml",
+  ".xlf": "xml",
+  ".xliff": "xml",
+  ".xmi": "xml",
+  ".xml.dist": "xml",
+  ".xproj": "xml",
+  ".xsd": "xml",
+  ".xul": "xml",
+  ".zcml": "xml",
+  ".xsp-config": "xpages",
+  ".xsp.metadata": "xpages",
+  ".xpl": "xproc",
+  ".xproc": "xproc",
+  ".xquery": "xquery",
+  ".xq": "xquery",
+  ".xql": "xquery",
+  ".xqm": "xquery",
+  ".xqy": "xquery",
+  ".xs": "xs",
+  ".xslt": "xslt",
+  ".xsl": "xslt",
+  ".xojo_code": "xojo",
+  ".xojo_menu": "xojo",
+  ".xojo_report": "xojo",
+  ".xojo_script": "xojo",
+  ".xojo_toolbar": "xojo",
+  ".xojo_window": "xojo",
+  ".xtend": "xtend",
+  ".yml": "yaml",
+  ".reek": "yaml",
+  ".rviz": "yaml",
+  ".sublime-syntax": "yaml",
+  ".syntax": "yaml",
+  ".yaml": "yaml",
+  ".yaml-tmlanguage": "yaml",
+  ".yang": "yang",
+  ".y": "yacc",
+  ".yacc": "yacc",
+  ".yy": "yacc",
+  ".zep": "zephir",
+  ".zig": "zig",
+  ".zimpl": "zimpl",
+  ".zmpl": "zimpl",
+  ".zpl": "zimpl",
+  ".desktop": "desktop",
+  ".desktop.in": "desktop",
+  ".ec": "ec",
+  ".eh": "ec",
+  ".edn": "edn",
+  ".fish": "fish",
+  ".mu": "mupad",
+  ".nc": "nesc",
+  ".ooc": "ooc",
+  ".rst": "restructuredtext",
+  ".rest": "restructuredtext",
+  ".rest.txt": "restructuredtext",
+  ".rst.txt": "restructuredtext",
+  ".wisp": "wisp",
+  ".prg": "xbase",
+  ".prw": "xbase"
+};
 const viewType = { introduction: "introduction", qa: "qa" };
 const _sfc_main$1 = {
   name: "ChatView",
@@ -75542,7 +76422,7 @@ const _sfc_main$1 = {
       currentViewType: viewType.introduction,
       isInProgress: false,
       qaData: { list: [] },
-      questionInput: "",
+      questionInput: "随机生成一个python函数",
       questionInputDisabled: false,
       showStopButton: false,
       questionInputButtonsVisible: true,
@@ -75619,10 +76499,11 @@ const _sfc_main$1 = {
      * 添加聊天
      */
     async addFreeTextQuestion() {
-      var _a;
       const input = this.questionInput;
-      this.questionInput = "";
-      if ((input == null ? void 0 : input.length) > 0) {
+      try {
+        if ((input || "").length === 0) {
+          return;
+        }
         this.conversationId = v4();
         const result = util.postMessageToCodeEditor({
           type: "addFreeTextQuestion",
@@ -75630,27 +76511,34 @@ const _sfc_main$1 = {
           conversationId: this.conversationId
         });
         if (result !== true) {
-          this.showInProgress({ showStopButton: true, inProgress: true });
-          this.addQuestion({ value: input, conversationId: this.conversationId });
-          (_a = this.abortController) == null ? void 0 : _a.abort();
-          this.abortController = new AbortController();
-          await chatUtil.sendApiRequest(
-            input,
-            {
-              conversationId: this.conversationId,
-              abortController: this.abortController,
-              history: this._history || []
-            },
-            (progress) => {
-              this.addResponse(progress);
-            },
-            (done) => {
-              this.addResponse(done);
-              this.isInProgress = false;
-            }
-          );
+          await this.addFreeTextQuestion4Local({ value: input, conversationId: this.conversationId });
         }
+      } catch (error2) {
+        console.error(error2);
       }
+      this.questionInput = "";
+    },
+    async addFreeTextQuestion4Local(message) {
+      var _a;
+      this.showInProgress({ showStopButton: true, inProgress: true });
+      this.addQuestion(message);
+      (_a = this.abortController) == null ? void 0 : _a.abort();
+      this.abortController = new AbortController();
+      await chatUtil.sendApiRequest(
+        this.questionInput,
+        {
+          conversationId: this.conversationId,
+          abortController: this.abortController,
+          history: this._history || []
+        },
+        (progress) => {
+          this.addResponse(progress);
+        },
+        (done) => {
+          this.addResponse(done);
+          this.isInProgress = false;
+        }
+      );
     },
     showInProgress(message) {
       this.showStopButton = message.showStopButton ? true : false;
@@ -75665,7 +76553,7 @@ const _sfc_main$1 = {
       this.currentViewType = viewType.qa;
       this.conversationId = message.conversationId ?? v4();
       this.qaData.list.push({
-        question: util.escapeHtml(message.value),
+        question: util.markedParser(util.escapeHtml(message.value)),
         conversationId: this.conversationId,
         answer: "",
         error: "",
@@ -75700,6 +76588,7 @@ const _sfc_main$1 = {
         this.message = null;
         this.showInProgress({ inProgress: false });
         setTimeout(() => {
+          var _a;
           const preCodeList = list2.children[list2.children.length - 1].querySelectorAll("pre > code");
           preCodeList.forEach((preCode) => {
             preCode.classList.add("input-background", "p-4", "pb-2", "block", "whitespace-pre", "overflow-x-scroll");
@@ -75737,6 +76626,7 @@ const _sfc_main$1 = {
             preCode.parentNode.append(buttonWrapper);
           });
           util.autoScrollToBottom(list2);
+          (_a = this.questionInputRef) == null ? void 0 : _a.focus();
         }, 100);
       }
       if (message.autoScroll) {
@@ -75835,16 +76725,49 @@ const _sfc_main$1 = {
           util.postMessageToCodeEditor(data);
         return;
       }
+    },
+    async busEventHandler(data) {
+      var _a;
+      let { cmd, value } = data;
+      switch (cmd) {
+        case "ask":
+          this.questionInput = value;
+          (_a = this.questionInputRef) == null ? void 0 : _a.focus();
+          if (!this.isInProgress && !value)
+            this.onAskButtonClick();
+          break;
+        case "chat":
+          this.questionInput = value;
+          if (!this.isInProgress && value)
+            this.onAskButtonClick();
+          break;
+        case "chat_code":
+          let { prompt_suffix, language, file } = data;
+          let question = value;
+          if (prompt_suffix && value) {
+            language = language || getLanguageExtByFilePath(file);
+            question = "```" + language + "\r\n" + value + "\n\n```\n\n" + prompt_suffix;
+          }
+          this.questionInput = question;
+          if (!this.isInProgress && value) {
+            this.conversationId = v4();
+            await this.addFreeTextQuestion4Local({
+              value: question,
+              conversationId: this.conversationId
+            });
+            this.questionInput = "";
+          }
+          break;
+      }
     }
   },
   mounted() {
     if (this.isVsCodeMode)
       window.addEventListener("message", this.messageHandler);
     document.addEventListener("click", this.documnetClickHandler);
-    if (this.isIdeaMode) {
-      this.$bus.on("executeCmd", (cmd, value) => {
-      });
-    }
+    if (!this.isIdeaMode)
+      return;
+    this.$bus.on("executeCmd", this.busEventHandler);
   }
 };
 const _hoisted_1 = { class: "flex flex-col h-screen" };
@@ -75908,7 +76831,7 @@ const _hoisted_14 = {
   "data-license": "isc-gnc"
 };
 const _hoisted_15 = ["onClick"];
-const _hoisted_16 = { class: "overflow-y-auto" };
+const _hoisted_16 = ["innerHTML"];
 const _hoisted_17 = { class: "chat-card-bg" };
 const _hoisted_18 = {
   key: 0,
@@ -76062,7 +76985,10 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
                   createVNode(_component_IconPencilSvg)
                 ], 8, _hoisted_15)
               ]),
-              createBaseVNode("div", _hoisted_16, toDisplayString(message.question), 1)
+              createBaseVNode("div", {
+                class: "overflow-y-auto",
+                innerHTML: message.question
+              }, null, 8, _hoisted_16)
             ])
           ]),
           createBaseVNode("div", _hoisted_17, [
@@ -76217,6 +77143,6 @@ app.use(router);
 app.provide("$bus", $bus);
 app.config.globalProperties.$bus = $bus;
 app.mount("#app");
-window.exportVar = function(cmd, value) {
-  $bus.emit("executeCmd", cmd, value);
+window.exportVar = function(data) {
+  $bus.emit("executeCmd", data);
 };
