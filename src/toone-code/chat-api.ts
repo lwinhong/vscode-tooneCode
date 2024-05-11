@@ -1,5 +1,6 @@
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
+import { fetchEventSource } from './fetchEventSource/index';
 
 type chatApiError = {
     message: string,
@@ -50,6 +51,8 @@ interface ChatMessage {
 // };
 type Role = 'user' | 'assistant' | 'system';
 type ChatType = 'chat' | 'code' | any;
+class RetriableError extends Error { }
+class FatalError extends Error { }
 
 export default class ChatApi {
     //private _cacheChatMessage?: CacheChatMessage[];
@@ -58,12 +61,90 @@ export default class ChatApi {
     // private readonly HUMAN_ROLE_START_TAG: string = "<s>human\n";
     // private readonly BOT_ROLE_START_TAG: string = "<s>bot\n";
     // private readonly ENDOFTEXT: string = "<|endoftext|>";
-    private readonly RESPONSE_RESULT_BASE64_SPLIT = "<|BASE64_SPLIT|>";
+    //private readonly RESPONSE_RESULT_BASE64_SPLIT = "<|BASE64_SPLIT|>";
     constructor(opt: chatApiOption) {
         const { apiBaseUrl } = opt;
         //this._historyMessages = new Array();
         axios.defaults.baseURL = apiBaseUrl ?? 'http://codeserver.t.vtoone.com/v1';
         axios.defaults.headers["Content-Type"] = "application/json";
+    }
+
+    async sendMessage1(text: string, opts: chatApiSendMessageOptions): Promise<ChatMessage> {
+        let {
+            stream,
+            onProgress,
+            onDone,
+            messageId = uuidv4(),
+            timeoutMs = 40 * 1000,
+            chatType = "chat",
+            historyCount = 3,
+            cacheHistory = true,
+            url
+        } = opts;
+        this._historyCount = historyCount;
+        let { abortSignal } = opts;
+        let abortController = null;
+        if (timeoutMs && !abortSignal) {
+            abortController = new AbortController();
+            abortSignal = abortController.signal;
+        }
+        const result: ChatMessage = {
+            role: "assistant",
+            id: uuidv4(),
+            parentMessageId: messageId,
+            text: "",
+            error: ""
+        };
+        if (!url) {
+            if (chatType === "code") {
+                url = '/code_generate';
+            }
+            else {
+                url = "/chat";
+            }
+        }
+        await fetchEventSource(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            //body: JSON.stringify(requestMsg),
+            signal: abortSignal,
+            openWhenHidden: true,
+            async onopen(response) {
+                if (response.ok) {
+                    return; // everything's good
+                } else if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+                    // client-side errors are usually non-retriable:
+                    throw new FatalError();
+                } else {
+                    //throw new RetriableError();
+                }
+            },
+            onmessage(msg) {
+                // if the server emits an error message, throw an exception
+                // so it gets handled by the onerror callback below:
+                if (msg.event === 'error') {
+                    throw new FatalError(msg.data);
+                } else if (msg.event === 'data') {
+                    result.text = msg.data;
+                    onProgress?.(result);
+                } else if (msg.event === 'done') {
+                    onDone?.(result);
+                }
+            },
+            onclose() {
+                // if the server closes the connection unexpectedly, retry:
+                //throw new RetriableError();
+            },
+            onerror(err) {
+                if (err instanceof FatalError) {
+                    throw err; // rethrow to stop the operation
+                } else {
+                    // do nothing to automatically retry. You can also
+                    // return a specific retry interval here.
+                }
+            }
+        });
+        return result;
     }
 
     async sendMessage(text: string, opts: chatApiSendMessageOptions): Promise<ChatMessage> {
@@ -85,12 +166,6 @@ export default class ChatApi {
             abortController = new AbortController();
             abortSignal = abortController.signal;
         }
-        // const message: ChatMessage = {
-        //     role: "user",
-        //     id: messageId,
-        //     parentMessageId: messageId,
-        //     text
-        // };
         const result: ChatMessage = {
             role: "assistant",
             id: uuidv4(),
@@ -116,7 +191,6 @@ export default class ChatApi {
             config.responseType = "stream";
             //config.url += "_stream";
             //cacheHistory && await this._updateMessages2(message);
-
             const requestMsg = await this.buildMessages(text, opts);
 
             const handler = (response: axios.AxiosResponse<any, any>) => {
@@ -154,6 +228,9 @@ export default class ChatApi {
                             // }
                             if (!strSource) {
                                 return;
+                            }
+                            if (strSource.startsWith("data:")) {
+                                strSource = strSource.substring(5);
                             }
 
                             result.text = strSource;

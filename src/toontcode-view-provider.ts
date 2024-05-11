@@ -251,6 +251,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 
 		if (filePath) {
 			filePath = Path.basename(filePath);
+			
 		}
 
 		if (this.chatCodeApi) {
