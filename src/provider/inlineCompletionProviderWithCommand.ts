@@ -7,6 +7,7 @@ import { Trie } from "../trie";
 import ChatGptViewProvider from '../toontcode-view-provider';
 import chatApi from '../toone-code/chat-api';
 import Path from 'path';
+import ChatApi2 from "../toone-code/chat-api2";
 
 let lastRequest = null;
 let someTrackingIdCounter = 0;
@@ -65,24 +66,44 @@ function requestApi(question: string, lang?: string, chatCodeApi?: chatApi, file
             }
 
             let response = "";
-            await chatCodeApi.sendMessage(question, {
+            let requesOption = {
                 abortSignal: abortController.signal,
-                stream: true,
                 chatType: 'code',
                 lang,
-                max_length: 512,
-                timeoutMs: 40 * 1000,
+                max_length: 256,
                 filePath,
-                laterCode,
-                onProgress: (message) => {
-                    response += message.text;
-                },
-                onDone: (message) => {
-                    //response = message.text;
-                    resolve(response);
-                    return false;
-                }
-            });
+                prefixCode: question,
+                suffixCode: laterCode,
+            };
+            const chatApi2 = new ChatApi2(requesOption);
+            let onProgress = (message: any) => {
+                response += message.text;
+            };
+            let onDone = (message: any) => {
+                //response = message.text;
+                resolve(response); 
+                return false;
+            };
+            await chatApi2.postToServer("", requesOption, onProgress, onDone);
+
+            // await chatCodeApi.sendMessage(question, {
+            //     abortSignal: abortController.signal,
+            //     stream: true,
+            //     chatType: 'code',
+            //     lang,
+            //     max_length: 512,
+            //     timeoutMs: 40 * 1000,
+            //     filePath,
+            //     laterCode,
+            //     onProgress: (message) => {
+            //         response += message.text;
+            //     },
+            //     onDone: (message) => {
+            //         //response = message.text;
+            //         resolve(response);
+            //         return false;
+            //     }
+            // });
         } catch (error) {
             //出错了干点什么
             reject(error);

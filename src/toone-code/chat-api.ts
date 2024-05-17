@@ -1,6 +1,7 @@
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
-import { fetchEventSource } from './fetchEventSource/index';
+//import fetch from 'isomorphic-fetch';
+const { createParser } = require('eventsource-parser');
 
 type chatApiError = {
     message: string,
@@ -51,8 +52,6 @@ interface ChatMessage {
 // };
 type Role = 'user' | 'assistant' | 'system';
 type ChatType = 'chat' | 'code' | any;
-class RetriableError extends Error { }
-class FatalError extends Error { }
 
 export default class ChatApi {
     //private _cacheChatMessage?: CacheChatMessage[];
@@ -62,89 +61,13 @@ export default class ChatApi {
     // private readonly BOT_ROLE_START_TAG: string = "<s>bot\n";
     // private readonly ENDOFTEXT: string = "<|endoftext|>";
     //private readonly RESPONSE_RESULT_BASE64_SPLIT = "<|BASE64_SPLIT|>";
+    //private _apiBaseUrl: string;
     constructor(opt: chatApiOption) {
         const { apiBaseUrl } = opt;
         //this._historyMessages = new Array();
+        //this._apiBaseUrl = apiBaseUrl ?? 'http://codeserver.t.vtoone.com/v1';
         axios.defaults.baseURL = apiBaseUrl ?? 'http://codeserver.t.vtoone.com/v1';
         axios.defaults.headers["Content-Type"] = "application/json";
-    }
-
-    async sendMessage1(text: string, opts: chatApiSendMessageOptions): Promise<ChatMessage> {
-        let {
-            stream,
-            onProgress,
-            onDone,
-            messageId = uuidv4(),
-            timeoutMs = 40 * 1000,
-            chatType = "chat",
-            historyCount = 3,
-            cacheHistory = true,
-            url
-        } = opts;
-        this._historyCount = historyCount;
-        let { abortSignal } = opts;
-        let abortController = null;
-        if (timeoutMs && !abortSignal) {
-            abortController = new AbortController();
-            abortSignal = abortController.signal;
-        }
-        const result: ChatMessage = {
-            role: "assistant",
-            id: uuidv4(),
-            parentMessageId: messageId,
-            text: "",
-            error: ""
-        };
-        if (!url) {
-            if (chatType === "code") {
-                url = '/code_generate';
-            }
-            else {
-                url = "/chat";
-            }
-        }
-        await fetchEventSource(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            //body: JSON.stringify(requestMsg),
-            signal: abortSignal,
-            openWhenHidden: true,
-            async onopen(response) {
-                if (response.ok) {
-                    return; // everything's good
-                } else if (response.status >= 400 && response.status < 500 && response.status !== 429) {
-                    // client-side errors are usually non-retriable:
-                    throw new FatalError();
-                } else {
-                    //throw new RetriableError();
-                }
-            },
-            onmessage(msg) {
-                // if the server emits an error message, throw an exception
-                // so it gets handled by the onerror callback below:
-                if (msg.event === 'error') {
-                    throw new FatalError(msg.data);
-                } else if (msg.event === 'data') {
-                    result.text = msg.data;
-                    onProgress?.(result);
-                } else if (msg.event === 'done') {
-                    onDone?.(result);
-                }
-            },
-            onclose() {
-                // if the server closes the connection unexpectedly, retry:
-                //throw new RetriableError();
-            },
-            onerror(err) {
-                if (err instanceof FatalError) {
-                    throw err; // rethrow to stop the operation
-                } else {
-                    // do nothing to automatically retry. You can also
-                    // return a specific retry interval here.
-                }
-            }
-        });
-        return result;
     }
 
     async sendMessage(text: string, opts: chatApiSendMessageOptions): Promise<ChatMessage> {
@@ -192,49 +115,21 @@ export default class ChatApi {
             //config.url += "_stream";
             //cacheHistory && await this._updateMessages2(message);
             const requestMsg = await this.buildMessages(text, opts);
-
+            requestMsg.requestId = result.id;
+            const parser = createParser((event: any) => {
+                if (event.type === 'event') {
+                    if (event.event === 'data') {
+                        result.text = event.data;
+                        onProgress?.(result);
+                    }
+                }
+            });
             const handler = (response: axios.AxiosResponse<any, any>) => {
                 if (onProgress) {
                     response.data.on('data', (chunk: any) => {
                         // 处理流数据的逻辑
                         try {
-                            let strSource = chunk.toString() || "";
-                            // if (strSource && strSource.indexOf(this.RESPONSE_RESULT_BASE64_SPLIT) >= 0) {
-                            //     let str = strSource;//Buffer.from(strSource, 'base64').toString('utf8');
-                            //     if (str) {
-                            //         let split = str.split(this.RESPONSE_RESULT_BASE64_SPLIT).filter((x: string) => {
-                            //             if (x.trim()) {
-                            //                 return true;
-                            //             }
-                            //             return false;
-                            //         });
-                            //         if (split.length > 0) {
-                            //             str = split[split.length - 1];
-                            //         }
-                            //     } if (!str) {
-                            //         str = strSource;
-                            //     }
-                            //     const json = JSON.parse(str);
-                            //     if (json.error) {
-                            //         result.error = json.error;
-                            //     } else {
-                            //         result.text = json.answer;
-                            //         if (json.done) {
-                            //             result.history = json.history;
-                            //         }
-                            //     }
-                            // } else {
-                            //     result.text = strSource;
-                            // }
-                            if (!strSource) {
-                                return;
-                            }
-                            if (strSource.startsWith("data:")) {
-                                strSource = strSource.substring(5);
-                            }
-
-                            result.text = strSource;
-                            onProgress?.(result);
+                            parser.feed(chunk.toString());
                         } catch (error) {
                             console.error(error);
                         }
@@ -277,7 +172,7 @@ export default class ChatApi {
         const { chatType = "chat", lang, stream, filePath, laterCode, max_length } = opts;
         // text+="\n使用中文回答问题";
         let data = {
-            chatType, prompt: text, stream, filePath, laterCode, max_length
+            chatType, prompt: text, stream, filePath, laterCode, max_length, requestId: ""
         };
         if (chatType === "chat") {
             //text = this.combineMessageWithTAG(text);

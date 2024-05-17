@@ -158,8 +158,8 @@ export function activate(context: vscode.ExtensionContext) {
 	if (onlyKeyControl) {
 		context.globalState.update("DisableInlineCompletion", true);
 	} else {
-		//context.globalState.update("DisableInlineCompletion", false);
-		context.globalState.update("DisableInlineCompletion", true);
+		context.globalState.update("DisableInlineCompletion", false);
+		//context.globalState.update("DisableInlineCompletion", true);
 		context.subscriptions.push(
 			vscode.languages.registerInlineCompletionItemProvider(
 				{ pattern: "**" },
@@ -205,7 +205,7 @@ export function activate(context: vscode.ExtensionContext) {
 			//先试着执行，如果执行过了就不再往下了
 			const result = false;// provider?.addCommnentGen(editor, myStatusBarItem);
 			if (!result) {
-				provider?.sendApiRequest(prompt, {
+				provider?.sendMessageToPage(prompt, {
 					command: "addComments", code: editor.document.getText(editor.selection),
 					chatType: useModel === "aix" ? "code" : "",
 					filePath: editor.document.fileName,
@@ -222,7 +222,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const selection = editor.document.getText(editor.selection);
 		if (selection) {
 			const prompt = vscode.workspace.getConfiguration("toonecode").get<string>(`promptPrefix.addTests`) || "";
-			provider?.sendApiRequest(prompt, {
+			provider?.sendMessageToPage(prompt, {
 				command: "addTests", chatType: useModel === "aix" ? "codeChat" : "", code: selection,
 				language: getDocumentLanguage(editor),
 				filePath: editor.document.fileName
@@ -242,7 +242,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 				const selection = editor.document.getText(editor.selection);
 				if (selection && prompt) {
-					provider?.sendApiRequest(prompt, {
+					provider?.sendMessageToPage(prompt, {
 						command, code: selection, language: getDocumentLanguage(editor),
 						chatType: useModel === "aix" ? "codeChat" : "", filePath: editor.document.fileName
 					});

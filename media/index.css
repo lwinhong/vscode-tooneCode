@@ -1,3 +1,57 @@
+@charset "UTF-8";:root {
+    --vscode-foreground: #cccccc;
+    --vscode-font-family: "Segoe WPC", "Segoe UI", sans-serif;
+    --vscode-font-weight: normal;
+    --vscode-font-size: 13px;
+    --vscode-editor-background: #1f1f1f;
+    --vscode-editor-foreground: #cccccc;
+    --vscode-focusBorder: #0078d4;
+    --vscode-textLink-foreground: #4daafc;
+    --vscode-textLink-activeForeground: #4daafc;
+    --vscode-editor-font-family: Consolas, 'Courier New', monospace;
+    --vscode-button-secondaryForeground: #cccccc;
+    --vscode-button-secondaryBackground: #313131;
+    --vscode-button-secondaryHoverBackground: #3c3c3c;
+    --vscode-input-background: #313131;
+    --vscode-input-foreground: #cccccc;
+    --vscode-input-border: #3c3c3c;
+    --vscode-input-placeholderForeground: #989898;
+
+    --tc-chat-card-content-bg: rgb(255 255 255 / 4%);
+
+    --container-padding: 0;
+    --input-padding-vertical: 6px;
+    --input-padding-horizontal: 4px;
+    --input-margin-vertical: 4px;
+    --input-margin-horizontal: 0;
+}
+:root[theme='light'] {
+    --vscode-foreground:  #3b3b3b;
+    --vscode-font-family: "Segoe WPC", "Segoe UI", sans-serif;
+    --vscode-font-weight: normal;
+    --vscode-font-size: 13px;
+    --vscode-editor-background: #ffffff;
+    --vscode-editor-foreground: #3b3b3b;
+    --vscode-focusBorder: #005fb8;
+    --vscode-textLink-foreground: #005fb8;
+    --vscode-textLink-activeForeground: #005fb8;
+    --vscode-editor-font-family: Consolas, 'Courier New', monospace;
+    --vscode-button-secondaryForeground: #3b3b3b;
+    --vscode-button-secondaryBackground: #e5e5e5;
+    --vscode-button-secondaryHoverBackground: #cccccc;
+    --vscode-input-background: #ffffff;
+    --vscode-input-foreground: #3b3b3b;
+    --vscode-input-border: #cecece;
+    --vscode-input-placeholderForeground: #767676;
+
+    --tc-chat-card-content-bg: rgb(0 0 0 / 5%);
+
+    --container-padding: 0;
+    --input-padding-vertical: 6px;
+    --input-padding-horizontal: 4px;
+    --input-margin-vertical: 4px;
+    --input-margin-horizontal: 0;
+}
 /**
  * @author Ali Gençay
  * https://github.com/gencay/vscode-chatgpt
@@ -20,7 +74,8 @@
 body {
     padding: 0 var(--container-padding);
     color: var(--vscode-foreground);
-     font-size: 13px; /*var(--vscode-editor-font-size); */
+    font-size: 13px;
+    /*var(--vscode-editor-font-size); */
     font-weight: var(--vscode-font-weight);
     font-family: var(--vscode-font-family);
     background-color: var(--vscode-editor-background);
@@ -156,7 +211,6 @@ textarea::placeholder {
 [contenteditable='true'] {
     outline: 1px solid var(--vscode-focusBorder);
 }
-
 /* CSS Spinner */
 .spinner {
     width: 36px;
@@ -214,24 +268,25 @@ textarea::placeholder {
 }
 .textarea-wrapper>textarea {
     resize: none;
-    overflow: hidden auto;
+    overflow: hidden;
     max-height: 20rem;
 }
 .textarea-wrapper>textarea,
 .textarea-wrapper::after {
-    border: 1px solid black;
-    padding: .5rem 5rem .5rem .5rem;
+    border: 1px solid #00000012;
+    padding: .5rem .5rem .5rem .5rem;
     font: inherit;
     grid-area: 1 / 1 / 2 / 2;
+    border-radius: 4px
 }
 .pre-code-element:not(:last-child) {
     margin-bottom: 2rem;
 }
 .chat-card-bg {
-    padding:4px 8px;
+    padding: 2px 4px;
 }
 .chat-card-content-bg {
-    background-color: rgb(255 255 255 / 4%);
+    background-color: var(--tc-chat-card-content-bg);
     border-radius: 4px;
 }
 .code-actions-wrapper {
@@ -324,93 +379,222 @@ to {
     text-decoration-line: underline;
     text-underline-offset: 2px;
 }
-pre code.hljs {
+.send-erea-items-center {
+    justify-content: right;
+    margin-left: 6px;
+}
+
+html[data-code-theme=dark] {
+  /*
+
+  Atom One Dark by Daniel Gamage
+  Original One Dark Syntax theme from https://github.com/atom/one-dark-syntax
+
+  base:    #282c34
+  mono-1:  #abb2bf
+  mono-2:  #818896
+  mono-3:  #5c6370
+  hue-1:   #56b6c2
+  hue-2:   #61aeee
+  hue-3:   #c678dd
+  hue-4:   #98c379
+  hue-5:   #e06c75
+  hue-5-2: #be5046
+  hue-6:   #d19a66
+  hue-6-2: #e6c07b
+
+  */
+}
+html[data-code-theme=dark] pre code.hljs {
   display: block;
   overflow-x: auto;
-  padding: 1em
+  padding: 1em;
 }
-code.hljs {
-  padding: 3px 5px
+html[data-code-theme=dark] code.hljs {
+  padding: 3px 5px;
 }
-/*
-
-Atom One Dark by Daniel Gamage
-Original One Dark Syntax theme from https://github.com/atom/one-dark-syntax
-
-base:    #282c34
-mono-1:  #abb2bf
-mono-2:  #818896
-mono-3:  #5c6370
-hue-1:   #56b6c2
-hue-2:   #61aeee
-hue-3:   #c678dd
-hue-4:   #98c379
-hue-5:   #e06c75
-hue-5-2: #be5046
-hue-6:   #d19a66
-hue-6-2: #e6c07b
-
-*/
-.hljs {
+html[data-code-theme=dark] .hljs {
   color: #abb2bf;
-  background: #282c34
+  background: #282c34;
 }
-.hljs-comment,
-.hljs-quote {
+html[data-code-theme=dark] .hljs-comment,
+html[data-code-theme=dark] .hljs-quote {
   color: #5c6370;
-  font-style: italic
+  font-style: italic;
 }
-.hljs-doctag,
-.hljs-keyword,
-.hljs-formula {
-  color: #c678dd
+html[data-code-theme=dark] .hljs-doctag,
+html[data-code-theme=dark] .hljs-keyword,
+html[data-code-theme=dark] .hljs-formula {
+  color: #c678dd;
 }
-.hljs-section,
-.hljs-name,
-.hljs-selector-tag,
-.hljs-deletion,
-.hljs-subst {
-  color: #e06c75
+html[data-code-theme=dark] .hljs-section,
+html[data-code-theme=dark] .hljs-name,
+html[data-code-theme=dark] .hljs-selector-tag,
+html[data-code-theme=dark] .hljs-deletion,
+html[data-code-theme=dark] .hljs-subst {
+  color: #e06c75;
 }
-.hljs-literal {
-  color: #56b6c2
+html[data-code-theme=dark] .hljs-literal {
+  color: #56b6c2;
 }
-.hljs-string,
-.hljs-regexp,
-.hljs-addition,
-.hljs-attribute,
-.hljs-meta .hljs-string {
-  color: #98c379
+html[data-code-theme=dark] .hljs-string,
+html[data-code-theme=dark] .hljs-regexp,
+html[data-code-theme=dark] .hljs-addition,
+html[data-code-theme=dark] .hljs-attribute,
+html[data-code-theme=dark] .hljs-meta .hljs-string {
+  color: #98c379;
 }
-.hljs-attr,
-.hljs-variable,
-.hljs-template-variable,
-.hljs-type,
-.hljs-selector-class,
-.hljs-selector-attr,
-.hljs-selector-pseudo,
-.hljs-number {
-  color: #d19a66
+html[data-code-theme=dark] .hljs-attr,
+html[data-code-theme=dark] .hljs-variable,
+html[data-code-theme=dark] .hljs-template-variable,
+html[data-code-theme=dark] .hljs-type,
+html[data-code-theme=dark] .hljs-selector-class,
+html[data-code-theme=dark] .hljs-selector-attr,
+html[data-code-theme=dark] .hljs-selector-pseudo,
+html[data-code-theme=dark] .hljs-number {
+  color: #d19a66;
 }
-.hljs-symbol,
-.hljs-bullet,
-.hljs-link,
-.hljs-meta,
-.hljs-selector-id,
-.hljs-title {
-  color: #61aeee
+html[data-code-theme=dark] .hljs-symbol,
+html[data-code-theme=dark] .hljs-bullet,
+html[data-code-theme=dark] .hljs-link,
+html[data-code-theme=dark] .hljs-meta,
+html[data-code-theme=dark] .hljs-selector-id,
+html[data-code-theme=dark] .hljs-title {
+  color: #61aeee;
 }
-.hljs-built_in,
-.hljs-title.class_,
-.hljs-class .hljs-title {
-  color: #e6c07b
+html[data-code-theme=dark] .hljs-built_in,
+html[data-code-theme=dark] .hljs-title.class_,
+html[data-code-theme=dark] .hljs-class .hljs-title {
+  color: #e6c07b;
 }
-.hljs-emphasis {
-  font-style: italic
+html[data-code-theme=dark] .hljs-emphasis {
+  font-style: italic;
 }
-.hljs-strong {
-  font-weight: bold
+html[data-code-theme=dark] .hljs-strong {
+  font-weight: bold;
 }
-.hljs-link {
-  text-decoration: underline
+html[data-code-theme=dark] .hljs-link {
+  text-decoration: underline;
+}
+html[data-code-theme=light] {
+  /*
+
+  Atom One Light by Daniel Gamage
+  Original One Light Syntax theme from https://github.com/atom/one-light-syntax
+
+  base:    #fafafa
+  mono-1:  #383a42
+  mono-2:  #686b77
+  mono-3:  #a0a1a7
+  hue-1:   #0184bb
+  hue-2:   #4078f2
+  hue-3:   #a626a4
+  hue-4:   #50a14f
+  hue-5:   #e45649
+  hue-5-2: #c91243
+  hue-6:   #986801
+  hue-6-2: #c18401
+
+  */
+}
+html[data-code-theme=light] pre code.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 1em;
+}
+html[data-code-theme=light] code.hljs {
+  padding: 3px 5px;
+}
+html[data-code-theme=light] .hljs {
+  color: #383a42;
+  background: #fafafa;
+}
+html[data-code-theme=light] .hljs-comment,
+html[data-code-theme=light] .hljs-quote {
+  color: #a0a1a7;
+  font-style: italic;
+}
+html[data-code-theme=light] .hljs-doctag,
+html[data-code-theme=light] .hljs-keyword,
+html[data-code-theme=light] .hljs-formula {
+  color: #a626a4;
+}
+html[data-code-theme=light] .hljs-section,
+html[data-code-theme=light] .hljs-name,
+html[data-code-theme=light] .hljs-selector-tag,
+html[data-code-theme=light] .hljs-deletion,
+html[data-code-theme=light] .hljs-subst {
+  color: #e45649;
+}
+html[data-code-theme=light] .hljs-literal {
+  color: #0184bb;
+}
+html[data-code-theme=light] .hljs-string,
+html[data-code-theme=light] .hljs-regexp,
+html[data-code-theme=light] .hljs-addition,
+html[data-code-theme=light] .hljs-attribute,
+html[data-code-theme=light] .hljs-meta .hljs-string {
+  color: #50a14f;
+}
+html[data-code-theme=light] .hljs-attr,
+html[data-code-theme=light] .hljs-variable,
+html[data-code-theme=light] .hljs-template-variable,
+html[data-code-theme=light] .hljs-type,
+html[data-code-theme=light] .hljs-selector-class,
+html[data-code-theme=light] .hljs-selector-attr,
+html[data-code-theme=light] .hljs-selector-pseudo,
+html[data-code-theme=light] .hljs-number {
+  color: #986801;
+}
+html[data-code-theme=light] .hljs-symbol,
+html[data-code-theme=light] .hljs-bullet,
+html[data-code-theme=light] .hljs-link,
+html[data-code-theme=light] .hljs-meta,
+html[data-code-theme=light] .hljs-selector-id,
+html[data-code-theme=light] .hljs-title {
+  color: #4078f2;
+}
+html[data-code-theme=light] .hljs-built_in,
+html[data-code-theme=light] .hljs-title.class_,
+html[data-code-theme=light] .hljs-class .hljs-title {
+  color: #c18401;
+}
+html[data-code-theme=light] .hljs-emphasis {
+  font-style: italic;
+}
+html[data-code-theme=light] .hljs-strong {
+  font-weight: bold;
+}
+html[data-code-theme=light] .hljs-link {
+  text-decoration: underline;
+}
+.chat-box-600 {
+  display: flex;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Chrome, Safari, and Opera */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  /* 设置滚动条宽度 */
+}
+::-webkit-scrollbar-track {
+  background: --var(--vscode-editor-background);
+  /*#f1f1f1;*/
+  border-radius: 2px;
+  /* 滚动条轨道背景色 */
+}
+::-webkit-scrollbar-thumb {
+  background: #888;
+  /* 滚动条滑块背景色 */
+  border-radius: 2px;
+  /* 滑块圆角 */
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+  /* 滑块悬停时的背景色 */
+  border-radius: 2px;
 }

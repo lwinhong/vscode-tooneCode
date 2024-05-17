@@ -10,6 +10,7 @@ import { Trie } from "../trie";
 import ChatGptViewProvider from '../toontcode-view-provider';
 import chatApi from '../toone-code/chat-api';
 import Path from 'path';
+import ChatApi2 from "../toone-code/chat-api2";
 
 let lastRequest = null;
 let delay: number = completionDelay * 1000;
@@ -135,33 +136,54 @@ function requestApi(question: string, lang?: string, chatCodeApi?: chatApi, file
     if (filePath) {
         filePath = Path.basename(filePath);
     }
+
     return new Promise(async (resolve, reject) => {
         try {
             if (!chatCodeApi) {
                 resolve("");
                 return;
             }
-
             let response = "";
-            await chatCodeApi.sendMessage(question, {
+            let requesOption = {
                 abortSignal: abortController.signal,
-                stream: true,
                 chatType: 'code',
                 lang,
                 max_length: 256,
-                timeoutMs: 40 * 1000,
                 filePath,
-                laterCode,
-                url: "/code_generate" + (fim ? "_fim" : ""),
-                onProgress: (message) => {
-                    response += message.text;
-                },
-                onDone: (message) => {
-                    //response = message.text;
-                    resolve(response);
-                    return false;
-                }
-            });
+                prefixCode: question,
+                suffixCode: laterCode,
+            };
+            const chatApi2 = new ChatApi2(requesOption);
+            let onProgress = (message: any) => {
+                response += message.text;
+            };
+            let onDone = (message: any) => {
+                //response = message.text;
+                resolve(response); 
+                return false;
+            };
+            await chatApi2.postToServer("", requesOption, onProgress, onDone);
+
+            // 一下是之前访问code服务的实现方法，还可以用
+            // await chatCodeApi.sendMessage(question, {
+            //     abortSignal: abortController.signal,
+            //     stream: true,
+            //     chatType: 'code',
+            //     lang,
+            //     max_length: 256,
+            //     timeoutMs: 40 * 1000,
+            //     filePath,
+            //     laterCode,
+            //     url: "/code_generate" + (fim ? "_fim" : ""),
+            //     onProgress: (message) => {
+            //         response += message.text;
+            //     },
+            //     onDone: (message) => {
+            //         //response = message.text;
+            //         resolve(response);
+            //         return false;
+            //     }
+            // });
         } catch (error) {
             //出错了干点什么
             reject(error);
@@ -242,7 +264,7 @@ export default function inlineCompletionProvider(
 
             if (true && !reGetCompletions) {
                 for (let prompt of prompts) {
-                    if (textBeforeCursor.trimEnd().indexOf(prompt) != -1) {
+                    if (textBeforeCursor.trimEnd().indexOf(prompt) !== -1) {
                         let completions;
                         completions = trie.getPrefix(textBeforeCursor);
                         let useTrim = false;
@@ -252,7 +274,7 @@ export default function inlineCompletionProvider(
                             );
                             useTrim = true;
                         }
-                        if (completions.length == 0) {
+                        if (completions.length === 0) {
                             break;
                         }
                         let items = new Array<MyInlineCompletionItem>();
@@ -424,7 +446,7 @@ export default function inlineCompletionProvider(
                     trackingId: someTrackingIdCounter++,
                 });
                 trie.addWord(textBeforeCursor + completion);
-                prompts.push(textBeforeCursor);
+                //prompts.push(textBeforeCursor);
 
                 updateStatusBarItem(myStatusBarItem, g_isLoading, false, "完成");
             }
