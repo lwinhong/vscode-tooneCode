@@ -10107,10 +10107,10 @@ const isReservedProp = /* @__PURE__ */ makeMap(
   ",key,ref,ref_for,ref_key,onVnodeBeforeMount,onVnodeMounted,onVnodeBeforeUpdate,onVnodeUpdated,onVnodeBeforeUnmount,onVnodeUnmounted"
 );
 const cacheStringFunction = (fn) => {
-  const cache2 = /* @__PURE__ */ Object.create(null);
+  const cache = /* @__PURE__ */ Object.create(null);
   return (str) => {
-    const hit = cache2[str];
-    return hit || (cache2[str] = fn(str));
+    const hit = cache[str];
+    return hit || (cache[str] = fn(str));
   };
 };
 const camelizeRE = /-(\w)/g;
@@ -11584,8 +11584,8 @@ function emit(instance, event, ...rawArgs) {
   }
 }
 function normalizeEmitsOptions(comp, appContext, asMixin = false) {
-  const cache2 = appContext.emitsCache;
-  const cached = cache2.get(comp);
+  const cache = appContext.emitsCache;
+  const cached = cache.get(comp);
   if (cached !== void 0) {
     return cached;
   }
@@ -11612,7 +11612,7 @@ function normalizeEmitsOptions(comp, appContext, asMixin = false) {
   }
   if (!raw && !hasExtends) {
     if (isObject$1(comp)) {
-      cache2.set(comp, null);
+      cache.set(comp, null);
     }
     return null;
   }
@@ -11622,7 +11622,7 @@ function normalizeEmitsOptions(comp, appContext, asMixin = false) {
     extend$2(normalized, raw);
   }
   if (isObject$1(comp)) {
-    cache2.set(comp, normalized);
+    cache.set(comp, normalized);
   }
   return normalized;
 }
@@ -12239,9 +12239,9 @@ const onRenderTracked = createHook(
 function onErrorCaptured(hook, target = currentInstance) {
   injectHook("ec", hook, target);
 }
-function renderList(source2, renderItem, cache2, index) {
+function renderList(source2, renderItem, cache, index) {
   let ret;
-  const cached = cache2 && cache2[index];
+  const cached = cache && cache[index];
   if (isArray$2(source2) || isString$1(source2)) {
     ret = new Array(source2.length);
     for (let i = 0, l = source2.length; i < l; i++) {
@@ -12269,8 +12269,8 @@ function renderList(source2, renderItem, cache2, index) {
   } else {
     ret = [];
   }
-  if (cache2) {
-    cache2[index] = ret;
+  if (cache) {
+    cache[index] = ret;
   }
   return ret;
 }
@@ -12612,10 +12612,10 @@ function resolveMergedOptions(instance) {
   const { mixins, extends: extendsOptions } = base;
   const {
     mixins: globalMixins,
-    optionsCache: cache2,
+    optionsCache: cache,
     config: { optionMergeStrategies }
   } = instance.appContext;
-  const cached = cache2.get(base);
+  const cached = cache.get(base);
   let resolved;
   if (cached) {
     resolved = cached;
@@ -12633,7 +12633,7 @@ function resolveMergedOptions(instance) {
     mergeOptions$1(resolved, base, optionMergeStrategies);
   }
   if (isObject$1(base)) {
-    cache2.set(base, resolved);
+    cache.set(base, resolved);
   }
   return resolved;
 }
@@ -13090,8 +13090,8 @@ function resolvePropValue(options, props, key, value, instance, isAbsent) {
   return value;
 }
 function normalizePropsOptions(comp, appContext, asMixin = false) {
-  const cache2 = appContext.propsCache;
-  const cached = cache2.get(comp);
+  const cache = appContext.propsCache;
+  const cached = cache.get(comp);
   if (cached) {
     return cached;
   }
@@ -13119,7 +13119,7 @@ function normalizePropsOptions(comp, appContext, asMixin = false) {
   }
   if (!raw && !hasExtends) {
     if (isObject$1(comp)) {
-      cache2.set(comp, EMPTY_ARR);
+      cache.set(comp, EMPTY_ARR);
     }
     return EMPTY_ARR;
   }
@@ -13156,7 +13156,7 @@ function normalizePropsOptions(comp, appContext, asMixin = false) {
   }
   const res = [normalized, needCastKeys];
   if (isObject$1(comp)) {
-    cache2.set(comp, res);
+    cache.set(comp, res);
   }
   return res;
 }
@@ -15878,9 +15878,9 @@ const modifierGuards = {
   exact: (e, modifiers) => systemModifiers.some((m) => e[`${m}Key`] && !modifiers.includes(m))
 };
 const withModifiers = (fn, modifiers) => {
-  const cache2 = fn._withMods || (fn._withMods = {});
+  const cache = fn._withMods || (fn._withMods = {});
   const cacheKey = modifiers.join(".");
-  return cache2[cacheKey] || (cache2[cacheKey] = (event, ...args) => {
+  return cache[cacheKey] || (cache[cacheKey] = (event, ...args) => {
     for (let i = 0; i < modifiers.length; i++) {
       const guard = modifierGuards[modifiers[i]];
       if (guard && guard(event, modifiers))
@@ -15899,9 +15899,9 @@ const keyNames = {
   delete: "backspace"
 };
 const withKeys = (fn, modifiers) => {
-  const cache2 = fn._withKeys || (fn._withKeys = {});
+  const cache = fn._withKeys || (fn._withKeys = {});
   const cacheKey = modifiers.join(".");
-  return cache2[cacheKey] || (cache2[cacheKey] = (event) => {
+  return cache[cacheKey] || (cache[cacheKey] = (event) => {
     if (!("key" in event)) {
       return;
     }
@@ -21319,15 +21319,15 @@ function source(re) {
   return re.source;
 }
 function lookahead(re) {
-  return concat("(?=", re, ")");
+  return concat$1("(?=", re, ")");
 }
 function anyNumberOfTimes(re) {
-  return concat("(?:", re, ")*");
+  return concat$1("(?:", re, ")*");
 }
 function optional(re) {
-  return concat("(?:", re, ")?");
+  return concat$1("(?:", re, ")?");
 }
-function concat(...args) {
+function concat$1(...args) {
   const joined = args.map((x) => source(x)).join("");
   return joined;
 }
@@ -21390,7 +21390,7 @@ const RE_STARTERS_RE = "!|!=|!==|%|%=|&|&&|&=|\\*|\\*=|\\+|\\+=|,|-|-=|/=|/|:|;|
 const SHEBANG = (opts = {}) => {
   const beginShebang = /^#![ ]*\//;
   if (opts.binary) {
-    opts.begin = concat(
+    opts.begin = concat$1(
       beginShebang,
       /.*\b/,
       opts.binary,
@@ -21485,7 +21485,7 @@ const COMMENT = function(begin, end, modeOptions = {}) {
       //
       // for a visual example please see:
       // https://github.com/highlightjs/highlight.js/issues/2827
-      begin: concat(
+      begin: concat$1(
         /[ ]+/,
         // necessary to prevent us gobbling up doctags like /* @author Bob Mcgill */
         "(",
@@ -21639,7 +21639,7 @@ const beforeMatchExt = (mode, parent) => {
     delete mode[key];
   });
   mode.keywords = originalMode.keywords;
-  mode.begin = concat(originalMode.beforeMatch, lookahead(originalMode.begin));
+  mode.begin = concat$1(originalMode.beforeMatch, lookahead(originalMode.begin));
   mode.starts = {
     relevance: 0,
     contains: [
@@ -22623,7 +22623,7 @@ const HLJS = function(hljs2) {
   };
   hljs2.versionString = version;
   hljs2.regex = {
-    concat,
+    concat: concat$1,
     lookahead,
     either,
     optional,
@@ -71573,6 +71573,155 @@ const BOM = [239, 187, 191];
 function hasBom(buffer) {
   return BOM.every((charCode, index) => buffer.charCodeAt(index) === charCode);
 }
+const ONLINE_CHAT_APIKEY = "app-jWmI0bA3AioiorQq6bmU73Ik";
+const ONLINE_CHAT_API = "http://ai.t.vtoone.com/api/v1/chat-messages";
+const ONLINE_CODE_APIKEY = "app-HZSqJWyZI6xjqkbyXUIcLErR";
+const ONLINE_CODE_API = "http://ai.t.vtoone.com/api/v1/completion-messages";
+class ChatApi2 {
+  constructor(options) {
+    let { abortSignal, timeoutMs = 40 * 1e3, chatType = "chat" } = options;
+    let abortController = null;
+    if (timeoutMs && !abortSignal) {
+      abortController = new AbortController();
+      abortSignal = abortController.signal;
+    }
+    this.requestConfig = {
+      method: "post",
+      timeout: timeoutMs,
+      signal: abortSignal,
+      responseType: "stream",
+      headers: this.getRequestHeader(chatType === "code" ? ONLINE_CODE_APIKEY : ONLINE_CHAT_APIKEY)
+    };
+    this.apiUrl = chatType === "code" ? ONLINE_CODE_API : ONLINE_CHAT_API;
+    this.callBackResult = {
+      role: "assistant",
+      id: v4(),
+      text: "",
+      error: ""
+    };
+  }
+  getCallBackResult() {
+    return this.callBackResult || {};
+  }
+  /**
+   * post到服务器
+   * @param {url} url 
+   * @param {数据} data 
+   * @param {进度回调} onProgress 
+   * @param {完成回调} onDone 
+   */
+  async postToServer(url, data, onProgress, onDone) {
+    data.requestId = this.callBackResult.id;
+    const sseParser = this.createSseParser(onProgress);
+    try {
+      let response = await fetch(
+        url || this.apiUrl,
+        {
+          body: JSON.stringify(this.getRequestData(data)),
+          ...this.requestConfig
+        }
+      );
+      if (!response.ok) {
+        throw new FatalError("无法连接到服务器");
+      }
+      const textDecoder = response.body.pipeThrough(new TextDecoderStream()).getReader();
+      while (true) {
+        const { done, value } = await textDecoder.read();
+        if (done) {
+          this.callBackResult.text = "";
+          onDone == null ? void 0 : onDone(this.callBackResult);
+          break;
+        }
+        sseParser.feed(value);
+      }
+    } catch (error2) {
+      this.callBackResult.error = "服务异常: " + error2.messages;
+      console.log(error2);
+      onDone == null ? void 0 : onDone(this.callBackResult);
+    }
+  }
+  /**
+   * sse解析器
+   * @param {进度} onProgress 
+   * @returns 
+   */
+  createSseParser(onProgress) {
+    return createParser((event) => {
+      if (event.type === "event") {
+        const answer = this.responseDataParser(event.data);
+        if (answer) {
+          this.callBackResult.text = answer;
+          onProgress(this.callBackResult);
+        }
+      }
+    });
+  }
+  /**
+   * 响应数据二次解析
+   * @param {响应数据} data 
+   * @returns 
+   */
+  responseDataParser(data) {
+    try {
+      let { event, answer } = JSON.parse(data);
+      if (event === "message") {
+        return answer;
+      }
+    } catch (error2) {
+      console.error(error2);
+    }
+  }
+  /**
+   * 添加请求头
+   * @param {Authorization} api_key 
+   * @returns 
+   */
+  getRequestHeader(api_key) {
+    let headers = {
+      "Authorization": `Bearer ${api_key}`,
+      "Content-Type": "application/json",
+      "Accept": "text/event-stream"
+    };
+    return headers;
+  }
+  /**
+   * 获取请求数据
+   * @param {请求数据} originData 
+   * @returns 
+   */
+  getRequestData(originData) {
+    let { chatType, lang, prompt, history: history2, prefixCode, suffixCode, max_length } = originData;
+    let query = {
+      "response_mode": "streaming",
+      "conversation_id": "",
+      "user": "abc-123"
+    };
+    if (chatType === "code") {
+      query.inputs = { "prefix_code": prefixCode, "suffix_code": suffixCode, max_length };
+    } else if (chatType === "chat") {
+      query.inputs = {};
+      let promptMessages = query.query = [];
+      promptMessages.push(
+        { role: "system", content: "You are a helpful assistant." }
+      );
+      this.buildHistory(history2, promptMessages);
+      promptMessages.push({ role: "user", content: prompt });
+    }
+    return query;
+  }
+  /**
+   * 组装历史
+   * @param {历史集合} histories [[],...[]]
+   * @param {*} messages 
+   */
+  buildHistory(histories, promptMessages) {
+    histories && histories.forEach((history2) => {
+      history2.forEach((item) => {
+        promptMessages.push({ role: item["role"], content: item["content"] });
+      });
+    });
+  }
+}
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -71580,9 +71729,9 @@ function bind(fn, thisArg) {
 }
 const { toString } = Object.prototype;
 const { getPrototypeOf } = Object;
-const kindOf = /* @__PURE__ */ ((cache2) => (thing) => {
+const kindOf = /* @__PURE__ */ ((cache) => (thing) => {
   const str = toString.call(thing);
-  return cache2[str] || (cache2[str] = str.slice(8, -1).toLowerCase());
+  return cache[str] || (cache[str] = str.slice(8, -1).toLowerCase());
 })(/* @__PURE__ */ Object.create(null));
 const kindOfTest = (type) => {
   type = type.toLowerCase();
@@ -73596,119 +73745,324 @@ axios.formToJSON = (thing) => formDataToJSON(utils$1.isHTMLForm(thing) ? new For
 axios.getAdapter = adapters.getAdapter;
 axios.HttpStatusCode = HttpStatusCode$1;
 axios.default = axios;
-const ONLINE_CHAT_APIKEY = "app-jWmI0bA3AioiorQq6bmU73Ik";
-const ONLINE_CHAT_API = "http://ai.t.vtoone.com/api/v1/chat-messages";
-const ONLINE_CODE_APIKEY = "app-HZSqJWyZI6xjqkbyXUIcLErR";
-const ONLINE_CODE_API = "http://ai.t.vtoone.com/api/v1/completion-messages";
-class ChatApi2 {
-  constructor(options) {
-    let { abortSignal, timeoutMs = 40 * 1e3, chatType = "chat" } = options;
+async function getBytes(response, onChunk) {
+  var _a;
+  const reader = (_a = response.body) == null ? void 0 : _a.getReader();
+  if (reader) {
+    let result = await reader.read();
+    while (!result.done) {
+      onChunk(result.value);
+      result = await reader.read();
+    }
+  } else {
+    onChunk(new Uint8Array(await response.arrayBuffer()));
+  }
+}
+function getLines(onLine) {
+  let buffer;
+  let position;
+  let fieldLength;
+  let discardTrailingNewline = false;
+  return function onChunk(arr) {
+    if (buffer === void 0) {
+      buffer = arr;
+      position = 0;
+      fieldLength = -1;
+    } else {
+      buffer = concat(buffer, arr);
+    }
+    const bufLength = buffer.length;
+    let lineStart = 0;
+    while (position < bufLength) {
+      if (discardTrailingNewline) {
+        if (buffer[position] === 10) {
+          lineStart = ++position;
+        }
+        discardTrailingNewline = false;
+      }
+      let lineEnd = -1;
+      for (; position < bufLength && lineEnd === -1; ++position) {
+        switch (buffer[position]) {
+          case 58:
+            if (fieldLength === -1) {
+              fieldLength = position - lineStart;
+            }
+            break;
+          case 13:
+            discardTrailingNewline = true;
+          case 10:
+            lineEnd = position;
+            break;
+        }
+      }
+      if (lineEnd === -1) {
+        break;
+      }
+      onLine(buffer.subarray(lineStart, lineEnd), fieldLength);
+      lineStart = position;
+      fieldLength = -1;
+    }
+    if (lineStart === bufLength) {
+      buffer = void 0;
+    } else if (lineStart !== 0) {
+      buffer = buffer.subarray(lineStart);
+      position -= lineStart;
+    }
+  };
+}
+function getMessages(onId, onRetry, onMessage) {
+  let message = newMessage();
+  const decoder = new TextDecoder();
+  return function onLine(line, fieldLength) {
+    if (line.length === 0) {
+      onMessage == null ? void 0 : onMessage(message);
+      message = newMessage();
+    } else if (fieldLength > 0) {
+      const field = decoder.decode(line.subarray(0, fieldLength));
+      const valueOffset = fieldLength + (line[fieldLength + 1] === 32 ? 2 : 1);
+      const value = decoder.decode(line.subarray(valueOffset));
+      switch (field) {
+        case "data":
+          message.data = message.data ? message.data + "\n" + value : value;
+          break;
+        case "event":
+          message.event = value;
+          break;
+        case "id":
+          onId(message.id = value);
+          break;
+        case "retry":
+          const retry = parseInt(value, 10);
+          if (!isNaN(retry)) {
+            onRetry(message.retry = retry);
+          }
+          break;
+      }
+    }
+  };
+}
+function concat(a, b) {
+  const res = new Uint8Array(a.length + b.length);
+  res.set(a);
+  res.set(b, a.length);
+  return res;
+}
+function newMessage() {
+  return {
+    data: "",
+    event: "",
+    id: "",
+    retry: void 0
+  };
+}
+const EventStreamContentType = "text/event-stream";
+const DefaultRetryInterval = 1e3;
+const LastEventId = "last-event-id";
+function fetchEventSource(input, {
+  signal: inputSignal,
+  headers: inputHeaders,
+  onopen: inputOnOpen,
+  onmessage,
+  onclose,
+  onerror,
+  openWhenHidden,
+  fetch: inputFetch,
+  ...rest
+}) {
+  return new Promise((resolve, reject) => {
+    const headers = { ...inputHeaders };
+    if (!headers.accept) {
+      headers.accept = EventStreamContentType;
+    }
+    let curRequestController;
+    function onVisibilityChange() {
+      curRequestController == null ? void 0 : curRequestController.abort();
+      if (!document.hidden) {
+        create();
+      }
+    }
+    if (!openWhenHidden) {
+      document.addEventListener("visibilitychange", onVisibilityChange);
+    }
+    let retryInterval = DefaultRetryInterval;
+    let retryTimer = 0;
+    function dispose() {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.clearTimeout(retryTimer);
+      curRequestController == null ? void 0 : curRequestController.abort();
+      curRequestController = null;
+    }
+    inputSignal == null ? void 0 : inputSignal.addEventListener("abort", () => {
+      dispose();
+      resolve();
+    });
+    const fetch2 = inputFetch ?? window.fetch;
+    const onopen = inputOnOpen ?? defaultOnOpen;
+    async function create() {
+      curRequestController = new AbortController();
+      try {
+        const response = await fetch2(input, {
+          ...rest,
+          headers,
+          signal: curRequestController.signal
+        });
+        await onopen(response);
+        await getBytes(response, getLines(getMessages((id) => {
+          if (id) {
+            headers[LastEventId] = id;
+          } else {
+            delete headers[LastEventId];
+          }
+        }, (retry) => {
+          retryInterval = retry;
+        }, onmessage)));
+        onclose == null ? void 0 : onclose();
+        dispose();
+        resolve();
+      } catch (err) {
+        dispose();
+        reject(err);
+        console.error(err);
+      }
+    }
+    create();
+  });
+}
+function defaultOnOpen(response) {
+  const contentType = response.headers.get("content-type");
+  if (!(contentType == null ? void 0 : contentType.startsWith(EventStreamContentType))) {
+    throw new Error(`Expected content-type to be ${EventStreamContentType}, Actual: ${contentType}`);
+  }
+}
+let FatalError$1 = class FatalError2 extends Error {
+};
+class ChatApi {
+  constructor(opt) {
+  }
+  async sendMessage(text, opts) {
+    const {
+      stream,
+      onProgress,
+      onDone,
+      timeoutMs = 60 * 1e3,
+      chatType = "chat"
+    } = opts;
+    let { abortSignal } = opts;
     let abortController = null;
     if (timeoutMs && !abortSignal) {
       abortController = new AbortController();
       abortSignal = abortController.signal;
     }
-    this.axiosConfig = {
-      method: "post",
-      timeout: timeoutMs,
-      signal: abortSignal,
-      responseType: "stream",
-      headers: this.getRequestHeader(chatType === "code" ? ONLINE_CODE_APIKEY : ONLINE_CHAT_APIKEY)
-    };
-    this.apiUrl = chatType === "code" ? ONLINE_CODE_API : ONLINE_CHAT_API;
-    this.callBackResult = {
+    const result = {
       role: "assistant",
       id: v4(),
       text: "",
       error: ""
     };
-  }
-  getCallBackResult() {
-    return this.callBackResult || {};
-  }
-  async postToServer(url, data, onProgress, onDone) {
-    data.requestId = this.callBackResult.id;
-    const sseParser = this.createSseParser(onProgress);
-    try {
-      let response = await fetch(
-        url || this.apiUrl,
-        {
-          body: JSON.stringify(this.getRequestData(data)),
-          ...this.axiosConfig
-        }
-      );
-      if (!response.ok) {
-        throw new FatalError("无法连接到服务器");
-      }
-      const textDecoder = response.body.pipeThrough(new TextDecoderStream()).getReader();
-      while (true) {
-        const { done, value } = await textDecoder.read();
-        if (done) {
-          this.callBackResult.text = "";
-          onDone == null ? void 0 : onDone(this.callBackResult);
-          break;
-        }
-        sseParser.feed(value);
-      }
-    } catch (error2) {
-      this.callBackResult.error = "服务异常: " + error2.messages;
-      console.log(error2);
-      onDone == null ? void 0 : onDone(this.callBackResult);
+    let url = "/chat";
+    if (chatType === "code") {
+      url = "/code_generate";
     }
+    let config = {
+      method: "post",
+      url,
+      timeout: timeoutMs,
+      signal: abortSignal
+    };
+    if (stream) {
+      config.responseType = "stream";
+      const requestMsg = await this.buildMessages(text, opts);
+      requestMsg.requestId = result.id;
+      config.data = requestMsg;
+      let url2 = "http://codeserver.t.vtoone.com/v1" + config.url;
+      await this.postByFetch(url2, config, requestMsg, onProgress, onDone, result);
+    } else {
+      const response = await this.doRequestPost(config, {});
+      result.text = response.data;
+      onDone == null ? void 0 : onDone(result);
+    }
+    return result;
   }
-  createSseParser(onProgress) {
-    return createParser((event) => {
-      if (event.type === "event") {
-        const answer = this.responseDataParser(event.data);
-        if (answer) {
-          this.callBackResult.text = answer;
-          onProgress(this.callBackResult);
+  async postByFetchEventSource(url, config, requestMsg, onProgress, onDone, result) {
+    await fetchEventSource(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestMsg),
+      signal: config.signal,
+      openWhenHidden: true,
+      async onopen(response) {
+        if (response.ok) {
+          return;
+        } else if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+          throw new FatalError$1();
+        } else {
+        }
+      },
+      onmessage(msg) {
+        if (msg.event === "error") {
+          throw new FatalError$1(msg.data);
+        } else if (msg.event === "data") {
+          result.text = msg.data;
+          onProgress(result);
+        } else if (msg.event === "done") {
+          onDone == null ? void 0 : onDone(result);
+        }
+      },
+      onclose() {
+      },
+      onerror(err) {
+        if (err instanceof FatalError$1) {
+          throw err;
+        } else {
         }
       }
     });
   }
-  responseDataParser(data) {
+  async postByFetch(url, config, requestMsg, onProgress, onDone, result) {
     try {
-      let { event, answer } = JSON.parse(data);
-      if (event === "message")
-        return answer;
-    } catch (error2) {
-      console.error(error2);
-    }
-  }
-  getRequestHeader(api_key) {
-    let headers = {
-      "Authorization": `Bearer ${api_key}`,
-      "Content-Type": "application/json",
-      "Accept": "text/event-stream"
-    };
-    return headers;
-  }
-  getRequestData(originData) {
-    let { chatType, lang, prompt, history: history2, prefixCode, suffixCode } = originData;
-    let query_dict = {
-      // "inputs": {},
-      // "query": prompt,
-      "response_mode": "streaming",
-      "conversation_id": "",
-      "user": "abc-123"
-    };
-    if (chatType === "code") {
-      query_dict.inputs = { "prefix_code": prefixCode, "suffix_code": suffixCode };
-    } else if (chatType === "chat") {
-      query_dict.inputs = {};
-      let messages = [
-        { role: "system", content: "You are a helpful assistant." }
-      ];
-      history2 && history2.forEach((his) => {
-        his.forEach((item) => {
-          messages.push({ role: his["role"], content: his["content"] });
-        });
+      let response = await fetch(
+        url,
+        {
+          method: "post",
+          body: JSON.stringify(requestMsg),
+          headers: {
+            "Content-Type": "application/json"
+          },
+          signal: config.signal
+        }
+      );
+      if (!response.ok) {
+        throw new FatalError$1("无法连接到服务器");
+      }
+      const parser = createParser((event) => {
+        if (event.type === "event") {
+          if (event.event === "data") {
+            result.text = event.data;
+            onProgress(result);
+          }
+        }
       });
-      messages.push({ role: "user", content: prompt });
-      query_dict.query = messages;
+      const textDecoder = response.body.pipeThrough(new TextDecoderStream()).getReader();
+      while (true) {
+        const { done, value } = await textDecoder.read();
+        if (done) {
+          onDone == null ? void 0 : onDone(result);
+          break;
+        }
+        parser.feed(value);
+      }
+    } catch (error2) {
+      result.error = "服务异常: " + error2;
+      console.log(error2);
+      onDone == null ? void 0 : onDone(result);
     }
-    return query_dict;
+  }
+  async buildMessages(text, opts) {
+    const { chatType = "chat", lang } = opts;
+    return { lang, chatType, "prompt": text, stream: true, history: opts.history || [] };
+  }
+  doRequestPost(config, data) {
+    return axios.post(config.url || "", data, config);
   }
 }
 const chatUtil = {
@@ -73792,11 +74146,70 @@ const chatUtil = {
       history: opts.history || []
     };
   },
+  buildHistories(viewHistories) {
+  },
   processQuestion(question, code, language) {
     if (code) {
       question = `${question}${language ? ` (当前编程语言是${language})` : ""}: ${code}`;
     }
     return question + "\r\n";
+  },
+  async sendApiRequestLocal(prompt, options, onProgress, onDone, onError) {
+    if (this.inProgress) {
+      return;
+    }
+    let { conversationId, abortController, history: history2 } = options || {};
+    let question = chatUtil.processQuestion(prompt);
+    this.inProgress = true;
+    if (!abortController)
+      abortController = new AbortController();
+    this.currentMessageId = v4();
+    let err;
+    let responseResult = {
+      type: "addResponse",
+      value: "",
+      conversationId,
+      done: false,
+      currentMessageId: this.currentMessageId,
+      autoScroll: true,
+      responseInMarkdown: true,
+      history: []
+    };
+    try {
+      const chatApi = new ChatApi({});
+      await chatApi.sendMessage(question, {
+        messageId: conversationId,
+        abortSignal: abortController.signal,
+        stream: true,
+        chatType: "chat",
+        history: history2,
+        onProgress: (message) => {
+          try {
+            let str = message.text;
+            if (!str)
+              return;
+            responseResult.value = str;
+            onProgress == null ? void 0 : onProgress(responseResult);
+          } catch (error2) {
+            console.error(error2);
+            console.log(message.text);
+          }
+        },
+        onDone: (message) => {
+          this.inProgress = false;
+          responseResult.done = true;
+          onDone == null ? void 0 : onDone(responseResult);
+          this.inProgress = false;
+        }
+      });
+      return;
+    } catch (error2) {
+      err = error2;
+    }
+    this.inProgress = false;
+    onError == null ? void 0 : onError(err ?? "没有api");
+    responseResult.done = true;
+    onDone == null ? void 0 : onDone(responseResult);
   }
 };
 const _sfc_main$2 = {};
@@ -74699,153 +75112,6 @@ const EXT2LANG = {
   ".prg": "xbase",
   ".prw": "xbase"
 };
-function Cache() {
-  var _cache = /* @__PURE__ */ Object.create(null);
-  var _hitCount = 0;
-  var _missCount = 0;
-  var _size = 0;
-  var _debug = false;
-  this.put = function(key, value, time, timeoutCallback) {
-    if (_debug) {
-      console.log("caching: %s = %j (@%s)", key, value, time);
-    }
-    if (typeof time !== "undefined" && (typeof time !== "number" || isNaN(time) || time <= 0)) {
-      throw new Error("Cache timeout must be a positive number");
-    } else if (typeof timeoutCallback !== "undefined" && typeof timeoutCallback !== "function") {
-      throw new Error("Cache timeout callback must be a function");
-    }
-    var oldRecord = _cache[key];
-    if (oldRecord) {
-      clearTimeout(oldRecord.timeout);
-    } else {
-      _size++;
-    }
-    var record = {
-      value,
-      expire: time + Date.now()
-    };
-    if (!isNaN(record.expire)) {
-      record.timeout = setTimeout((function() {
-        _del(key);
-        if (timeoutCallback) {
-          timeoutCallback(key, value);
-        }
-      }).bind(this), time);
-    }
-    _cache[key] = record;
-    return value;
-  };
-  this.del = function(key) {
-    var canDelete = true;
-    var oldRecord = _cache[key];
-    if (oldRecord) {
-      clearTimeout(oldRecord.timeout);
-      if (!isNaN(oldRecord.expire) && oldRecord.expire < Date.now()) {
-        canDelete = false;
-      }
-    } else {
-      canDelete = false;
-    }
-    if (canDelete) {
-      _del(key);
-    }
-    return canDelete;
-  };
-  function _del(key) {
-    _size--;
-    delete _cache[key];
-  }
-  this.clear = function() {
-    for (var key in _cache) {
-      clearTimeout(_cache[key].timeout);
-    }
-    _size = 0;
-    _cache = /* @__PURE__ */ Object.create(null);
-    if (_debug) {
-      _hitCount = 0;
-      _missCount = 0;
-    }
-  };
-  this.get = function(key) {
-    var data = _cache[key];
-    if (typeof data != "undefined") {
-      if (isNaN(data.expire) || data.expire >= Date.now()) {
-        if (_debug)
-          _hitCount++;
-        return data.value;
-      } else {
-        if (_debug)
-          _missCount++;
-        _size--;
-        delete _cache[key];
-      }
-    } else if (_debug) {
-      _missCount++;
-    }
-    return null;
-  };
-  this.size = function() {
-    return _size;
-  };
-  this.memsize = function() {
-    var size2 = 0, key;
-    for (key in _cache) {
-      size2++;
-    }
-    return size2;
-  };
-  this.debug = function(bool) {
-    _debug = bool;
-  };
-  this.hits = function() {
-    return _hitCount;
-  };
-  this.misses = function() {
-    return _missCount;
-  };
-  this.keys = function() {
-    return Object.keys(_cache);
-  };
-  this.exportJson = function() {
-    var plainJsCache = {};
-    for (var key in _cache) {
-      var record = _cache[key];
-      plainJsCache[key] = {
-        value: record.value,
-        expire: record.expire || "NaN"
-      };
-    }
-    return JSON.stringify(plainJsCache);
-  };
-  this.importJson = function(jsonToImport, options) {
-    var cacheToImport = JSON.parse(jsonToImport);
-    var currTime = Date.now();
-    var skipDuplicates = options && options.skipDuplicates;
-    for (var key in cacheToImport) {
-      if (cacheToImport.hasOwnProperty(key)) {
-        if (skipDuplicates) {
-          var existingRecord = _cache[key];
-          if (existingRecord) {
-            if (_debug) {
-              console.log("Skipping duplicate imported key '%s'", key);
-            }
-            continue;
-          }
-        }
-        var record = cacheToImport[key];
-        var remainingTime = record.expire - currTime;
-        if (remainingTime <= 0) {
-          this.del(key);
-          continue;
-        }
-        remainingTime = remainingTime > 0 ? remainingTime : void 0;
-        this.put(key, record.value, remainingTime);
-      }
-    }
-    return this.size();
-  };
-}
-const cache = new Cache();
 const viewType = { introduction: "introduction", qa: "qa" };
 const _sfc_main$1 = {
   name: "ChatView",
@@ -74889,8 +75155,6 @@ const _sfc_main$1 = {
     onClearClick() {
       this.qaData.list = [];
       this.currentViewType = viewType.introduction;
-      if (this._history)
-        this._history = [];
       util.postMessageToCodeEditor({
         type: "clearConversation"
       });
@@ -74960,7 +75224,7 @@ const _sfc_main$1 = {
         {
           conversationId: this.conversationId,
           abortController: this.abortController,
-          history: this._history || []
+          history: chatUtil.buildHistories(this.qaData.list)
         },
         (progress) => {
           this.addResponse(progress);
@@ -75005,10 +75269,14 @@ const _sfc_main$1 = {
         done: false
       });
       util.autoScrollToBottom(this.qaElementList);
-      cache.put(this.conversationId, { q: value });
     },
     addResponse(message) {
-      this.addResponseCore(message);
+      if (this.isVsCodeMode)
+        this.addResponseCore(message);
+      else {
+        this.message = message;
+        util.throttle(() => this.addResponseCore(this.message), 300);
+      }
     },
     addResponseCore(message) {
       const conversationId = message.conversationId ?? this.conversationId;

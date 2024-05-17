@@ -39,9 +39,18 @@ export default class ChatApi2 {
             error: "",
         };
     }
+
     getCallBackResult() {
         return this.callBackResult || {};
     }
+
+    /**
+     * post到服务器
+     * @param {url} url 
+     * @param {数据} data 
+     * @param {进度回调} onProgress 
+     * @param {完成回调} onDone 
+     */
     async postToServer(url, data, onProgress, onDone) {
         data.requestId = this.callBackResult.id;
 
@@ -55,7 +64,7 @@ export default class ChatApi2 {
                 });
 
             if (!response.ok) {
-                throw new FatalError("无法连接到服务器");
+                throw new Error("无法连接到服务器:" + response);
             }
 
             const textDecoder = response.body.pipeThrough(new TextDecoderStream()).getReader();
@@ -70,7 +79,7 @@ export default class ChatApi2 {
             }
         } catch (error) {
             this.callBackResult.error = "服务异常: " + error.messages;
-            console.log(error)
+            console.log(error);
             onDone?.(this.callBackResult);
         }
     }
@@ -92,6 +101,11 @@ export default class ChatApi2 {
         });
     }
 
+    /**
+     * 响应数据二次解析
+     * @param {响应数据} data 
+     * @returns 
+     */
     responseDataParser(data) {
         try {
             let { event, answer } = JSON.parse(data);
@@ -104,6 +118,11 @@ export default class ChatApi2 {
         }
     }
 
+    /**
+     * 添加请求头
+     * @param {Authorization} api_key 
+     * @returns 
+     */
     getRequestHeader(api_key) {
         let headers = {
             'Authorization': `Bearer ${api_key}`,
@@ -112,38 +131,45 @@ export default class ChatApi2 {
         };
         return headers;
     }
+
+    /**
+     * 获取请求数据
+     * @param {请求数据} originData 
+     * @returns 
+     */
     getRequestData(originData) {
-        let { chatType, lang, prompt, history, prefixCode, suffixCode } = originData
-        let query_dict = {
-            // "inputs": {},
-            // "query": prompt,
+        let { chatType, lang, prompt, history, prefixCode, suffixCode, max_length } = originData;
+        let query = {
             "response_mode": "streaming",
             "conversation_id": "",
             "user": "abc-123"
         };
         if (chatType === "code") {
-            //"inputs": {"prefix_code": prefix_code,"suffix_code":suffix_code},
-            query_dict.inputs = { "prefix_code": prefixCode, "suffix_code": suffixCode };
+            query.inputs = { "prefix_code": prefixCode, "suffix_code": suffixCode, max_length };
         } else if (chatType === "chat") {
-            query_dict.inputs = {};
+            query.inputs = {};
+            let promptMessages = query.query = [];
 
-            let messages = [
+            promptMessages.push(
                 { role: "system", content: "You are a helpful assistant." }
-            ];
-            this.buildHistory(history, messages);
+            );
+            this.buildHistory(history, promptMessages);
+            promptMessages.push({ role: "user", content: prompt });
 
-            messages.push({ role: "user", content: prompt });
-            query_dict.query = messages;
         }
-        return query_dict;
+        return query;
     }
 
-    buildHistory(histories, messages) {
+    /**
+     * 组装历史
+     * @param {历史集合} histories [[],...[]]
+     * @param {*} messages 
+     */
+    buildHistory(histories, promptMessages) {
         histories && histories.forEach(history => {
             history.forEach(item => {
-                messages.push({ role: item["role"], content: item["content"] });
+                promptMessages.push({ role: item["role"], content: item["content"] });
             });
         });
-
     }
 }
