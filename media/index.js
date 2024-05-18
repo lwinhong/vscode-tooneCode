@@ -71622,7 +71622,7 @@ class ChatApi2 {
         }
       );
       if (!response.ok) {
-        throw new FatalError("无法连接到服务器");
+        throw new Error("无法连接到服务器");
       }
       const textDecoder = response.body.pipeThrough(new TextDecoderStream()).getReader();
       while (true) {
@@ -71716,9 +71716,7 @@ class ChatApi2 {
    */
   buildHistory(histories, promptMessages) {
     histories && histories.forEach((history2) => {
-      history2.forEach((item) => {
-        promptMessages.push({ role: item["role"], content: item["content"] });
-      });
+      promptMessages.push({ role: history2["role"], content: history2["content"] });
     });
   }
 }
@@ -73934,8 +73932,8 @@ function defaultOnOpen(response) {
     throw new Error(`Expected content-type to be ${EventStreamContentType}, Actual: ${contentType}`);
   }
 }
-let FatalError$1 = class FatalError2 extends Error {
-};
+class FatalError extends Error {
+}
 class ChatApi {
   constructor(opt) {
   }
@@ -73994,13 +73992,13 @@ class ChatApi {
         if (response.ok) {
           return;
         } else if (response.status >= 400 && response.status < 500 && response.status !== 429) {
-          throw new FatalError$1();
+          throw new FatalError();
         } else {
         }
       },
       onmessage(msg) {
         if (msg.event === "error") {
-          throw new FatalError$1(msg.data);
+          throw new FatalError(msg.data);
         } else if (msg.event === "data") {
           result.text = msg.data;
           onProgress(result);
@@ -74011,7 +74009,7 @@ class ChatApi {
       onclose() {
       },
       onerror(err) {
-        if (err instanceof FatalError$1) {
+        if (err instanceof FatalError) {
           throw err;
         } else {
         }
@@ -74032,7 +74030,7 @@ class ChatApi {
         }
       );
       if (!response.ok) {
-        throw new FatalError$1("无法连接到服务器");
+        throw new FatalError("无法连接到服务器");
       }
       const parser = createParser((event) => {
         if (event.type === "event") {
@@ -74065,6 +74063,7 @@ class ChatApi {
     return axios.post(config.url || "", data, config);
   }
 }
+const historyCount = 3;
 const chatUtil = {
   async sendApiRequest(prompt, options, onProgress, onDone, onError) {
     if (this.inProgress) {
@@ -74147,6 +74146,27 @@ const chatUtil = {
     };
   },
   buildHistories(viewHistories) {
+    let histories = [];
+    if (!viewHistories || viewHistories.length === 0)
+      return histories;
+    let tempHistories = [];
+    if (viewHistories.length > historyCount) {
+      for (let i = viewHistories.length - historyCount; i < viewHistories.length; i++) {
+        tempHistories.push(viewHistories[i]);
+      }
+    } else {
+      tempHistories = viewHistories;
+    }
+    tempHistories.forEach((item) => {
+      histories.push({
+        role: "user",
+        content: item.originQuestion
+      }, {
+        role: "assistant",
+        content: item.originAnswer
+      });
+    });
+    return histories;
   },
   processQuestion(question, code, language) {
     if (code) {
@@ -75215,6 +75235,7 @@ const _sfc_main$1 = {
     },
     async addFreeTextQuestion4Local(message) {
       var _a;
+      let history2 = chatUtil.buildHistories(this.qaData.list);
       this.showInProgress({ showStopButton: true, inProgress: true });
       this.addQuestion(message);
       (_a = this.abortController) == null ? void 0 : _a.abort();
@@ -75224,7 +75245,7 @@ const _sfc_main$1 = {
         {
           conversationId: this.conversationId,
           abortController: this.abortController,
-          history: chatUtil.buildHistories(this.qaData.list)
+          history: history2
         },
         (progress) => {
           this.addResponse(progress);
@@ -75262,6 +75283,7 @@ const _sfc_main$1 = {
       }
       this.qaData.list.push({
         question,
+        originQuestion: value,
         conversationId: this.conversationId,
         answer: "",
         error: "",
@@ -75347,13 +75369,13 @@ const _sfc_main$1 = {
     },
     addError(message) {
       const conversationId = message.conversationId ?? this.conversationId;
-      let existingMessageData = this.qaData.list.find((f) => f.conversationId === conversationId);
-      if (!existingMessageData) {
+      let exist = this.qaData.list.find((f) => f.conversationId === conversationId);
+      if (!exist) {
         return;
       }
       const messageValue = message.value || "An error occurred. If this issue persists please clear your session token with `ChatGPT: Reset session` command and/or restart your Visual Studio Code. If you still experience issues, it may be due to outage on https://openai.com services.";
-      existingMessageData.answer = "";
-      existingMessageData.error = util.markedParser(messageValue);
+      exist.answer = "";
+      exist.error = util.markedParser(messageValue);
       if (message.autoScroll) {
         util.autoScrollToBottom(this.qaElementList);
       }
