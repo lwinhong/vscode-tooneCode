@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { updateStatusBarItem } from "./updateStatusBarItem";
+import { updateStatusBarItem } from "./updateStatusBarItem.js";
 
 let g_isEnable: boolean;
 export default function changeIconColor(

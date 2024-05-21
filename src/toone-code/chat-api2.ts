@@ -1,6 +1,5 @@
-import { createParser } from 'eventsource-parser';
 import { v4 as uuidv4 } from "uuid";
-
+import { createParser } from "../utils/eventsource-parser/parse";
 // 聊天接口
 export const ONLINE_CHAT_APIKEY = "app-jWmI0bA3AioiorQq6bmU73Ik";
 export const ONLINE_CHAT_API = "http://ai.t.vtoone.com/api/v1/chat-messages";
@@ -9,8 +8,11 @@ export const ONLINE_CODE_APIKEY = "app-HZSqJWyZI6xjqkbyXUIcLErR";
 export const ONLINE_CODE_API = "http://ai.t.vtoone.com/api/v1/completion-messages";
 
 export default class ChatApi2 {
+    private requestConfig;
+    private apiUrl: string;
+    private callBackResult;
 
-    constructor(options) {
+    constructor(options: any) {
         let { abortSignal, timeoutMs = 40 * 1000, chatType = "chat" } = options;
 
         let abortController = null;
@@ -39,7 +41,6 @@ export default class ChatApi2 {
             error: "",
         };
     }
-
     getCallBackResult() {
         return this.callBackResult || {};
     }
@@ -51,33 +52,35 @@ export default class ChatApi2 {
      * @param {进度回调} onProgress 
      * @param {完成回调} onDone 
      */
-    async postToServer(url, data, onProgress, onDone) {
+    async postToServer(url: string, data: any, onProgress: any, onDone: any) {
         data.requestId = this.callBackResult.id;
 
         //sse 解析器
-        const sseParser = this.createSseParser(onProgress);
+        const sseParser = this.createSseParser(onProgress, onDone);
         try {
-            let response = await fetch(url || this.apiUrl,
+            let response: Response = await fetch(url || this.apiUrl,
                 {
-                    body: JSON.stringify(this.getRequestData(data)),
+                    body: this.getRequestDataJson(data),
                     ...this.requestConfig
                 });
 
             if (!response.ok) {
-                throw new Error("无法连接到服务器:" + response);
+                throw new Error(`无法连接到服务器：${response.status}-${response.statusText}`);
             }
-
+            if (response.body === null) {
+                throw new Error(`响应response.body:空 `);
+            }
             const textDecoder = response.body.pipeThrough(new TextDecoderStream()).getReader();
             while (true) {
                 const { done, value } = await textDecoder.read();
                 if (done) {
-                    this.callBackResult.text = "";
-                    onDone?.(this.callBackResult);
+                    //this.callBackResult.text = "";
+                    //onDone?.(this.callBackResult);
                     break;
                 }
                 sseParser.feed(value);
             }
-        } catch (error) {
+        } catch (error: any) {
             this.callBackResult.error = "服务异常: " + error.messages;
             console.log(error);
             onDone?.(this.callBackResult);
@@ -89,14 +92,18 @@ export default class ChatApi2 {
      * @param {进度} onProgress 
      * @returns 
      */
-    createSseParser(onProgress) {
-        return createParser((event) => {
-            if (event.type === 'event') {
-                const answer = this.responseDataParser(event.data);
-                if (answer) {
-                    this.callBackResult.text = answer;
-                    onProgress(this.callBackResult);
-                }
+    createSseParser(onProgress: any, onDone: any) {
+        return createParser((sseEvent: any) => {
+            if (sseEvent.type !== 'event') {
+                return;
+            }
+            const { event, answer } = this.responseDataParser(sseEvent.data);
+            if (event === 'message') {
+                this.callBackResult.text = answer;
+                onProgress?.(this.callBackResult);
+            } else if (event === "message_end") {
+                this.callBackResult.text = "";
+                onDone?.(this.callBackResult);
             }
         });
     }
@@ -106,12 +113,9 @@ export default class ChatApi2 {
      * @param {响应数据} data 
      * @returns 
      */
-    responseDataParser(data) {
+    responseDataParser(data: any) {
         try {
-            let { event, answer } = JSON.parse(data);
-            if (event === 'message') {
-                return answer;
-            }
+            return JSON.parse(data);
         }
         catch (error) {
             console.error(error);
@@ -123,7 +127,7 @@ export default class ChatApi2 {
      * @param {Authorization} api_key 
      * @returns 
      */
-    getRequestHeader(api_key) {
+    getRequestHeader(api_key: string) {
         let headers = {
             'Authorization': `Bearer ${api_key}`,
             'Content-Type': 'application/json',
@@ -137,9 +141,9 @@ export default class ChatApi2 {
      * @param {请求数据} originData 
      * @returns 
      */
-    getRequestData(originData) {
+    getRequestData(originData: any) {
         let { chatType, lang, prompt, history, prefixCode, suffixCode, max_length } = originData;
-        let query = {
+        let query: any = {
             "response_mode": "streaming",
             "conversation_id": "",
             "user": "abc-123"
@@ -148,28 +152,29 @@ export default class ChatApi2 {
             query.inputs = { "prefix_code": prefixCode, "suffix_code": suffixCode, max_length };
         } else if (chatType === "chat") {
             query.inputs = {};
-            let promptMessages = query.query = [];
+            let promptMessages: any[] = query.query = [];
 
             promptMessages.push(
-                { role: "system", content: "You are a helpful assistant." }
+                { role: "system", content: 'You are a helpful assistant. 请用中文回答，你的名字叫"同望编码助手"。' },
             );
             this.buildHistory(history, promptMessages);
             promptMessages.push({ role: "user", content: prompt });
-
         }
         return query;
     }
 
+    getRequestDataJson(originData: any) {
+        return JSON.stringify(this.getRequestData(originData));
+    }
+
     /**
      * 组装历史
-     * @param {历史集合} histories [[],...[]]
+     * @param {历史集合} histories [[]...]
      * @param {*} messages 
      */
-    buildHistory(histories, promptMessages) {
-        histories && histories.forEach(history => {
-            history.forEach(item => {
-                promptMessages.push({ role: item["role"], content: item["content"] });
-            });
+    buildHistory(histories: any, promptMessages: any) {
+        histories && histories.forEach((history: any) => {
+            promptMessages.push({ role: history["role"], content: history["content"] });
         });
     }
 }

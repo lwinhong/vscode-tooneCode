@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
-import CodeGenByTemplateUtil from './utils/codeGenByTemplateUtil';
-import chatApi from './toone-code/chat-api';
-import inlineCompletionProvider from "./provider/inlineCompletionProvider";
-import inlineCompletionProviderWithCommand from "./provider/inlineCompletionProviderWithCommand";
-import { useModel } from "./param/configures";
+import CodeGenByTemplateUtil from './utils/codeGenByTemplateUtil.js';
+import chatApi from './toone-code/chat-api.js';
+import inlineCompletionProvider from "./provider/inlineCompletionProvider.js";
+import inlineCompletionProviderWithCommand from "./provider/inlineCompletionProviderWithCommand.js";
+import { useModel } from "./param/configures.js";
 import Path from 'path';
 
 export default class ToontCodeViewProvider implements vscode.WebviewViewProvider {
@@ -201,12 +201,12 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 					chatType: chatType,
 					filePath,
 					laterCode,
-					onProgress: (message) => {
+					onProgress: (message: any) => {
 						this.response = message.text;
 						responseResult.value = message.text;
 						this.sendMessage(responseResult);
 					},
-					onDone: (message) => {
+					onDone: (message: any) => {
 						responseResult.done = true;
 						this.sendMessage(responseResult);
 						this.inProgress = false;

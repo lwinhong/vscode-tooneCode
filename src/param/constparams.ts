@@ -1,7 +1,7 @@
-import { statApiHerf, surveyUrlCN, surveyUrlEN } from "../localconfig";
+import { statApiHerf, surveyUrlCN, surveyUrlEN } from "../localconfig.js";
 import * as vscode from "vscode";
-import { localeCN } from "../locales/localeCN";
-import { localeEN } from "../locales/localeEN";
+import { localeCN } from "../locales/localeCN.js";
+import { localeEN } from "../locales/localeEN.js";
 
 export const extensionId = "aminer.codegeex";
 export const extensionVersion = "1.1.2";

@@ -3,12 +3,12 @@ import {
     candidateNum,
     completionDelay,
     disabledFor,
-} from "../param/configures";
-import getDocumentLanguage from "../utils/getDocumentLanguage";
-import { updateStatusBarItem } from "../utils/updateStatusBarItem";
-import { Trie } from "../trie";
-import ChatGptViewProvider from '../toontcode-view-provider';
-import chatApi from '../toone-code/chat-api';
+} from "../param/configures.js";
+import getDocumentLanguage from "../utils/getDocumentLanguage.js";
+import { updateStatusBarItem } from "../utils/updateStatusBarItem.js";
+import { Trie } from "../trie.js";
+import ChatGptViewProvider from '../toontcode-view-provider.js';
+import chatApi from '../toone-code/chat-api.js';
 import Path from 'path';
 import ChatApi2 from "../toone-code/chat-api2";
 
@@ -144,7 +144,7 @@ function requestApi(question: string, lang?: string, chatCodeApi?: chatApi, file
                 return;
             }
             let response = "";
-            let requesOption = {
+            let requesOption: any = {
                 abortSignal: abortController.signal,
                 chatType: 'code',
                 lang,
@@ -159,7 +159,7 @@ function requestApi(question: string, lang?: string, chatCodeApi?: chatApi, file
             };
             let onDone = (message: any) => {
                 //response = message.text;
-                resolve(response); 
+                resolve(response);
                 return false;
             };
             await chatApi2.postToServer("", requesOption, onProgress, onDone);

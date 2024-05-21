@@ -1,13 +1,13 @@
 import * as vscode from "vscode";
 
-import getDocumentLanguage from "../utils/getDocumentLanguage";
-import { updateStatusBarItem } from "../utils/updateStatusBarItem";
-import { disabledFor, enableExtension } from "../param/configures";
-import { Trie } from "../trie";
-import ChatGptViewProvider from '../toontcode-view-provider';
-import chatApi from '../toone-code/chat-api';
+import getDocumentLanguage from "../utils/getDocumentLanguage.js";
+import { updateStatusBarItem } from "../utils/updateStatusBarItem.js";
+import { disabledFor, enableExtension } from "../param/configures.js";
+import { Trie } from "../trie.js";
+import ChatGptViewProvider from '../toontcode-view-provider.js';
+import chatApi from '../toone-code/chat-api.js';
 import Path from 'path';
-import ChatApi2 from "../toone-code/chat-api2";
+import ChatApi2 from "../toone-code/chat-api2.js";
 
 let lastRequest = null;
 let someTrackingIdCounter = 0;

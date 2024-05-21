@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { disabledFor } from "../param/configures";
+import { disabledFor } from "../param/configures.js";
 
 export const isCurrentLanguageDisable = () => {
     let editor = vscode.window.activeTextEditor;

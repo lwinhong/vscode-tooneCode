@@ -1,11 +1,11 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import ChatGptViewProvider from './toontcode-view-provider';
-import changeIconColor from "./utils/changeIconColor";
-import { isCurrentLanguageDisable } from "./utils/isCurrentLanguageDisable";
-import { enableExtension, onlyKeyControl, useModel } from "./param/configures";
-import getDocumentLanguage from "./utils/getDocumentLanguage";
+import ChatGptViewProvider from './toontcode-view-provider.js';
+import changeIconColor from "./utils/changeIconColor.js";
+import { isCurrentLanguageDisable } from "./utils/isCurrentLanguageDisable.js";
+import { enableExtension, onlyKeyControl, useModel } from "./param/configures.js";
+import getDocumentLanguage from "./utils/getDocumentLanguage.js";
 
 let g_isLoading = false;
 let originalColor: string | vscode.ThemeColor | undefined;

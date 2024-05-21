@@ -65,7 +65,7 @@
       },
       {
         "command": "vscode-toonecode.new-completions",
-        "key": "Alt+\\",
+        "key": "Alt+p",
         "when": "editorFocus && !editorReadonly"
       }
     ],

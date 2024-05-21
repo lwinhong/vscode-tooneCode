@@ -104,7 +104,7 @@ export default class ChatApi {
                 url = "/chat";
             }
         }
-        let config: axios.AxiosRequestConfig<any> = {
+        let config: any = {
             method: 'post',
             url,
             timeout: timeoutMs,
@@ -124,7 +124,7 @@ export default class ChatApi {
                     }
                 }
             });
-            const handler = (response: axios.AxiosResponse<any, any>) => {
+            const handler = (response: any) => {
                 if (onProgress) {
                     response.data.on('data', (chunk: any) => {
                         // 处理流数据的逻辑
@@ -239,7 +239,7 @@ export default class ChatApi {
         this._historyMessages = undefined;
     }
 
-    private doRequestPost(config: axios.AxiosRequestConfig<any>, data: any): Promise<axios.AxiosResponse<any, any>> {
+    private doRequestPost(config: any, data: any): Promise<any> {
         return axios.post(config.url || "", data, config);
     }
 }

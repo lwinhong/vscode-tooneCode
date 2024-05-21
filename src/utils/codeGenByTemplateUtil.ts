@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
-import { templateExplanation, csTemplateExplanation } from "../templates/explanation";
-import chatApi from '../toone-code/chat-api';
-import { updateStatusBarItem } from "./updateStatusBarItem";
-import ChatGptViewProvider from '../toontcode-view-provider';
+import { templateExplanation, csTemplateExplanation } from "../templates/explanation.js";
+import chatApi from '../toone-code/chat-api.js';
+import { updateStatusBarItem } from "./updateStatusBarItem.js";
+import ChatGptViewProvider from '../toontcode-view-provider.js';
 
 let abortController: any;
 /**

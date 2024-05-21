@@ -71612,30 +71612,28 @@ class ChatApi2 {
    */
   async postToServer(url, data, onProgress, onDone) {
     data.requestId = this.callBackResult.id;
-    const sseParser = this.createSseParser(onProgress);
+    const sseParser = this.createSseParser(onProgress, onDone);
     try {
       let response = await fetch(
         url || this.apiUrl,
         {
-          body: JSON.stringify(this.getRequestData(data)),
+          body: this.getRequestDataJson(data),
           ...this.requestConfig
         }
       );
       if (!response.ok) {
-        throw new Error("无法连接到服务器");
+        throw new Error(`无法连接到服务器：${response.status}-${response.statusText}`);
       }
       const textDecoder = response.body.pipeThrough(new TextDecoderStream()).getReader();
       while (true) {
         const { done, value } = await textDecoder.read();
         if (done) {
-          this.callBackResult.text = "";
-          onDone == null ? void 0 : onDone(this.callBackResult);
           break;
         }
         sseParser.feed(value);
       }
     } catch (error2) {
-      this.callBackResult.error = "服务异常: " + error2.messages;
+      this.callBackResult.error = "服务异常: " + error2.message;
       console.log(error2);
       onDone == null ? void 0 : onDone(this.callBackResult);
     }
@@ -71645,14 +71643,18 @@ class ChatApi2 {
    * @param {进度} onProgress 
    * @returns 
    */
-  createSseParser(onProgress) {
-    return createParser((event) => {
-      if (event.type === "event") {
-        const answer = this.responseDataParser(event.data);
-        if (answer) {
-          this.callBackResult.text = answer;
-          onProgress(this.callBackResult);
-        }
+  createSseParser(onProgress, onDone) {
+    return createParser((sseEvent) => {
+      if (sseEvent.type !== "event") {
+        return;
+      }
+      const { event, answer } = this.responseDataParser(sseEvent.data);
+      if (event === "message") {
+        this.callBackResult.text = answer;
+        onProgress == null ? void 0 : onProgress(this.callBackResult);
+      } else if (event === "message_end") {
+        this.callBackResult.text = "";
+        onDone == null ? void 0 : onDone(this.callBackResult);
       }
     });
   }
@@ -71663,10 +71665,7 @@ class ChatApi2 {
    */
   responseDataParser(data) {
     try {
-      let { event, answer } = JSON.parse(data);
-      if (event === "message") {
-        return answer;
-      }
+      return JSON.parse(data);
     } catch (error2) {
       console.error(error2);
     }
@@ -71702,16 +71701,19 @@ class ChatApi2 {
       query.inputs = {};
       let promptMessages = query.query = [];
       promptMessages.push(
-        { role: "system", content: "You are a helpful assistant." }
+        { role: "system", content: 'You are a helpful assistant. 请用中文回答，你的名字叫"同望编码助手"。' }
       );
       this.buildHistory(history2, promptMessages);
       promptMessages.push({ role: "user", content: prompt });
     }
     return query;
   }
+  getRequestDataJson(originData) {
+    return JSON.stringify(this.getRequestData(originData));
+  }
   /**
    * 组装历史
-   * @param {历史集合} histories [[],...[]]
+   * @param {历史集合} histories [[]...]
    * @param {*} messages 
    */
   buildHistory(histories, promptMessages) {
@@ -75233,9 +75235,9 @@ const _sfc_main$1 = {
       }
       this.questionInput = "";
     },
-    async addFreeTextQuestion4Local(message) {
+    async addFreeTextQuestion4Local(message, withHistory = true) {
       var _a;
-      let history2 = chatUtil.buildHistories(this.qaData.list);
+      let history2 = withHistory && chatUtil.buildHistories(this.qaData.list);
       this.showInProgress({ showStopButton: true, inProgress: true });
       this.addQuestion(message);
       (_a = this.abortController) == null ? void 0 : _a.abort();
@@ -75245,7 +75247,7 @@ const _sfc_main$1 = {
         {
           conversationId: this.conversationId,
           abortController: this.abortController,
-          history: history2
+          history: history2 || []
         },
         (progress) => {
           this.addResponse(progress);
@@ -75293,12 +75295,7 @@ const _sfc_main$1 = {
       util.autoScrollToBottom(this.qaElementList);
     },
     addResponse(message) {
-      if (this.isVsCodeMode)
-        this.addResponseCore(message);
-      else {
-        this.message = message;
-        util.throttle(() => this.addResponseCore(this.message), 300);
-      }
+      this.addResponseCore(message);
     },
     addResponseCore(message) {
       const conversationId = message.conversationId ?? this.conversationId;
@@ -75483,7 +75480,7 @@ const _sfc_main$1 = {
           break;
         case "chat_code":
           this.conversationId = v4();
-          this.addFreeTextQuestion4Local(data);
+          this.addFreeTextQuestion4Local(data, false);
           break;
         case "selectedText":
           break;
@@ -75495,8 +75492,23 @@ const _sfc_main$1 = {
               document.documentElement.removeAttribute("theme");
             }
           };
-          handleThemeChange(value !== "light");
+          handleThemeChange(!(value || "").toLowerCase().includes("light"));
           break;
+        case "colorChanged":
+          this.colorChangedHandler(value);
+          break;
+      }
+    },
+    colorChangedHandler(colorValue) {
+      try {
+        let { backColor, foreColor, borderColor } = JSON.parse(colorValue);
+        document.documentElement.style.setProperty(`--vscode-foreground`, foreColor);
+        document.documentElement.style.setProperty(`--vscode-editor-foreground`, foreColor);
+        document.documentElement.style.setProperty(`--vscode-button-secondaryForeground`, foreColor);
+        document.documentElement.style.setProperty(`--vscode-input-foreground`, foreColor);
+        document.documentElement.style.setProperty(`--vscode-editor-background`, backColor);
+        document.documentElement.style.setProperty(`--vscode-input-border`, borderColor);
+      } catch (error2) {
       }
     }
   },
