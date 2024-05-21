@@ -11,14 +11,14 @@ export default class ChatApi2 {
     private requestConfig;
     private apiUrl: string;
     private callBackResult;
+    private abortController: AbortController | undefined;
 
     constructor(options: any) {
         let { abortSignal, timeoutMs = 40 * 1000, chatType = "chat" } = options;
 
-        let abortController = null;
         if (timeoutMs && !abortSignal) {
-            abortController = new AbortController();
-            abortSignal = abortController.signal;
+            this.abortController = new AbortController();
+            abortSignal = this.abortController.signal;
         }
         // 创建axios配置
         this.requestConfig = {
@@ -41,6 +41,14 @@ export default class ChatApi2 {
             error: "",
         };
     }
+
+    abort() {
+        if (this.abortController) {
+            this.abortController?.abort();
+        }
+        this.abortController = undefined;
+    }
+
     getCallBackResult() {
         return this.callBackResult || {};
     }

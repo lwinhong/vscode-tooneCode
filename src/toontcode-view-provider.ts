@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import CodeGenByTemplateUtil from './utils/codeGenByTemplateUtil.js';
 import chatApi from './toone-code/chat-api.js';
-import inlineCompletionProvider from "./provider/inlineCompletionProvider.js";
+// import inlineCompletionProvider from "./provider/inlineCompletionProvider";
+import inlineCompletionProvider1 from "./provider/inlineCompletionProvider1";
 import inlineCompletionProviderWithCommand from "./provider/inlineCompletionProviderWithCommand.js";
 import { useModel } from "./param/configures.js";
 import Path from 'path';
@@ -325,7 +326,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		reGetCompletions: boolean,
 		originalColor: string | vscode.ThemeColor | undefined,
 		extensionContext: vscode.ExtensionContext): vscode.InlineCompletionItemProvider {
-		return inlineCompletionProvider(g_isLoading, myStatusBarItem, reGetCompletions, originalColor, extensionContext, this.chatCodeApi, this);
+		return inlineCompletionProvider1(g_isLoading, myStatusBarItem, reGetCompletions, originalColor, extensionContext);
 	}
 
 	public setMethod(): void {

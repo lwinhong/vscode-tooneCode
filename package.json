@@ -208,11 +208,6 @@
           "type": "boolean",
           "default": null,
           "description": "如果您只想在隐身模式下按 alt/option+\\ 来获取需要的建议，请选中此选项"
-        },
-        "toonecode.useModel": {
-          "type": "string",
-          "default": "aix",
-          "description": ""
         }
       }
     }
@@ -226,6 +221,7 @@
     "test": "vscode-test"
   },
   "devDependencies": {
+    "@types/axios": "^0.14.0",
     "@types/isomorphic-fetch": "^0.0.39",
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
@@ -239,13 +235,10 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@types/axios": "^0.14.0",
     "axios": "^1.6.7",
     "delay": "^6.0.0",
     "esbuild": "^0.20.1",
-    "eventsource-parser": "^1.1.2",
     "glob": "^10.3.10",
-    "isomorphic-fetch": "^3.0.0",
     "mocha": "^10.3.0",
     "p-timeout": "^6.1.2",
     "quick-lru": "^7.0.0",
