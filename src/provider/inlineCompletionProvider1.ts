@@ -30,7 +30,7 @@ const inlineCompletionProvider1 = (
             if (await delayRequest() === false) {
                 return;
             }
-
+            position = editor.selection.active;
             let { beforeText, afterText } = getCursorBeforeAfterText(document, editor, position);
             //没有先不执行
             if (!beforeText) {
@@ -41,7 +41,7 @@ const inlineCompletionProvider1 = (
             updateStatusBarItem2(true);
 
             let items = new Array<vscode.InlineCompletionItem>();
-            let completion = await requestApi(beforeText, lang, editor.document.fileName, afterText, afterText ? true : false);
+            let completion = (await requestApi(beforeText, lang, editor.document.fileName, afterText, afterText ? true : false))?.trim();
             items.push({
                 insertText: completion,
                 range: new vscode.Range(
@@ -84,8 +84,7 @@ const delayRequest = async () => {
         console.log("来太快了");
         return false;
     }
-    console.log("real to get");
-    console.log("new command");
+    console.log("real to get:new command");
     return true;
 };
 

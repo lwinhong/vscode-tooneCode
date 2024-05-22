@@ -135,11 +135,15 @@ export function activate(context: vscode.ExtensionContext) {
 		context.globalState.update("EnableExtension", false);
 	}
 	const statusBarItemCommandId = "toonecode.disable-enable";
+	context.subscriptions.push(
+        vscode.commands.registerCommand(statusBarItemCommandId, () => {
+            //disableEnable(myStatusBarItem, g_isLoading, originalColor, context);
+        })
+    );
 	myStatusBarItem = vscode.window.createStatusBarItem(
 		vscode.StatusBarAlignment.Right,
 		100
 	);
-
 	myStatusBarItem.command = statusBarItemCommandId;
 	context.subscriptions.push(myStatusBarItem);
 	changeIconColor(

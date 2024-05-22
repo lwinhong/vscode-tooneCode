@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
-import { createParser } from "../utils/eventsource-parser/parse";
+// import { createParser } from "../utils/eventsource-parser/parse";
+const { createParser } = require('eventsource-parser');
 // 聊天接口
 export const ONLINE_CHAT_APIKEY = "app-jWmI0bA3AioiorQq6bmU73Ik";
 export const ONLINE_CHAT_API = "http://ai.t.vtoone.com/api/v1/chat-messages";
@@ -43,8 +44,12 @@ export default class ChatApi2 {
     }
 
     abort() {
-        if (this.abortController) {
-            this.abortController?.abort();
+        try {
+            if (this.abortController) {
+                this.abortController?.abort();
+            }
+        } catch (error) {
+            console.error(error);
         }
         this.abortController = undefined;
     }
