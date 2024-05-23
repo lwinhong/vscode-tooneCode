@@ -27,6 +27,7 @@ const inlineCompletionProvider1 = (
                 return;
             }
             cancelLastRequest();
+
             if (await delayRequest() === false) {
                 return;
             }
@@ -41,14 +42,18 @@ const inlineCompletionProvider1 = (
             updateStatusBarItem2(true);
 
             let items = new Array<vscode.InlineCompletionItem>();
-            let completion = (await requestApi(beforeText, lang, editor.document.fileName, afterText, afterText ? true : false))?.trim();
-            items.push({
-                insertText: completion,
-                range: new vscode.Range(
-                    position.translate(0, completion.length),
-                    position
-                ),
-            });
+            try {
+                let completion = (await requestApi(beforeText, lang, editor.document.fileName, afterText, afterText ? true : false))?.trim();
+                items.push({
+                    insertText: completion,
+                    range: new vscode.Range(
+                        position.translate(0, completion.length),
+                        position
+                    ),
+                });
+            } catch (error) {
+                console.log(error);
+            }
             updateStatusBarItem2(false);
             return items;
         },
@@ -123,6 +128,7 @@ const requestApi = async (question: string, lang?: string,
             let response = "";
             let requesOption: any = {
                 abortSignal: abortController.signal,
+                abortController,
                 chatType: 'code', lang, max_length: 256, filePath,
                 prefixCode: question, suffixCode: laterCode,
             };

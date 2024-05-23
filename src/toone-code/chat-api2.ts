@@ -13,19 +13,22 @@ export default class ChatApi2 {
     private apiUrl: string;
     private callBackResult;
     private abortController: AbortController | undefined;
+    private isDone: boolean = false;
 
     constructor(options: any) {
-        let { abortSignal, timeoutMs = 40 * 1000, chatType = "chat" } = options;
+        let { abortSignal, abortController, timeoutMs = 20 * 1000, chatType = "chat" } = options;
 
         if (timeoutMs && !abortSignal) {
-            this.abortController = new AbortController();
-            abortSignal = this.abortController.signal;
+            abortController = new AbortController();
+            abortSignal = abortController.signal;
         }
+        this.abortController = abortController;
         // 创建axios配置
         this.requestConfig = {
             method: 'post',
             timeout: timeoutMs,
             signal: abortSignal,
+            abortController,
             responseType: "stream",
             headers: this.getRequestHeader(chatType === "code"
                 ? ONLINE_CODE_APIKEY : ONLINE_CHAT_APIKEY)
@@ -43,6 +46,9 @@ export default class ChatApi2 {
         };
     }
 
+    /**
+     * 取消请求
+     */
     abort() {
         try {
             if (this.abortController) {
@@ -54,6 +60,10 @@ export default class ChatApi2 {
         this.abortController = undefined;
     }
 
+    /**
+     * 获取结果
+     * @returns 结果
+     */
     getCallBackResult() {
         return this.callBackResult || {};
     }
@@ -70,33 +80,43 @@ export default class ChatApi2 {
 
         //sse 解析器
         const sseParser = this.createSseParser(onProgress, onDone);
+        let timoutTask;
         try {
-            let response: Response = await fetch(url || this.apiUrl,
-                {
-                    body: this.getRequestDataJson(data),
-                    ...this.requestConfig
-                });
+            //超时处理
+            timoutTask = setTimeout(() => this.abort(), this.requestConfig.timeout);
+
+            //请求
+            let response: Response = await fetch(url || this.apiUrl, {
+                body: this.getRequestDataJson(data),
+                ...this.requestConfig
+            });
 
             if (!response.ok) {
                 throw new Error(`无法连接到服务器：${response.status}-${response.statusText}`);
             }
             if (response.body === null) {
-                throw new Error(`响应response.body:空 `);
+                throw new Error(`响应response.body: 空`);
             }
             const textDecoder = response.body.pipeThrough(new TextDecoderStream()).getReader();
             while (true) {
                 const { done, value } = await textDecoder.read();
+                console.log("textDecoder.read():" + value);
                 if (done) {
-                    //this.callBackResult.text = "";
-                    //onDone?.(this.callBackResult);
+                    this.isDone = true;
                     break;
                 }
                 sseParser.feed(value);
             }
+            if (!this.isDone) {
+                this.fireDone(onDone);
+            }
         } catch (error: any) {
-            this.callBackResult.error = "服务异常: " + error.messages;
             console.log(error);
-            onDone?.(this.callBackResult);
+            this.callBackResult.error = "服务异常: " + error.message;
+            this.fireDone(onDone);
+        }
+        if (timoutTask) {
+            clearTimeout(timoutTask);
         }
     }
 
@@ -110,15 +130,25 @@ export default class ChatApi2 {
             if (sseEvent.type !== 'event') {
                 return;
             }
-            const { event, answer } = this.responseDataParser(sseEvent.data);
+            const { event, answer, message } = this.responseDataParser(sseEvent.data);
+            console.log("SseParser-> " + event + ":" + answer);
             if (event === 'message') {
                 this.callBackResult.text = answer;
                 onProgress?.(this.callBackResult);
             } else if (event === "message_end") {
-                this.callBackResult.text = "";
-                onDone?.(this.callBackResult);
+                this.fireDone(onDone);
+            } else if (event === "error") {
+                console.log("SseParser->error--->: " + message);  
+                this.callBackResult.error = message;
+                this.fireDone(onDone);
             }
         });
+    }
+
+    fireDone(onDone: any) {
+        this.callBackResult.text = "";
+        this.isDone = true;
+        onDone?.(this.callBackResult);
     }
 
     /**

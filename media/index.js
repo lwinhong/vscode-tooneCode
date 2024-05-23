@@ -273,12 +273,12 @@ var _parseMarkdown, parseMarkdown_fn, _onError, onError_fn;
     } };
   });
   function Vn(r, ...e) {
-    var _a, _b;
+    var _a7, _b2;
     for (let t of e) {
       for (let i in t)
-        ((_a = r == null ? void 0 : r.hasOwnProperty) == null ? void 0 : _a.call(r, i)) || (r[i] = t[i]);
+        ((_a7 = r == null ? void 0 : r.hasOwnProperty) == null ? void 0 : _a7.call(r, i)) || (r[i] = t[i]);
       for (let i of Object.getOwnPropertySymbols(t))
-        ((_b = r == null ? void 0 : r.hasOwnProperty) == null ? void 0 : _b.call(r, i)) || (r[i] = t[i]);
+        ((_b2 = r == null ? void 0 : r.hasOwnProperty) == null ? void 0 : _b2.call(r, i)) || (r[i] = t[i]);
     }
     return r;
   }
@@ -327,9 +327,9 @@ var _parseMarkdown, parseMarkdown_fn, _onError, onError_fn;
       }
       return false;
     })() || N.warn("purge-deprecation", ["The `purge`/`content` options have changed in Tailwind CSS v3.0.", "Update your configuration file to eliminate this warning.", "https://tailwindcss.com/docs/upgrade-guide#configure-content-sources"]), r.safelist = (() => {
-      var _a;
+      var _a7;
       let { content: t, purge: i, safelist: n } = r;
-      return Array.isArray(n) ? n : Array.isArray(t == null ? void 0 : t.safelist) ? t.safelist : Array.isArray(i == null ? void 0 : i.safelist) ? i.safelist : Array.isArray((_a = i == null ? void 0 : i.options) == null ? void 0 : _a.safelist) ? i.options.safelist : [];
+      return Array.isArray(n) ? n : Array.isArray(t == null ? void 0 : t.safelist) ? t.safelist : Array.isArray(i == null ? void 0 : i.safelist) ? i.safelist : Array.isArray((_a7 = i == null ? void 0 : i.options) == null ? void 0 : _a7.safelist) ? i.options.safelist : [];
     })(), r.blocklist = (() => {
       let { blocklist: t } = r;
       if (Array.isArray(t)) {
@@ -339,21 +339,21 @@ var _parseMarkdown, parseMarkdown_fn, _onError, onError_fn;
       }
       return [];
     })(), typeof r.prefix == "function" ? (N.warn("prefix-function", ["As of Tailwind CSS v3.0, `prefix` cannot be a function.", "Update `prefix` in your configuration to be a string to eliminate this warning.", "https://tailwindcss.com/docs/upgrade-guide#prefix-cannot-be-a-function"]), r.prefix = "") : r.prefix = r.prefix ?? "", r.content = { relative: (() => {
-      var _a;
+      var _a7;
       let { content: t } = r;
-      return (t == null ? void 0 : t.relative) ? t.relative : ((_a = r.future) == null ? void 0 : _a.relativeContentPathsByDefault) ?? false;
+      return (t == null ? void 0 : t.relative) ? t.relative : ((_a7 = r.future) == null ? void 0 : _a7.relativeContentPathsByDefault) ?? false;
     })(), files: (() => {
       let { content: t, purge: i } = r;
       return Array.isArray(i) ? i : Array.isArray(i == null ? void 0 : i.content) ? i.content : Array.isArray(t) ? t : Array.isArray(t == null ? void 0 : t.content) ? t.content : Array.isArray(t == null ? void 0 : t.files) ? t.files : [];
     })(), extract: (() => {
       let t = (() => {
-        var _a, _b, _c, _d2, _e2, _f2, _g, _h2, _i2, _j;
-        return ((_a = r.purge) == null ? void 0 : _a.extract) ? r.purge.extract : ((_b = r.content) == null ? void 0 : _b.extract) ? r.content.extract : ((_d2 = (_c = r.purge) == null ? void 0 : _c.extract) == null ? void 0 : _d2.DEFAULT) ? r.purge.extract.DEFAULT : ((_f2 = (_e2 = r.content) == null ? void 0 : _e2.extract) == null ? void 0 : _f2.DEFAULT) ? r.content.extract.DEFAULT : ((_h2 = (_g = r.purge) == null ? void 0 : _g.options) == null ? void 0 : _h2.extractors) ? r.purge.options.extractors : ((_j = (_i2 = r.content) == null ? void 0 : _i2.options) == null ? void 0 : _j.extractors) ? r.content.options.extractors : {};
+        var _a7, _b2, _c2, _d2, _e2, _f2, _g, _h2, _i2, _j;
+        return ((_a7 = r.purge) == null ? void 0 : _a7.extract) ? r.purge.extract : ((_b2 = r.content) == null ? void 0 : _b2.extract) ? r.content.extract : ((_d2 = (_c2 = r.purge) == null ? void 0 : _c2.extract) == null ? void 0 : _d2.DEFAULT) ? r.purge.extract.DEFAULT : ((_f2 = (_e2 = r.content) == null ? void 0 : _e2.extract) == null ? void 0 : _f2.DEFAULT) ? r.content.extract.DEFAULT : ((_h2 = (_g = r.purge) == null ? void 0 : _g.options) == null ? void 0 : _h2.extractors) ? r.purge.options.extractors : ((_j = (_i2 = r.content) == null ? void 0 : _i2.options) == null ? void 0 : _j.extractors) ? r.content.options.extractors : {};
       })(), i = {}, n = (() => {
-        var _a, _b, _c, _d2;
-        if ((_b = (_a = r.purge) == null ? void 0 : _a.options) == null ? void 0 : _b.defaultExtractor)
+        var _a7, _b2, _c2, _d2;
+        if ((_b2 = (_a7 = r.purge) == null ? void 0 : _a7.options) == null ? void 0 : _b2.defaultExtractor)
           return r.purge.options.defaultExtractor;
-        if ((_d2 = (_c = r.content) == null ? void 0 : _c.options) == null ? void 0 : _d2.defaultExtractor)
+        if ((_d2 = (_c2 = r.content) == null ? void 0 : _c2.options) == null ? void 0 : _d2.defaultExtractor)
           return r.content.options.defaultExtractor;
       })();
       if (n !== void 0 && (i.DEFAULT = n), typeof t == "function")
@@ -367,8 +367,8 @@ var _parseMarkdown, parseMarkdown_fn, _onError, onError_fn;
       return i;
     })(), transform: (() => {
       let t = (() => {
-        var _a, _b, _c, _d2, _e2, _f2;
-        return ((_a = r.purge) == null ? void 0 : _a.transform) ? r.purge.transform : ((_b = r.content) == null ? void 0 : _b.transform) ? r.content.transform : ((_d2 = (_c = r.purge) == null ? void 0 : _c.transform) == null ? void 0 : _d2.DEFAULT) ? r.purge.transform.DEFAULT : ((_f2 = (_e2 = r.content) == null ? void 0 : _e2.transform) == null ? void 0 : _f2.DEFAULT) ? r.content.transform.DEFAULT : {};
+        var _a7, _b2, _c2, _d2, _e2, _f2;
+        return ((_a7 = r.purge) == null ? void 0 : _a7.transform) ? r.purge.transform : ((_b2 = r.content) == null ? void 0 : _b2.transform) ? r.content.transform : ((_d2 = (_c2 = r.purge) == null ? void 0 : _c2.transform) == null ? void 0 : _d2.DEFAULT) ? r.purge.transform.DEFAULT : ((_f2 = (_e2 = r.content) == null ? void 0 : _e2.transform) == null ? void 0 : _f2.DEFAULT) ? r.content.transform.DEFAULT : {};
       })(), i = {};
       return typeof t == "function" && (i.DEFAULT = t), typeof t == "object" && t !== null && Object.assign(i, t), i;
     })() };
@@ -908,7 +908,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     function Cb(r) {
       return r && r.__esModule ? r : { default: r };
     }
-    function _b(r, e) {
+    function _b2(r, e) {
       r.prototype = Object.create(e.prototype), r.prototype.constructor = r, Hn(r, e);
     }
     function Hn(r, e) {
@@ -917,7 +917,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       }, Hn(r, e);
     }
     var Ab = function(r) {
-      _b(e, r);
+      _b2(e, r);
       function e(t) {
         var i;
         return i = r.call(this, t) || this, i.type = Sb.SELECTOR, i;
@@ -2380,7 +2380,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     ff.exports = { aliceblue: [240, 248, 255], antiquewhite: [250, 235, 215], aqua: [0, 255, 255], aquamarine: [127, 255, 212], azure: [240, 255, 255], beige: [245, 245, 220], bisque: [255, 228, 196], black: [0, 0, 0], blanchedalmond: [255, 235, 205], blue: [0, 0, 255], blueviolet: [138, 43, 226], brown: [165, 42, 42], burlywood: [222, 184, 135], cadetblue: [95, 158, 160], chartreuse: [127, 255, 0], chocolate: [210, 105, 30], coral: [255, 127, 80], cornflowerblue: [100, 149, 237], cornsilk: [255, 248, 220], crimson: [220, 20, 60], cyan: [0, 255, 255], darkblue: [0, 0, 139], darkcyan: [0, 139, 139], darkgoldenrod: [184, 134, 11], darkgray: [169, 169, 169], darkgreen: [0, 100, 0], darkgrey: [169, 169, 169], darkkhaki: [189, 183, 107], darkmagenta: [139, 0, 139], darkolivegreen: [85, 107, 47], darkorange: [255, 140, 0], darkorchid: [153, 50, 204], darkred: [139, 0, 0], darksalmon: [233, 150, 122], darkseagreen: [143, 188, 143], darkslateblue: [72, 61, 139], darkslategray: [47, 79, 79], darkslategrey: [47, 79, 79], darkturquoise: [0, 206, 209], darkviolet: [148, 0, 211], deeppink: [255, 20, 147], deepskyblue: [0, 191, 255], dimgray: [105, 105, 105], dimgrey: [105, 105, 105], dodgerblue: [30, 144, 255], firebrick: [178, 34, 34], floralwhite: [255, 250, 240], forestgreen: [34, 139, 34], fuchsia: [255, 0, 255], gainsboro: [220, 220, 220], ghostwhite: [248, 248, 255], gold: [255, 215, 0], goldenrod: [218, 165, 32], gray: [128, 128, 128], green: [0, 128, 0], greenyellow: [173, 255, 47], grey: [128, 128, 128], honeydew: [240, 255, 240], hotpink: [255, 105, 180], indianred: [205, 92, 92], indigo: [75, 0, 130], ivory: [255, 255, 240], khaki: [240, 230, 140], lavender: [230, 230, 250], lavenderblush: [255, 240, 245], lawngreen: [124, 252, 0], lemonchiffon: [255, 250, 205], lightblue: [173, 216, 230], lightcoral: [240, 128, 128], lightcyan: [224, 255, 255], lightgoldenrodyellow: [250, 250, 210], lightgray: [211, 211, 211], lightgreen: [144, 238, 144], lightgrey: [211, 211, 211], lightpink: [255, 182, 193], lightsalmon: [255, 160, 122], lightseagreen: [32, 178, 170], lightskyblue: [135, 206, 250], lightslategray: [119, 136, 153], lightslategrey: [119, 136, 153], lightsteelblue: [176, 196, 222], lightyellow: [255, 255, 224], lime: [0, 255, 0], limegreen: [50, 205, 50], linen: [250, 240, 230], magenta: [255, 0, 255], maroon: [128, 0, 0], mediumaquamarine: [102, 205, 170], mediumblue: [0, 0, 205], mediumorchid: [186, 85, 211], mediumpurple: [147, 112, 219], mediumseagreen: [60, 179, 113], mediumslateblue: [123, 104, 238], mediumspringgreen: [0, 250, 154], mediumturquoise: [72, 209, 204], mediumvioletred: [199, 21, 133], midnightblue: [25, 25, 112], mintcream: [245, 255, 250], mistyrose: [255, 228, 225], moccasin: [255, 228, 181], navajowhite: [255, 222, 173], navy: [0, 0, 128], oldlace: [253, 245, 230], olive: [128, 128, 0], olivedrab: [107, 142, 35], orange: [255, 165, 0], orangered: [255, 69, 0], orchid: [218, 112, 214], palegoldenrod: [238, 232, 170], palegreen: [152, 251, 152], paleturquoise: [175, 238, 238], palevioletred: [219, 112, 147], papayawhip: [255, 239, 213], peachpuff: [255, 218, 185], peru: [205, 133, 63], pink: [255, 192, 203], plum: [221, 160, 221], powderblue: [176, 224, 230], purple: [128, 0, 128], rebeccapurple: [102, 51, 153], red: [255, 0, 0], rosybrown: [188, 143, 143], royalblue: [65, 105, 225], saddlebrown: [139, 69, 19], salmon: [250, 128, 114], sandybrown: [244, 164, 96], seagreen: [46, 139, 87], seashell: [255, 245, 238], sienna: [160, 82, 45], silver: [192, 192, 192], skyblue: [135, 206, 235], slateblue: [106, 90, 205], slategray: [112, 128, 144], slategrey: [112, 128, 144], snow: [255, 250, 250], springgreen: [0, 255, 127], steelblue: [70, 130, 180], tan: [210, 180, 140], teal: [0, 128, 128], thistle: [216, 191, 216], tomato: [255, 99, 71], turquoise: [64, 224, 208], violet: [238, 130, 238], wheat: [245, 222, 179], white: [255, 255, 255], whitesmoke: [245, 245, 245], yellow: [255, 255, 0], yellowgreen: [154, 205, 50] };
   });
   function Sr(r, { loose: e = false } = {}) {
-    var _a, _b;
+    var _a7, _b2;
     if (typeof r != "string")
       return null;
     if (r = r.trim(), r === "transparent")
@@ -2394,7 +2394,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     if (i === null)
       return null;
     let n = [i[2], i[3], i[4]].filter(Boolean).map((s) => s.toString());
-    return !e && n.length !== 3 || n.length < 3 && !n.some((s) => /^var\(.*?\)$/.test(s)) ? null : { mode: i[1], color: n, alpha: (_b = (_a = i[5]) == null ? void 0 : _a.toString) == null ? void 0 : _b.call(_a) };
+    return !e && n.length !== 3 || n.length < 3 && !n.some((s) => /^var\(.*?\)$/.test(s)) ? null : { mode: i[1], color: n, alpha: (_b2 = (_a7 = i[5]) == null ? void 0 : _a7.toString) == null ? void 0 : _b2.call(_a7) };
   }
   function Ns({ mode: r, color: e, alpha: t }) {
     let i = t !== void 0;
@@ -2535,8 +2535,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     _r();
   });
   function K(r, e) {
-    var _a, _b;
-    return Ai.future.includes(e) ? r.future === "all" || (((_a = r == null ? void 0 : r.future) == null ? void 0 : _a[e]) ?? Af[e] ?? false) : Ai.experimental.includes(e) ? r.experimental === "all" || (((_b = r == null ? void 0 : r.experimental) == null ? void 0 : _b[e]) ?? Af[e] ?? false) : false;
+    var _a7, _b2;
+    return Ai.future.includes(e) ? r.future === "all" || (((_a7 = r == null ? void 0 : r.future) == null ? void 0 : _a7[e]) ?? Af[e] ?? false) : Ai.experimental.includes(e) ? r.experimental === "all" || (((_b2 = r == null ? void 0 : r.experimental) == null ? void 0 : _b2[e]) ?? Af[e] ?? false) : false;
   }
   function Of(r) {
     return r.experimental === "all" ? Ai.experimental : Object.keys((r == null ? void 0 : r.experimental) ?? {}).filter((e) => Ai.experimental.includes(e) && r.experimental[e]);
@@ -2585,8 +2585,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     }
   }
   function Tr(r, e = {}, { validate: t = () => true } = {}) {
-    var _a;
-    let i = (_a = e.values) == null ? void 0 : _a[r];
+    var _a7;
+    let i = (_a7 = e.values) == null ? void 0 : _a7[r];
     return i !== void 0 ? i : e.supportsNegativeValues && r.startsWith("-") ? Hx(r.slice(1), e.values, t) : Df(r, t);
   }
   function Xe(r) {
@@ -2604,19 +2604,19 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     return r;
   }
   function Yx(r, e = {}, { tailwindConfig: t = {}, utilityModifier: i, rawModifier: n } = {}) {
-    var _a, _b, _c, _d2, _e2;
-    if (((_a = e.values) == null ? void 0 : _a[n]) !== void 0)
-      return kt((_b = e.values) == null ? void 0 : _b[n]);
+    var _a7, _b2, _c2, _d2, _e2;
+    if (((_a7 = e.values) == null ? void 0 : _a7[n]) !== void 0)
+      return kt((_b2 = e.values) == null ? void 0 : _b2[n]);
     let [s, a] = qf(n);
     if (a !== void 0) {
-      let o = ((_c = e.values) == null ? void 0 : _c[s]) ?? (Xe(s) ? s.slice(1, -1) : void 0);
+      let o = ((_c2 = e.values) == null ? void 0 : _c2[s]) ?? (Xe(s) ? s.slice(1, -1) : void 0);
       return o === void 0 ? void 0 : (o = kt(o), Xe(a) ? qe(o, a.slice(1, -1)) : ((_e2 = (_d2 = t.theme) == null ? void 0 : _d2.opacity) == null ? void 0 : _e2[a]) === void 0 ? void 0 : qe(o, t.theme.opacity[a]));
     }
     return Tr(n, e, { rawModifier: n, utilityModifier: i, validate: yf });
   }
   function Qx(r, e = {}) {
-    var _a;
-    return (_a = e.values) == null ? void 0 : _a[r];
+    var _a7;
+    return (_a7 = e.values) == null ? void 0 : _a7[r];
   }
   function he(r) {
     return (e, t, i) => Tr(e, t, { ...i, validate: r });
@@ -2641,11 +2641,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     return [];
   }
   function* Ws(r, e, t, i) {
-    var _a;
+    var _a7;
     let n = K(i, "generalizedModifiers"), [s, a] = qf(e);
     if (n && t.modifiers != null && (t.modifiers === "any" || typeof t.modifiers == "object" && (a && Xe(a) || a in t.modifiers)) || (s = e, a = void 0), a !== void 0 && s === "" && (s = "DEFAULT"), a !== void 0) {
       if (typeof t.modifiers == "object") {
-        let c = ((_a = t.modifiers) == null ? void 0 : _a[a]) ?? null;
+        let c = ((_a7 = t.modifiers) == null ? void 0 : _a7[a]) ?? null;
         c !== null ? a = c : Xe(a) && (a = a.slice(1, -1));
       }
       let u = Tr(e, t, { rawModifier: e, utilityModifier: a, tailwindConfig: i });
@@ -3705,7 +3705,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
   });
   var At = v((fT, Oc) => {
     l();
-    var Cc = Ke(), _c, Ac, dt = class extends Cc {
+    var Cc = Ke(), _c2, Ac, dt = class extends Cc {
       constructor(e) {
         super(e);
         this.type = "root", this.nodes || (this.nodes = []);
@@ -3726,11 +3726,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         return n;
       }
       toResult(e = {}) {
-        return new _c(new Ac(), this, e).stringify();
+        return new _c2(new Ac(), this, e).stringify();
       }
     };
     dt.registerLazyResult = (r) => {
-      _c = r;
+      _c2 = r;
     };
     dt.registerProcessor = (r) => {
       Ac = r;
@@ -4692,7 +4692,7 @@ https://www.w3ctech.com/topic/2226`));
     Ze();
     wt();
   });
-  var mp = v((r5, _a) => {
+  var mp = v((r5, _a7) => {
     l();
     var { Rule: up, AtRule: Ek } = me(), fp = De();
     function xa(r, e) {
@@ -4822,7 +4822,7 @@ https://www.w3ctech.com/topic/2226`));
       r[hp] = n, r[Sa] = n ? !n("all") : t === "noop";
     }
     var Ca = Symbol("hasRootRule");
-    _a.exports = (r = {}) => {
+    _a7.exports = (r = {}) => {
       let e = dp(["media", "supports", "layer"], r.bubble), t = Tk(e), i = dp(["document", "font-face", "keyframes", "-webkit-keyframes", "-moz-keyframes"], r.unwrap), n = (r.rootRuleName || "at-root").replace(/^@/, ""), s = r.preserveEmpty;
       return { postcssPlugin: "postcss-nested", Once(a) {
         a.walkAtRules(n, (o) => {
@@ -4837,7 +4837,7 @@ https://www.w3ctech.com/topic/2226`));
         a[Ca] && (a.walkAtRules(n, qk), a[Ca] = false);
       } };
     };
-    _a.exports.postcss = true;
+    _a7.exports.postcss = true;
   });
   var bp = v((i5, wp) => {
     l();
@@ -4969,9 +4969,9 @@ https://www.w3ctech.com/topic/2226`));
     Mp = J(De());
   });
   function ve(r) {
-    var _a;
+    var _a7;
     let e = Fp.default.className();
-    return e.value = r, pt(((_a = e == null ? void 0 : e.raws) == null ? void 0 : _a.value) ?? e.value);
+    return e.value = r, pt(((_a7 = e == null ? void 0 : e.raws) == null ? void 0 : _a7.value) ?? e.value);
   }
   var Fp, qt = A(() => {
     l();
@@ -5138,8 +5138,8 @@ https://www.w3ctech.com/topic/2226`));
     }, screenVariants: ({ theme: r, addVariant: e, matchVariant: t }) => {
       let i = r("screens") ?? {}, n = Object.values(i).every((b) => typeof b == "string"), s = tt(r("screens")), a = /* @__PURE__ */ new Set([]);
       function o(b) {
-        var _a;
-        return ((_a = b.match(/(\D+)$/)) == null ? void 0 : _a[1]) ?? "(none)";
+        var _a7;
+        return ((_a7 = b.match(/(\D+)$/)) == null ? void 0 : _a7[1]) ?? "(none)";
       }
       function u(b) {
         b !== void 0 && a.add(o(b));
@@ -5423,11 +5423,11 @@ https://www.w3ctech.com/topic/2226`));
       r({ outline: (t) => ({ "outline-color": $(t) }) }, { values: Z(e("outlineColor")), type: ["color", "any"] });
     }, ringWidth: ({ matchUtilities: r, addDefaults: e, addUtilities: t, theme: i, config: n }) => {
       let s = (() => {
-        var _a, _b;
+        var _a7, _b2;
         if (K(n(), "respectDefaultRingColorOpacity"))
           return i("ringColor.DEFAULT");
         let a = i("ringOpacity.DEFAULT", "0.5");
-        return ((_a = i("ringColor")) == null ? void 0 : _a.DEFAULT) ? qe((_b = i("ringColor")) == null ? void 0 : _b.DEFAULT, a, `rgb(147 197 253 / ${a})`) : `rgb(147 197 253 / ${a})`;
+        return ((_a7 = i("ringColor")) == null ? void 0 : _a7.DEFAULT) ? qe((_b2 = i("ringColor")) == null ? void 0 : _b2.DEFAULT, a, `rgb(147 197 253 / ${a})`) : `rgb(147 197 253 / ${a})`;
       })();
       e("ring-width", { "--tw-ring-inset": " ", "--tw-ring-offset-width": i("ringOffsetWidth.DEFAULT", "0px"), "--tw-ring-offset-color": i("ringOffsetColor.DEFAULT", "#fff"), "--tw-ring-color": s, "--tw-ring-offset-shadow": "0 0 #0000", "--tw-ring-shadow": "0 0 #0000", "--tw-shadow": "0 0 #0000", "--tw-shadow-colored": "0 0 #0000" }), r({ ring: (a) => ({ "@defaults ring-width": {}, "--tw-ring-offset-shadow": "var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color)", "--tw-ring-shadow": `var(--tw-ring-inset) 0 0 0 calc(${a} + var(--tw-ring-offset-width)) var(--tw-ring-color)`, "box-shadow": ["var(--tw-ring-offset-shadow)", "var(--tw-ring-shadow)", "var(--tw-shadow, 0 0 #0000)"].join(", ") }) }, { values: i("ringWidth"), type: "length" }), t({ ".ring-inset": { "@defaults ring-width": {}, "--tw-ring-inset": "inset" } });
     }, ringColor: ({ matchUtilities: r, theme: e, corePlugins: t }) => {
@@ -5550,10 +5550,10 @@ https://www.w3ctech.com/topic/2226`));
         return t = true, false;
     }), t || r.remove();
   }
-  function pn(r, { selector: e, candidate: t, context: i, isArbitraryVariant: n, base: s = t.split(new RegExp(`\\${((_a) => (_a = i == null ? void 0 : i.tailwindConfig) == null ? void 0 : _a.separator)() ?? ":"}(?![^[]*\\])`)).pop() }) {
-    var _a2;
+  function pn(r, { selector: e, candidate: t, context: i, isArbitraryVariant: n, base: s = t.split(new RegExp(`\\${((_a7) => (_a7 = i == null ? void 0 : i.tailwindConfig) == null ? void 0 : _a7.separator)() ?? ":"}(?![^[]*\\])`)).pop() }) {
+    var _a8;
     let a = (0, Rt.default)().astSync(e);
-    ((_a2 = i == null ? void 0 : i.tailwindConfig) == null ? void 0 : _a2.prefix) && !n && (r = Dt(i.tailwindConfig.prefix, r)), r = r.replace(ed, `.${ve(t)}`);
+    ((_a8 = i == null ? void 0 : i.tailwindConfig) == null ? void 0 : _a8.prefix) && !n && (r = Dt(i.tailwindConfig.prefix, r)), r = r.replace(ed, `.${ve(t)}`);
     let o = (0, Rt.default)().astSync(r);
     a.each((p2) => fS(p2, s)), a.walkClasses((p2) => {
       p2.raws && p2.value.includes(s) && (p2.raws.value = ve((0, Zp.default)(p2.raws.value)));
@@ -5794,12 +5794,12 @@ https://www.w3ctech.com/topic/2226`));
     return r === Ve ? [Ve] : de(r, e);
   }
   function* _S(r, e) {
-    var _a;
+    var _a7;
     for (let t of r)
-      t[1].raws.tailwind = { ...t[1].raws.tailwind, classCandidate: e, preserveSource: ((_a = t[0].options) == null ? void 0 : _a.preserveSource) ?? false }, yield t;
+      t[1].raws.tailwind = { ...t[1].raws.tailwind, classCandidate: e, preserveSource: ((_a7 = t[0].options) == null ? void 0 : _a7.preserveSource) ?? false }, yield t;
   }
   function* dn(r, e, t = r) {
-    var _a;
+    var _a7;
     let i = e.tailwindConfig.separator, [n, ...s] = CS(r, i).reverse(), a = false;
     if (n.startsWith("!") && (a = true, n = n.slice(1)), K(e.tailwindConfig, "variantGrouping") && n.startsWith("(") && n.endsWith(")")) {
       let o = s.slice().reverse().join(i);
@@ -5822,7 +5822,7 @@ https://www.w3ctech.com/topic/2226`));
             k.push([{ ...d, options: { ...d.options, ...x } }, S]);
         }
         if (k.length > 0) {
-          let w = Array.from(Ws(((_a = d.options) == null ? void 0 : _a.types) ?? [], p2, d.options ?? {}, e.tailwindConfig)).map(([b, x]) => x);
+          let w = Array.from(Ws(((_a7 = d.options) == null ? void 0 : _a7.types) ?? [], p2, d.options ?? {}, e.tailwindConfig)).map(([b, x]) => x);
           w.length > 0 && c.set(k, w), u.push(k);
         }
       }
@@ -5869,8 +5869,8 @@ https://www.w3ctech.com/topic/2226`));
         if (d[1].raws.tailwind = { ...d[1].raws.tailwind, candidate: r }, d[0].collectedFormats) {
           let y = Yr("&", ...d[0].collectedFormats), k = j.root({ nodes: [d[1].clone()] });
           k.walkRules((w) => {
-            var _a2;
-            hn(w) || (w.selector = pn(y, { selector: w.selector, candidate: t, base: r.split(new RegExp(`\\${((_a2 = e == null ? void 0 : e.tailwindConfig) == null ? void 0 : _a2.separator) ?? ":"}(?![^[]*\\])`)).pop(), isArbitraryVariant: d[0].isArbitraryVariant, context: e }));
+            var _a8;
+            hn(w) || (w.selector = pn(y, { selector: w.selector, candidate: t, base: r.split(new RegExp(`\\${((_a8 = e == null ? void 0 : e.tailwindConfig) == null ? void 0 : _a8.separator) ?? ":"}(?![^[]*\\])`)).pop(), isArbitraryVariant: d[0].isArbitraryVariant, context: e }));
           }), d[1] = k.nodes[0];
         }
         yield d;
@@ -6227,14 +6227,14 @@ https://www.w3ctech.com/topic/2226`));
     return Qa.has(r) || Qa.set(r, /* @__PURE__ */ new Map()), Qa.get(r);
   }
   function hd(r, e) {
-    var _a;
+    var _a7;
     let t = false;
     for (let i of r) {
       if (!i)
         continue;
       let n = Xs.parse(i), s = n.hash ? n.href.replace(n.hash, "") : n.href;
       s = n.search ? s.replace(n.search, "") : s;
-      let a = (_a = ae.statSync(decodeURIComponent(s), { throwIfNoEntry: false })) == null ? void 0 : _a.mtimeMs;
+      let a = (_a7 = ae.statSync(decodeURIComponent(s), { throwIfNoEntry: false })) == null ? void 0 : _a7.mtimeMs;
       !a || ((!e.has(i) || a > e.get(i)) && (t = true), e.set(i, a));
     }
     return t;
@@ -6348,10 +6348,10 @@ https://www.w3ctech.com/topic/2226`));
       let p2 = [];
       for (let [h3, d] of e.variantOptions.entries())
         d.variantInfo !== Ha.Base && p2.push({ name: h3, isArbitrary: d.type === Symbol.for("MATCH_VARIANT"), values: Object.keys(d.values ?? {}), hasDash: h3 !== "@", selectors({ modifier: y, value: k } = {}) {
-          var _a;
+          var _a7;
           let w = "__TAILWIND_PLACEHOLDER__", b = j.rule({ selector: `.${w}` }), x = j.root({ nodes: [b.clone()] }), S = x.toString(), _ = (e.variantMap.get(h3) ?? []).flatMap(([F, X]) => X), D = [];
           for (let F of _) {
-            let X = [], ce = { args: { modifier: y, value: ((_a = d.values) == null ? void 0 : _a[k]) ?? k }, separator: e.tailwindConfig.separator, modifySelectors(re) {
+            let X = [], ce = { args: { modifier: y, value: ((_a7 = d.values) == null ? void 0 : _a7[k]) ?? k }, separator: e.tailwindConfig.separator, modifySelectors(re) {
               return x.each((pe) => {
                 pe.type === "rule" && (pe.selectors = pe.selectors.map((Rl) => re({ get className() {
                   return $a(Rl);
@@ -6634,8 +6634,8 @@ https://www.w3ctech.com/topic/2226`));
   });
   function ht(r, e = void 0, t = void 0) {
     return r.map((i) => {
-      var _a;
-      let n = i.clone(), s = ((_a = i.raws.tailwind) == null ? void 0 : _a.preserveSource) !== true || !n.source;
+      var _a7;
+      let n = i.clone(), s = ((_a7 = i.raws.tailwind) == null ? void 0 : _a7.preserveSource) !== true || !n.source;
       return e !== void 0 && s && (n.source = e, "walk" in n && n.walk((a) => {
         a.source = e;
       })), t !== void 0 && (n.raws.tailwind = { ...n.raws.tailwind, ...t }), n;
@@ -6759,14 +6759,14 @@ https://www.w3ctech.com/topic/2226`));
       let { defaults: a, base: o, components: u, utilities: c, variants: f } = r.stylesheetCache;
       t.base && (t.base.before(ht([...o, ...a], t.base.source, { layer: "base" })), t.base.remove()), t.components && (t.components.before(ht([...u], t.components.source, { layer: "components" })), t.components.remove()), t.utilities && (t.utilities.before(ht([...c], t.utilities.source, { layer: "utilities" })), t.utilities.remove());
       let p2 = Array.from(f).filter((d) => {
-        var _a;
-        let y = (_a = d.raws.tailwind) == null ? void 0 : _a.parentLayer;
+        var _a7;
+        let y = (_a7 = d.raws.tailwind) == null ? void 0 : _a7.parentLayer;
         return y === "components" ? t.components !== null : y === "utilities" ? t.utilities !== null : true;
       });
       t.variants ? (t.variants.before(ht(p2, t.variants.source, { layer: "variants" })), t.variants.remove()) : p2.length > 0 && e.append(ht(p2, e.source, { layer: "variants" }));
       let h3 = p2.some((d) => {
-        var _a;
-        return ((_a = d.raws.tailwind) == null ? void 0 : _a.parentLayer) === "utilities";
+        var _a7;
+        return ((_a7 = d.raws.tailwind) == null ? void 0 : _a7.parentLayer) === "utilities";
       });
       t.utilities && c.size === 0 && !h3 && N.warn("content-problems", ["No utility classes were detected in your source files. If this is unexpected, double-check the `content` option in your Tailwind CSS configuration.", "https://tailwindcss.com/docs/content-configuration"]), mt.DEBUG && (console.log("Potential classes: ", i.size), console.log("Active contexts: ", fn.size)), r.changedContent = [], e.walkAtRules("layer", (d) => {
         Object.keys(t).includes(d.params) && d.remove();
@@ -6832,9 +6832,9 @@ https://www.w3ctech.com/topic/2226`));
   function t2(r, e) {
     let t = /* @__PURE__ */ new Map();
     return r.walkRules((i) => {
-      var _a;
+      var _a7;
       for (let a of Qd(i))
-        if (((_a = a.raws.tailwind) == null ? void 0 : _a.layer) !== void 0)
+        if (((_a7 = a.raws.tailwind) == null ? void 0 : _a7.layer) !== void 0)
           return;
       let n = e2(i), s = e.offsets.create("user");
       for (let a of Sn(i)) {
@@ -7219,10 +7219,10 @@ https://www.w3ctech.com/topic/2226`));
   }
   function yh(r) {
     let e = r.tailwindConfig, t = { theme: (i, n, ...s) => {
-      var _a;
+      var _a7;
       let { isValid: a, value: o, error: u, alpha: c } = w2(e, n, s.length ? s : void 0);
       if (!a) {
-        let h3 = i.parent, d = (_a = h3 == null ? void 0 : h3.raws.tailwind) == null ? void 0 : _a.candidate;
+        let h3 = i.parent, d = (_a7 = h3 == null ? void 0 : h3.raws.tailwind) == null ? void 0 : _a7.candidate;
         if (h3 && d !== void 0) {
           r.markInvalidUtilityNode(h3), h3.remove(), N.warn("invalid-theme-key-in-class", [`The utility \`${d}\` contains an invalid theme value and was not generated.`]);
           return;
@@ -7484,8 +7484,8 @@ https://www.w3ctech.com/topic/2226`));
   function Ph(r, e) {
     let t = null, i = null;
     return r.walkAtRules("config", (n) => {
-      var _a;
-      if (i = ((_a = n.source) == null ? void 0 : _a.input.file) ?? e.opts.from ?? null, i === null)
+      var _a7;
+      if (i = ((_a7 = n.source) == null ? void 0 : _a7.input.file) ?? e.opts.from ?? null, i === null)
         throw n.error("The `@config` directive cannot be used without setting `from` in your PostCSS config.");
       if (t)
         throw n.error("Only one `@config` directive is allowed per file.");
@@ -10232,8 +10232,8 @@ const replacer = (_key, val) => {
   return val;
 };
 const stringifySymbol = (v, i = "") => {
-  var _a;
-  return isSymbol(v) ? `Symbol(${(_a = v.description) != null ? _a : i})` : v;
+  var _a7;
+  return isSymbol(v) ? `Symbol(${(_a7 = v.description) != null ? _a7 : i})` : v;
 };
 /**
 * @vue/reactivity v3.4.21
@@ -10383,11 +10383,11 @@ class ReactiveEffect {
     }
   }
   stop() {
-    var _a;
+    var _a7;
     if (this.active) {
       preCleanupEffect(this);
       postCleanupEffect(this);
-      (_a = this.onStop) == null ? void 0 : _a.call(this);
+      (_a7 = this.onStop) == null ? void 0 : _a7.call(this);
       this.active = false;
     }
   }
@@ -10553,8 +10553,8 @@ function trigger(target, type, key, newValue, oldValue, oldTarget) {
   resetScheduling();
 }
 function getDepFromReactive(object, key) {
-  var _a;
-  return (_a = targetMap.get(object)) == null ? void 0 : _a.get(key);
+  var _a7;
+  return (_a7 = targetMap.get(object)) == null ? void 0 : _a7.get(key);
 }
 const isNonTrackableKeys = /* @__PURE__ */ makeMap(`__proto__,__v_isRef,__isVue`);
 const builtInSymbols = new Set(
@@ -11134,12 +11134,12 @@ function computed$1(getterOrOptions, debugOptions, isSSR = false) {
   return cRef;
 }
 function trackRefValue(ref2) {
-  var _a;
+  var _a7;
   if (shouldTrack && activeEffect) {
     ref2 = toRaw(ref2);
     trackEffect(
       activeEffect,
-      (_a = ref2.dep) != null ? _a : ref2.dep = createDep(
+      (_a7 = ref2.dep) != null ? _a7 : ref2.dep = createDep(
         () => ref2.dep = void 0,
         ref2 instanceof ComputedRefImpl ? ref2 : void 0
       )
@@ -11258,8 +11258,8 @@ function warn$1(msg, ...args) {
       11,
       [
         msg + args.map((a) => {
-          var _a, _b;
-          return (_b = (_a = a.toString) == null ? void 0 : _a.call(a)) != null ? _b : JSON.stringify(a);
+          var _a7, _b2;
+          return (_b2 = (_a7 = a.toString) == null ? void 0 : _a7.call(a)) != null ? _b2 : JSON.stringify(a);
         }).join(""),
         instance && instance.proxy,
         trace.map(
@@ -18252,6 +18252,188 @@ function _sfc_render$2(_ctx, _cache) {
   return openBlock(), createElementBlock("svg", _hoisted_1$2, _hoisted_3$2);
 }
 const __unplugin_components_0 = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["render", _sfc_render$2]]);
+var TEXT_PLAIN = "text/plain";
+function warnOrLog() {
+  (console.warn || console.log).apply(console, arguments);
+}
+warnOrLog.bind("[clipboard-polyfill]");
+var originalWindow = typeof window === "undefined" ? void 0 : window;
+var originalGlobalThis = typeof globalThis === "undefined" ? void 0 : globalThis;
+var _a, _b, _c;
+var promiseConstructorImpl = (_c = (_a = originalWindow) == null ? void 0 : _a.Promise) != null ? _c : (_b = originalGlobalThis) == null ? void 0 : _b.Promise;
+function getPromiseConstructor() {
+  if (!promiseConstructorImpl) {
+    throw new Error(
+      "No `Promise` implementation available for `clipboard-polyfill`. Consider using: https://github.com/lgarron/clipboard-polyfill#flat-file-version-with-promise-included"
+    );
+  }
+  return promiseConstructorImpl;
+}
+var originalNavigator = typeof navigator === "undefined" ? void 0 : navigator;
+var originalNavigatorClipboard = originalNavigator == null ? void 0 : originalNavigator.clipboard;
+var _a2;
+(_a2 = originalNavigatorClipboard == null ? void 0 : originalNavigatorClipboard.read) == null ? void 0 : _a2.bind(
+  originalNavigatorClipboard
+);
+var _a3;
+(_a3 = originalNavigatorClipboard == null ? void 0 : originalNavigatorClipboard.readText) == null ? void 0 : _a3.bind(
+  originalNavigatorClipboard
+);
+var _a4;
+(_a4 = originalNavigatorClipboard == null ? void 0 : originalNavigatorClipboard.write) == null ? void 0 : _a4.bind(
+  originalNavigatorClipboard
+);
+var _a5;
+var originalNavigatorClipboardWriteText = (_a5 = originalNavigatorClipboard == null ? void 0 : originalNavigatorClipboard.writeText) == null ? void 0 : _a5.bind(
+  originalNavigatorClipboard
+);
+var _a6;
+(_a6 = originalWindow) == null ? void 0 : _a6.ClipboardItem;
+var promiseConstructor = getPromiseConstructor();
+var ieWindow = originalWindow;
+function seemToBeInIE() {
+  return typeof ClipboardEvent === "undefined" && typeof (ieWindow == null ? void 0 : ieWindow.clipboardData) !== "undefined" && typeof (ieWindow == null ? void 0 : ieWindow.clipboardData.setData) !== "undefined";
+}
+function writeTextIE(text) {
+  if (!ieWindow.clipboardData) {
+    return false;
+  }
+  var success = ieWindow.clipboardData.setData("Text", text);
+  return success;
+}
+function copyListener(tracker, data, e) {
+  tracker.success = true;
+  for (var type in data) {
+    var value = data[type];
+    var clipboardData = e.clipboardData;
+    clipboardData.setData(type, value);
+    if (type === TEXT_PLAIN && clipboardData.getData(type) !== value) {
+      tracker.success = false;
+    }
+  }
+  e.preventDefault();
+}
+function execCopy(data) {
+  var tracker = { success: false };
+  var listener = copyListener.bind(this, tracker, data);
+  document.addEventListener("copy", listener);
+  try {
+    document.execCommand("copy");
+  } finally {
+    document.removeEventListener("copy", listener);
+  }
+  return tracker.success;
+}
+function copyUsingTempSelection(e, data) {
+  selectionSet(e);
+  var success = execCopy(data);
+  selectionClear();
+  return success;
+}
+function copyUsingTempElem(data) {
+  var tempElem = document.createElement("div");
+  tempElem.setAttribute("style", "-webkit-user-select: text !important");
+  tempElem.textContent = "temporary element";
+  document.body.appendChild(tempElem);
+  var success = copyUsingTempSelection(tempElem, data);
+  document.body.removeChild(tempElem);
+  return success;
+}
+function copyTextUsingDOM(str) {
+  var tempElem = document.createElement("div");
+  tempElem.setAttribute("style", "-webkit-user-select: text !important");
+  var spanParent = tempElem;
+  if (tempElem.attachShadow) {
+    spanParent = tempElem.attachShadow({ mode: "open" });
+  }
+  var span = document.createElement("span");
+  span.innerText = str;
+  spanParent.appendChild(span);
+  document.body.appendChild(tempElem);
+  selectionSet(span);
+  var result = document.execCommand("copy");
+  selectionClear();
+  document.body.removeChild(tempElem);
+  return result;
+}
+function selectionSet(elem) {
+  var sel = document.getSelection();
+  if (sel) {
+    var range = document.createRange();
+    range.selectNodeContents(elem);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+}
+function selectionClear() {
+  var sel = document.getSelection();
+  if (sel) {
+    sel.removeAllRanges();
+  }
+}
+function writeFallback(stringItem) {
+  var hasTextPlain = TEXT_PLAIN in stringItem;
+  if (seemToBeInIE()) {
+    if (!hasTextPlain) {
+      throw new Error("No `text/plain` value was specified.");
+    }
+    if (writeTextIE(stringItem[TEXT_PLAIN])) {
+      return true;
+    } else {
+      throw new Error("Copying failed, possibly because the user rejected it.");
+    }
+  }
+  if (execCopy(stringItem)) {
+    return true;
+  }
+  if (navigator.userAgent.indexOf("Edge") > -1) {
+    return true;
+  }
+  if (copyUsingTempSelection(document.body, stringItem)) {
+    return true;
+  }
+  if (copyUsingTempElem(stringItem)) {
+    return true;
+  }
+  if (copyTextUsingDOM(stringItem[TEXT_PLAIN])) {
+    return true;
+  }
+  return false;
+}
+promiseConstructor.resolve();
+promiseConstructor.resolve(false);
+function rejectThrownErrors(executor) {
+  return new promiseConstructor((resolve, reject) => {
+    try {
+      resolve(executor());
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+function stringToStringItem(s) {
+  var stringItem = {};
+  stringItem[TEXT_PLAIN] = s;
+  return stringItem;
+}
+function writeText(s) {
+  if (originalNavigatorClipboardWriteText) {
+    return originalNavigatorClipboardWriteText(s).catch((e) => {
+      writeTextStringFallbackPromise(s);
+    });
+  }
+  return writeTextStringFallbackPromise(s);
+}
+function writeTextStringFallbackPromise(s) {
+  return rejectThrownErrors(
+    () => promiseConstructor.resolve(writeTextStringFallback(s))
+  );
+}
+function writeTextStringFallback(s) {
+  if (!writeFallback(stringToStringItem(s))) {
+    throw new Error("writeText() failed");
+  }
+}
 let getRandomValues;
 const rnds8 = new Uint8Array(16);
 function rng() {
@@ -19801,7 +19983,7 @@ class _Tokenizer {
     }
   }
   url(src) {
-    var _a;
+    var _a7;
     let cap;
     if (cap = this.rules.inline.url.exec(src)) {
       let text, href;
@@ -19812,7 +19994,7 @@ class _Tokenizer {
         let prevCapZero;
         do {
           prevCapZero = cap[0];
-          cap[0] = ((_a = this.rules.inline._backpedal.exec(cap[0])) == null ? void 0 : _a[0]) ?? "";
+          cap[0] = ((_a7 = this.rules.inline._backpedal.exec(cap[0])) == null ? void 0 : _a7[0]) ?? "";
         } while (prevCapZero !== cap[0]);
         text = escape$1$1(cap[0]);
         if (cap[1] === "www.") {
@@ -20352,8 +20534,8 @@ class _Renderer {
     this.options = options || _defaults;
   }
   code(code, infostring, escaped) {
-    var _a;
-    const lang = (_a = (infostring || "").match(/^\S*/)) == null ? void 0 : _a[0];
+    var _a7;
+    const lang = (_a7 = (infostring || "").match(/^\S*/)) == null ? void 0 : _a7[0];
     code = code.replace(/\n$/, "") + "\n";
     if (!lang) {
       return "<pre><code>" + (escaped ? code : escape$1$1(code, true)) + "</code></pre>\n";
@@ -20765,7 +20947,7 @@ class Marked {
    * Run callback for every token
    */
   walkTokens(tokens, callback) {
-    var _a, _b;
+    var _a7, _b2;
     let values = [];
     for (const token of tokens) {
       values = values.concat(callback.call(this, token));
@@ -20789,7 +20971,7 @@ class Marked {
         }
         default: {
           const genericToken = token;
-          if ((_b = (_a = this.defaults.extensions) == null ? void 0 : _a.childTokens) == null ? void 0 : _b[genericToken.type]) {
+          if ((_b2 = (_a7 = this.defaults.extensions) == null ? void 0 : _a7.childTokens) == null ? void 0 : _b2[genericToken.type]) {
             this.defaults.extensions.childTokens[genericToken.type].forEach((childTokens) => {
               const tokens2 = genericToken[childTokens].flat(Infinity);
               values = values.concat(this.walkTokens(tokens2, callback));
@@ -71400,12 +71582,12 @@ const insertSvg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="
 const checkSvg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" data-license="isc-gnc" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>`;
 const util = {
   postMessageToCodeEditor(data) {
-    var _a;
-    return (_a = util.getUseStore()) == null ? void 0 : _a.postMessageToCodeEditor(data);
+    var _a7;
+    return (_a7 = util.getUseStore()) == null ? void 0 : _a7.postMessageToCodeEditor(data);
   },
   postMessageToIdeaEditor(data) {
-    var _a;
-    return (_a = util.getUseStore()) == null ? void 0 : _a.postMessageToIdeaEditor(data);
+    var _a7;
+    return (_a7 = util.getUseStore()) == null ? void 0 : _a7.postMessageToIdeaEditor(data);
   },
   getUseStore() {
     return this.useStore || (this.useStore = useStore());
@@ -71421,8 +71603,8 @@ const util = {
     return unsafe;
   },
   autoScrollToBottom(element) {
-    var _a;
-    (_a = element == null ? void 0 : element.scrollTo) == null ? void 0 : _a.call(element, { behavior: "smooth", top: element.scrollHeight });
+    var _a7;
+    (_a7 = element == null ? void 0 : element.scrollTo) == null ? void 0 : _a7.call(element, { behavior: "smooth", top: element.scrollHeight });
   },
   markedParser(value) {
     return marked.parse(value);
@@ -71579,16 +71761,17 @@ const ONLINE_CODE_APIKEY = "app-HZSqJWyZI6xjqkbyXUIcLErR";
 const ONLINE_CODE_API = "http://ai.t.vtoone.com/api/v1/completion-messages";
 class ChatApi2 {
   constructor(options) {
-    let { abortSignal, timeoutMs = 40 * 1e3, chatType = "chat" } = options;
-    let abortController = null;
+    let { abortSignal, abortController, timeoutMs = 60 * 1e3, chatType = "chat" } = options;
     if (timeoutMs && !abortSignal) {
       abortController = new AbortController();
       abortSignal = abortController.signal;
     }
+    this.abortController = abortController;
     this.requestConfig = {
       method: "post",
       timeout: timeoutMs,
       signal: abortSignal,
+      abortController,
       responseType: "stream",
       headers: this.getRequestHeader(chatType === "code" ? ONLINE_CODE_APIKEY : ONLINE_CHAT_APIKEY)
     };
@@ -71599,7 +71782,26 @@ class ChatApi2 {
       text: "",
       error: ""
     };
+    this.isDone = false;
   }
+  /**
+  * 取消请求
+  */
+  abort() {
+    var _a7;
+    try {
+      if (this.abortController) {
+        (_a7 = this.abortController) == null ? void 0 : _a7.abort();
+      }
+    } catch (error2) {
+      console.error(error2);
+    }
+    this.abortController = void 0;
+  }
+  /**
+   * 获取结果
+   * @returns 结果
+   */
   getCallBackResult() {
     return this.callBackResult || {};
   }
@@ -71613,7 +71815,9 @@ class ChatApi2 {
   async postToServer(url, data, onProgress, onDone) {
     data.requestId = this.callBackResult.id;
     const sseParser = this.createSseParser(onProgress, onDone);
+    let timoutTask;
     try {
+      timoutTask = setTimeout(() => this.abort(), this.requestConfig.timeout);
       let response = await fetch(
         url || this.apiUrl,
         {
@@ -71624,18 +71828,28 @@ class ChatApi2 {
       if (!response.ok) {
         throw new Error(`无法连接到服务器：${response.status}-${response.statusText}`);
       }
+      if (response.body === null) {
+        throw new Error(`响应response.body: 空`);
+      }
       const textDecoder = response.body.pipeThrough(new TextDecoderStream()).getReader();
       while (true) {
         const { done, value } = await textDecoder.read();
         if (done) {
+          this.isDone = true;
           break;
         }
         sseParser.feed(value);
       }
+      if (!this.isDone) {
+        this.fireDone(onDone);
+      }
     } catch (error2) {
-      this.callBackResult.error = "服务异常: " + error2.message;
       console.log(error2);
-      onDone == null ? void 0 : onDone(this.callBackResult);
+      this.callBackResult.error = "服务异常: " + error2.message;
+      this.fireDone(onDone);
+    }
+    if (timoutTask) {
+      clearTimeout(timoutTask);
     }
   }
   /**
@@ -71648,15 +71862,24 @@ class ChatApi2 {
       if (sseEvent.type !== "event") {
         return;
       }
-      const { event, answer } = this.responseDataParser(sseEvent.data);
+      const { event, answer, message } = this.responseDataParser(sseEvent.data);
       if (event === "message") {
         this.callBackResult.text = answer;
+        console.log("SseParser-> message_end");
         onProgress == null ? void 0 : onProgress(this.callBackResult);
       } else if (event === "message_end") {
-        this.callBackResult.text = "";
-        onDone == null ? void 0 : onDone(this.callBackResult);
+        this.fireDone(onDone);
+      } else if (event === "error") {
+        console.log("SseParser->error--->: " + message);
+        this.callBackResult.error = message;
+        this.fireDone(onDone);
       }
     });
+  }
+  fireDone(onDone) {
+    this.callBackResult.text = "";
+    this.isDone = true;
+    onDone == null ? void 0 : onDone(this.callBackResult);
   }
   /**
    * 响应数据二次解析
@@ -73746,8 +73969,8 @@ axios.getAdapter = adapters.getAdapter;
 axios.HttpStatusCode = HttpStatusCode$1;
 axios.default = axios;
 async function getBytes(response, onChunk) {
-  var _a;
-  const reader = (_a = response.body) == null ? void 0 : _a.getReader();
+  var _a7;
+  const reader = (_a7 = response.body) == null ? void 0 : _a7.getReader();
   if (reader) {
     let result = await reader.read();
     while (!result.done) {
@@ -75148,7 +75371,7 @@ const _sfc_main$1 = {
       currentViewType: viewType.introduction,
       isInProgress: false,
       qaData: { list: [] },
-      questionInput: "随机生成一个python函数",
+      questionInput: "",
       questionInputDisabled: false,
       showStopButton: false,
       questionInputButtonsVisible: true,
@@ -75182,13 +75405,13 @@ const _sfc_main$1 = {
       });
     },
     onStopClick(e) {
-      var _a;
+      var _a7;
       e.preventDefault();
       const result = util.postMessageToCodeEditor({
         type: "stopGenerating"
       });
       if (result !== true) {
-        (_a = this.abortController) == null ? void 0 : _a.abort();
+        (_a7 = this.abortController) == null ? void 0 : _a7.abort();
         this.showInProgress({ inProgress: false });
         let existingMessageData = this.qaData.list.find((f) => f.conversationId === this.conversationId);
         if (!existingMessageData && this.qaData.list.length > 0) {
@@ -75204,10 +75427,10 @@ const _sfc_main$1 = {
       }
     },
     onResendClick(message) {
-      var _a;
+      var _a7;
       this.resenEditdVisible = true;
       this.questionInput = message.question;
-      (_a = this.questionInputRef) == null ? void 0 : _a.focus();
+      (_a7 = this.questionInputRef) == null ? void 0 : _a7.focus();
     },
     onQuestionKeyEnter(e) {
       e.preventDefault();
@@ -75224,6 +75447,7 @@ const _sfc_main$1 = {
      */
     async addFreeTextQuestion() {
       const input = this.questionInput;
+      this.questionInput = "";
       try {
         if ((input || "").length === 0) {
           return;
@@ -75233,14 +75457,13 @@ const _sfc_main$1 = {
       } catch (error2) {
         console.error(error2);
       }
-      this.questionInput = "";
     },
     async addFreeTextQuestion4Local(message, withHistory = true) {
-      var _a;
+      var _a7;
       let history2 = withHistory && chatUtil.buildHistories(this.qaData.list);
       this.showInProgress({ showStopButton: true, inProgress: true });
       this.addQuestion(message);
-      (_a = this.abortController) == null ? void 0 : _a.abort();
+      (_a7 = this.abortController) == null ? void 0 : _a7.abort();
       this.abortController = new AbortController();
       await chatUtil.sendApiRequest(
         message.value,
@@ -75319,7 +75542,7 @@ const _sfc_main$1 = {
         this.message = null;
         this.showInProgress({ inProgress: false });
         setTimeout(() => {
-          var _a;
+          var _a7;
           const preCodeList = list2.children[list2.children.length - 1].querySelectorAll("pre > code");
           preCodeList.forEach((preCode) => {
             preCode.classList.add("input-background", "p-4", "pb-2", "block", "whitespace-pre", "overflow-x-scroll");
@@ -75357,7 +75580,7 @@ const _sfc_main$1 = {
             preCode.parentNode.append(buttonWrapper);
           });
           util.autoScrollToBottom(list2);
-          (_a = this.questionInputRef) == null ? void 0 : _a.focus();
+          (_a7 = this.questionInputRef) == null ? void 0 : _a7.focus();
         }, 100);
       }
       if (message.autoScroll) {
@@ -75378,15 +75601,15 @@ const _sfc_main$1 = {
       }
     },
     documnetClickHandler(e) {
-      var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+      var _a7, _b2, _c2, _d, _e, _f, _g, _h, _i;
       const targetButton = e.target.closest("button");
-      if ((_a = targetButton == null ? void 0 : targetButton.classList) == null ? void 0 : _a.contains("resend-element-ext")) {
+      if ((_a7 = targetButton == null ? void 0 : targetButton.classList) == null ? void 0 : _a7.contains("resend-element-ext")) {
         targetButton.classList.add("hidden");
         return;
       }
-      if ((_b = targetButton == null ? void 0 : targetButton.classList) == null ? void 0 : _b.contains("code-element-ext")) {
+      if ((_b2 = targetButton == null ? void 0 : targetButton.classList) == null ? void 0 : _b2.contains("code-element-ext")) {
         e.preventDefault();
-        navigator.clipboard.writeText((_d = (_c = targetButton.parentElement.parentElement) == null ? void 0 : _c.firstElementChild) == null ? void 0 : _d.textContent).then(() => {
+        writeText((_d = (_c2 = targetButton.parentElement.parentElement) == null ? void 0 : _c2.firstElementChild) == null ? void 0 : _d.textContent).then(() => {
           targetButton.innerHTML = `${checkSvg} 已复制`;
           setTimeout(() => {
             targetButton.innerHTML = `${clipboardSvg} 复制`;
@@ -75464,12 +75687,12 @@ const _sfc_main$1 = {
       }
     },
     async busEventHandler(data) {
-      var _a;
+      var _a7;
       let { cmd, value } = data;
       switch (cmd) {
         case "ask":
           this.questionInput = value;
-          (_a = this.questionInputRef) == null ? void 0 : _a.focus();
+          (_a7 = this.questionInputRef) == null ? void 0 : _a7.focus();
           if (!this.isInProgress && !value)
             this.onAskButtonClick();
           break;

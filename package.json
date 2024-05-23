@@ -3,10 +3,10 @@
   "displayName": "toone-code",
   "publisher": "Toone",
   "description": "Toone vscode-toonecode",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "icon": "images/ai-logo.png",
   "engines": {
-    "vscode": "^1.87.0"
+    "vscode": "^1.68.0"
   },
   "categories": [
     "Programming Languages",
@@ -174,7 +174,7 @@
         },
         "toonecode.promptPrefix.addComments": {
           "type": "string",
-          "default": "为以上代码每一行加上注释，并markdown包装生成的新代码",
+          "default": "为以上代码每一行加上注释",
           "description": "允许您选中代码后，让 GPT 针对此代码添加注释的快速 Prompt 前缀。",
           "order": 16
         },
@@ -230,7 +230,7 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
     "@types/uuid": "^9.0.8",
-    "@types/vscode": "^1.87.0",
+    "@types/vscode": "^1.68.0",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
     "@vscode/test-cli": "^0.0.6",

@@ -175,9 +175,9 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand("vscode-toonecode.new-completions", () => {
 		context.globalState.update("DisableInlineCompletion", false);
 		vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
-		setTimeout(() => {
-			context.globalState.update("DisableInlineCompletion", true);
-		}, 200);
+		// setTimeout(() => {
+		// 	context.globalState.update("DisableInlineCompletion", true);
+		// }, 200);
 	});
 
 	// let inlineProvider2: vscode.InlineCompletionItemProvider;
