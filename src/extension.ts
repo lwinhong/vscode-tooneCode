@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import ChatGptViewProvider from './toontcode-view-provider.js';
 import changeIconColor from "./utils/changeIconColor.js";
 import { isCurrentLanguageDisable } from "./utils/isCurrentLanguageDisable.js";
-import { enableExtension, useModel } from "./param/configures.js";
+import { enableExtension } from "./param/configures.js";
 import getDocumentLanguage from "./utils/getDocumentLanguage.js";
 
 let g_isLoading = false;
@@ -211,7 +211,7 @@ export function activate(context: vscode.ExtensionContext) {
 			if (!result) {
 				provider?.sendMessageToPage(prompt, {
 					command: "addComments", code: editor.document.getText(editor.selection),
-					chatType: useModel === "aix" ? "code" : "",
+					chatType: "",
 					filePath: editor.document.fileName,
 					language: getDocumentLanguage(editor)
 				});
@@ -227,7 +227,7 @@ export function activate(context: vscode.ExtensionContext) {
 		if (selection) {
 			const prompt = vscode.workspace.getConfiguration("toonecode").get<string>(`promptPrefix.addTests`) || "";
 			provider?.sendMessageToPage(prompt, {
-				command: "addTests", chatType: useModel === "aix" ? "codeChat" : "", code: selection,
+				command: "addTests", chatType: "", code: selection,
 				language: getDocumentLanguage(editor),
 				filePath: editor.document.fileName
 			});
@@ -248,7 +248,7 @@ export function activate(context: vscode.ExtensionContext) {
 				if (selection && prompt) {
 					provider?.sendMessageToPage(prompt, {
 						command, code: selection, language: getDocumentLanguage(editor),
-						chatType: useModel === "aix" ? "codeChat" : "", filePath: editor.document.fileName
+						chatType: "", filePath: editor.document.fileName
 					});
 				}
 			}));

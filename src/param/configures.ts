@@ -1,12 +1,8 @@
 import { workspace } from "vscode";
 
-export const useOnline = true; //使用在线服务器直连。否则使用测试地址
-
 const configuration = workspace.getConfiguration("toonecode", undefined);
 
-export const generationPreference = configuration.get("GenerationPreference");
 export const disabledFor = configuration.get("DisabledFor", new Object());
-
 export const disabledLangs = () => {
     const disabledFor = configuration.get("DisabledFor", new Object());
     let disabledLangs = [];
@@ -23,48 +19,10 @@ export const disabledLangs = () => {
     return disabledLangs;
 };
 
-const defaultConfig = {
-    temp: 0.8,
-    topp: 0.95,
-    topk: 0,
-};
-const modelConfig = configuration.get("DecodingStrategies", defaultConfig);
-export const temp = modelConfig.temp;
-export const topk = modelConfig.topk;
-export const topp = modelConfig.topp;
 //get number of candidates
 const candidateNum_str = String(configuration.get("CandidateNum", "1"));
 export const candidateNum = parseInt(candidateNum_str);
-export const needGuide = configuration.get("NeedGuide");
-export const translationInsertMode = configuration.get("Translation");
 export const enableExtension = configuration.get("EnableExtension", true);
-export const acceptedsurvey = configuration.get("Survey", null);
 export const completionDelay = configuration.get("CompletionDelay", 0.5);
-export const templates = configuration.get("PromptTemplates(Experimental)", {});
-export const useModel = String(configuration.get("useModel", ""));
-export const controls = {
-    interactiveMode: {
-        mac: "Control + Enter",
-        win: "Ctrl + Enter",
-    },
-    promptMode: {
-        mac: "Option + T",
-        win: "Ctrl + T",
-    },
-    translationMode: {
-        mac: "Option + Control + T",
-        win: "Alt + Ctrl + T",
-    },
-    nextSuggestion: {
-        mac: "Option + ]",
-        win: "Alt + ]",
-    },
-    previousSuggestion: {
-        mac: "Option + [",
-        win: "Alt + [",
-    },
-    newSuggestion: {
-        mac: "Option + N",
-        win: "Alt + N",
-    },
-};
+
+export const useOnline = true; //使用在线服务器直连。否则使用测试地址

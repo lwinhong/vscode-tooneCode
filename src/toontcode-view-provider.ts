@@ -4,7 +4,6 @@ import chatApi from './toone-code/chat-api.js';
 // import inlineCompletionProvider from "./provider/inlineCompletionProvider";
 import inlineCompletionProvider1 from "./provider/inlineCompletionProvider1";
 import inlineCompletionProviderWithCommand from "./provider/inlineCompletionProviderWithCommand.js";
-import { useModel/*, useOnline*/ } from "./param/configures.js";
 import Path from 'path';
 
 export default class ToontCodeViewProvider implements vscode.WebviewViewProvider {
@@ -274,11 +273,9 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		if (code) {
 			// Add prompt prefix to the code if there was a code block selected
 			//question = `${question}${language ? ` (The following code is in ${language} programming language)` : ''}: ${code}`;
-			if (useModel === "aix") {
-				question = `${code}\n${question}`;
-			} else {
-				question = `${question}${language ? ` (当前编程语言是${language})` : ''}: ${code}`;
-			}
+
+			question = `${question}${language ? ` (当前编程语言是${language})` : ''}: ${code}`;
+
 		}
 		return question + "\r\n";
 	}
