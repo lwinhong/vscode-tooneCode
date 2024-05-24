@@ -21,59 +21,59 @@
     "menus": {
       "editor/context": [
         {
-          "submenu": "vscode-toonecode-view-submenus",
+          "submenu": "toonecode-view-submenus",
           "when": "editorHasSelection",
           "group": "navigation"
         }
       ],
-      "vscode-toonecode-view-submenus": [
+      "toonecode-view-submenus": [
         {
-          "command": "vscode-toonecode.generateCode",
+          "command": "toonecode.generateCode",
           "group": "tooneCode@1",
           "when": "editorHasSelection && generateCode-enabled"
         },
         {
-          "command": "vscode-toonecode.addTests",
+          "command": "toonecode.addTests",
           "group": "tooneCode@2",
           "when": "editorHasSelection && addTests-enabled"
         },
         {
-          "command": "vscode-toonecode.findProblems",
+          "command": "toonecode.findProblems",
           "group": "tooneCode@3",
           "when": "editorHasSelection && findProblems-enabled"
         },
         {
-          "command": "vscode-toonecode.optimize",
+          "command": "toonecode.optimize",
           "group": "tooneCode@4",
           "when": "editorHasSelection && optimize-enabled"
         },
         {
-          "command": "vscode-toonecode.explain",
+          "command": "toonecode.explain",
           "group": "tooneCode@5",
           "when": "editorHasSelection && explain-enabled"
         },
         {
-          "command": "vscode-toonecode.addComments",
+          "command": "toonecode.addComments",
           "group": "tooneCode@6",
           "when": "editorHasSelection && addComments-enabled"
         },
         {
-          "command": "vscode-toonecode.completeCode",
+          "command": "toonecode.completeCode",
           "group": "tooneCode@7",
           "when": "editorHasSelection && completeCode-enabled"
         },
         {
-          "command": "vscode-toonecode.adhoc",
+          "command": "toonecode.adhoc",
           "group": "tooneCode@8",
           "when": "editorHasSelection && adhoc-enabled"
         },
         {
-          "command": "vscode-toonecode.customPrompt1",
+          "command": "toonecode.customPrompt1",
           "group": "tooneCode@9",
           "when": "editorHasSelection && customPrompt1-enabled"
         },
         {
-          "command": "vscode-toonecode.customPrompt2",
+          "command": "toonecode.customPrompt2",
           "group": "tooneCode@10",
           "when": "editorHasSelection && customPrompt2-enabled"
         }
@@ -81,67 +81,67 @@
     },
     "submenus": [
       {
-        "id": "vscode-toonecode-view-submenus",
+        "id": "toonecode-view-submenus",
         "label": "TooneCode"
       }
     ],
     "keybindings": [
       {
-        "command": "vscode-toonecode.generateCode",
+        "command": "toonecode.generateCode",
         "key": "ctrl+shift+a",
         "mac": "cmd+shift+a",
         "when": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.addTests",
+        "command": "toonecode.addTests",
         "key": "ctrl+k ctrl+shift+1",
         "mac": "cmd+k cmd+shift+1",
         "when": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.findProblems",
+        "command": "toonecode.findProblems",
         "key": "ctrl+k ctrl+shift+2",
         "mac": "cmd+k cmd+shift+2",
         "when": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.optimize",
+        "command": "toonecode.optimize",
         "key": "ctrl+k ctrl+shift+3",
         "mac": "cmd+k cmd+shift+3",
         "when": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.explain",
+        "command": "toonecode.explain",
         "key": "ctrl+k ctrl+shift+4",
         "mac": "cmd+k cmd+shift+4",
         "when": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.addComments",
+        "command": "toonecode.addComments",
         "key": "ctrl+k ctrl+shift+5",
         "mac": "cmd+k cmd+shift+5",
         "when": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.completeCode",
+        "command": "toonecode.completeCode",
         "key": "ctrl+k ctrl+shift+6",
         "mac": "cmd+k cmd+shift+6",
         "when": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.adhoc",
+        "command": "toonecode.adhoc",
         "key": "ctrl+k ctrl+shift+7",
         "mac": "cmd+k cmd+shift+7",
         "when": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.customPrompt1",
+        "command": "toonecode.customPrompt1",
         "key": "ctrl+k ctrl+shift+8",
         "mac": "cmd+k cmd+shift+8",
         "when": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.customPrompt2",
+        "command": "toonecode.customPrompt2",
         "key": "ctrl+k ctrl+shift+9",
         "mac": "cmd+k cmd+shift+9",
         "when": "editorHasSelection"
@@ -149,86 +149,86 @@
     ],
     "commands": [
       {
-        "command": "vscode-toonecode.freeText",
+        "command": "toonecode.freeText",
         "title": "TooneCode: Ask anything"
       },
       {
-        "command": "vscode-toonecode.clearSession",
+        "command": "toonecode.clearSession",
         "title": "TooneCode: Reset session"
       },
       {
-        "command": "vscode-toonecode.generateCode",
+        "command": "toonecode.generateCode",
         "title": "TooneCode: Generate code",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.addTests",
+        "command": "toonecode.addTests",
         "title": "生成测试",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.findProblems",
+        "command": "toonecode.findProblems",
         "title": "TooneCode: Find bugs",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.optimize",
+        "command": "toonecode.optimize",
         "title": "TooneCode: 优化",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.explain",
+        "command": "toonecode.explain",
         "title": "解析代码",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.addComments",
+        "command": "toonecode.addComments",
         "title": "生成注释",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.completeCode",
+        "command": "toonecode.completeCode",
         "title": "TooneCode: Complete code",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.adhoc",
+        "command": "toonecode.adhoc",
         "title": "TooneCode: Ad-hoc prompt",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.customPrompt1",
+        "command": "toonecode.customPrompt1",
         "title": "TooneCode: Custom prompt 1",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.customPrompt2",
+        "command": "toonecode.customPrompt2",
         "title": "TooneCode: Custom prompt 2",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.clearConversation",
+        "command": "toonecode.clearConversation",
         "title": "TooneCode: Clear conversation"
       },
       {
-        "command": "vscode-toonecode.exportConversation",
+        "command": "toonecode.exportConversation",
         "title": "TooneCode: Export conversation"
       }
     ],
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "vscode-toonecode-view-container",
+          "id": "toonecode-view-container",
           "title": "TooneCode",
           "icon": "images/ai-logo-in.png"
         }
       ]
     },
     "views": {
-      "vscode-toonecode-view-container": [
+      "toonecode-view-container": [
         {
           "type": "webview",
-          "id": "vscode-toonecode.view",
+          "id": "toonecode.view",
           "name": ""
         }
       ]

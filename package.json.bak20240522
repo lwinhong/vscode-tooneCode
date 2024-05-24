@@ -2,7 +2,7 @@
   "name": "toone-code",
   "displayName": "toone-code",
   "publisher": "Toone",
-  "description": "Toone vscode-toonecode",
+  "description": "Toone toonecode",
   "version": "0.0.1",
   "icon": "images/ai-logo.png",
   "engines": {
@@ -22,29 +22,29 @@
     "menus": {
       "editor/context": [
         {
-          "submenu": "vscode-toonecode-view-submenus",
+          "submenu": "toonecode-view-submenus",
           "when": "editorHasSelection",
           "group": "navigation"
         }
       ],
-      "vscode-toonecode-view-submenus": [
+      "toonecode-view-submenus": [
         {
-          "command": "vscode-toonecode.generateCode",
+          "command": "toonecode.generateCode",
           "group": "tooneCode@1",
           "when": "editorHasSelection && generateCode-enabled"
         },
         {
-          "command": "vscode-toonecode.addTests",
+          "command": "toonecode.addTests",
           "group": "tooneCode@2",
           "when": "editorHasSelection && addTests-enabled"
         },
         {
-          "command": "vscode-toonecode.explain",
+          "command": "toonecode.explain",
           "group": "tooneCode@5",
           "when": "editorHasSelection && explain-enabled"
         },
         {
-          "command": "vscode-toonecode.addComments",
+          "command": "toonecode.addComments",
           "group": "tooneCode@6",
           "when": "editorHasSelection && addComments-enabled"
         }
@@ -52,68 +52,68 @@
     },
     "submenus": [
       {
-        "id": "vscode-toonecode-view-submenus",
+        "id": "toonecode-view-submenus",
         "label": "TooneCode"
       }
     ],
     "keybindings": [
       {
-        "command": "vscode-toonecode.generateCode",
+        "command": "toonecode.generateCode",
         "key": "ctrl+shift+a",
         "mac": "cmd+shift+a",
         "when": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.new-completions",
+        "command": "toonecode.new-completions",
         "key": "Alt+p",
         "when": "editorFocus && !editorReadonly"
       }
     ],
     "commands": [
       {
-        "command": "vscode-toonecode.freeText",
+        "command": "toonecode.freeText",
         "title": "TooneCode: Ask anything"
       },
       {
-        "command": "vscode-toonecode.clearSession",
+        "command": "toonecode.clearSession",
         "title": "TooneCode: Reset session"
       },
       {
-        "command": "vscode-toonecode.generateCode",
+        "command": "toonecode.generateCode",
         "title": "生成代码",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.addTests",
+        "command": "toonecode.addTests",
         "title": "生成测试",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.optimize",
+        "command": "toonecode.optimize",
         "title": "TooneCode: 优化",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.explain",
+        "command": "toonecode.explain",
         "title": "解析代码",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.addComments",
+        "command": "toonecode.addComments",
         "title": "生成注释",
         "enablement": "editorHasSelection && !editorReadonly"
       },
       {
-        "command": "vscode-toonecode.completeCode",
+        "command": "toonecode.completeCode",
         "title": "完成代码",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.clearConversation",
+        "command": "toonecode.clearConversation",
         "title": "TooneCode: Clear conversation"
       },
       {
-        "command": "vscode-toonecode.exportConversation",
+        "command": "toonecode.exportConversation",
         "title": "TooneCode: Export conversation"
       },
       {
@@ -124,17 +124,17 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "vscode-toonecode-view-container",
+          "id": "toonecode-view-container",
           "title": "TooneCode",
           "icon": "images/ai-logo-in.svg"
         }
       ]
     },
     "views": {
-      "vscode-toonecode-view-container": [
+      "toonecode-view-container": [
         {
           "type": "webview",
-          "id": "vscode-toonecode.view",
+          "id": "toonecode.view",
           "name": ""
         }
       ]
