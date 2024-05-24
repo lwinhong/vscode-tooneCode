@@ -1,1 +1,1 @@
-welcome to use toone vscode plugin !
+欢迎使用

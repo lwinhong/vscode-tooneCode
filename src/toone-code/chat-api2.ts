@@ -1,12 +1,14 @@
 import { v4 as uuidv4 } from "uuid";
-// import { createParser } from "../utils/eventsource-parser/parse";
 const { createParser } = require('eventsource-parser');
+
 // 聊天接口
 export const ONLINE_CHAT_APIKEY = "app-jWmI0bA3AioiorQq6bmU73Ik";
 export const ONLINE_CHAT_API = "http://ai.t.vtoone.com/api/v1/chat-messages";
 // 代码接口
 export const ONLINE_CODE_APIKEY = "app-HZSqJWyZI6xjqkbyXUIcLErR";
 export const ONLINE_CODE_API = "http://ai.t.vtoone.com/api/v1/completion-messages";
+//export const ONLINE_CODE_APIKEY = "app-app-OU5P1wr9ErUs0VBsuK5CBk5I";
+//export const ONLINE_CODE_API = "http://10.1.30.43:5001/v1/completion-messages";
 
 export default class ChatApi2 {
     private requestConfig;
@@ -16,7 +18,7 @@ export default class ChatApi2 {
     private isDone: boolean = false;
 
     constructor(options: any) {
-        let { abortSignal, abortController, timeoutMs = 20 * 1000, chatType = "chat" } = options;
+        let { abortSignal, abortController, timeoutMs = 60 * 1000, chatType = "chat" } = options;
 
         if (timeoutMs && !abortSignal) {
             abortController = new AbortController();
@@ -79,7 +81,7 @@ export default class ChatApi2 {
         data.requestId = this.callBackResult.id;
 
         //sse 解析器
-        const sseParser = this.createSseParser(onProgress, onDone);
+        const sseParser = this.createSseParser(onProgress, onDone, data);
         let timoutTask;
         try {
             //超时处理
@@ -107,6 +109,7 @@ export default class ChatApi2 {
                 }
                 sseParser.feed(value);
             }
+
             if (!this.isDone) {
                 this.fireDone(onDone);
             }
@@ -125,12 +128,13 @@ export default class ChatApi2 {
      * @param {进度} onProgress 
      * @returns 
      */
-    createSseParser(onProgress: any, onDone: any) {
+    createSseParser(onProgress: any, onDone: any, data: any) {
+        let notOnline = data && data.useOnline === false;
         return createParser((sseEvent: any) => {
             if (sseEvent.type !== 'event') {
                 return;
             }
-            const { event, answer, message } = this.responseDataParser(sseEvent.data);
+            const { event, answer, message } = this.responseDataParser(sseEvent, !notOnline);
             console.log("SseParser-> " + event + ":" + answer);
             if (event === 'message') {
                 this.callBackResult.text = answer;
@@ -138,7 +142,7 @@ export default class ChatApi2 {
             } else if (event === "message_end") {
                 this.fireDone(onDone);
             } else if (event === "error") {
-                console.log("SseParser->error--->: " + message);  
+                console.log("SseParser->error--->: " + message);
                 this.callBackResult.error = message;
                 this.fireDone(onDone);
             }
@@ -156,13 +160,17 @@ export default class ChatApi2 {
      * @param {响应数据} data 
      * @returns 
      */
-    responseDataParser(data: any) {
-        try {
-            return JSON.parse(data);
+    responseDataParser(sseEvent: any, useOnline: boolean) {
+        if (useOnline) {
+            try {
+                return JSON.parse(sseEvent.data);
+            }
+            catch (error) {
+                console.error(error);
+            }
+            return;
         }
-        catch (error) {
-            console.error(error);
-        }
+        return { event: sseEvent.event, answer: sseEvent.data, message: sseEvent.data };
     }
 
     /**
@@ -185,6 +193,10 @@ export default class ChatApi2 {
      * @returns 
      */
     getRequestData(originData: any) {
+        if (!originData.useOnline) {
+            return originData;
+        }
+
         let { chatType, lang, prompt, history, prefixCode, suffixCode, max_length } = originData;
         let query: any = {
             "response_mode": "streaming",
@@ -207,13 +219,14 @@ export default class ChatApi2 {
     }
 
     getRequestDataJson(originData: any) {
-        return JSON.stringify(this.getRequestData(originData));
+        const json = JSON.stringify(this.getRequestData(originData));
+        return json;
     }
 
     /**
      * 组装历史
      * @param {历史集合} histories [[]...]
-     * @param {*} messages 
+     * @param {*} promptMessages 
      */
     buildHistory(histories: any, promptMessages: any) {
         histories && histories.forEach((history: any) => {

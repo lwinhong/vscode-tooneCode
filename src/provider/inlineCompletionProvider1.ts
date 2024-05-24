@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { candidateNum, completionDelay, disabledFor } from "../param/configures";
+import { candidateNum, completionDelay, disabledFor, useOnline } from "../param/configures";
 
 import ChatGptViewProvider from '../toontcode-view-provider';
 import ChatApi2 from "../toone-code/chat-api2";
@@ -126,14 +126,24 @@ const requestApi = async (question: string, lang?: string,
     return new Promise(async (resolve, reject) => {
         try {
             let response = "";
+            let url = "";
             let requesOption: any = {
                 abortSignal: abortController.signal,
                 abortController,
                 chatType: 'code', lang, max_length: 256, filePath,
                 prefixCode: question, suffixCode: laterCode,
             };
+            if (!useOnline) {
+                url = "http://codeserver.t.vtoone.com/v1/code_generate_fim";
+                requesOption.prompt = question;
+                requesOption.laterCode = laterCode;
+                requesOption.stream = true;
+                requesOption.prefixCode = "";
+                requesOption.suffixCode = "";
+                requesOption.useOnline = false;
+            }
             const chatApi2 = lastChatApi2 = new ChatApi2(requesOption);
-            await chatApi2.postToServer("", requesOption,
+            await chatApi2.postToServer(url, requesOption,
                 (message: any) => response += message.text,
                 (message: any) => {
                     resolve(response);

@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import ChatGptViewProvider from './toontcode-view-provider.js';
 import changeIconColor from "./utils/changeIconColor.js";
 import { isCurrentLanguageDisable } from "./utils/isCurrentLanguageDisable.js";
-import { enableExtension, onlyKeyControl, useModel } from "./param/configures.js";
+import { enableExtension, useModel } from "./param/configures.js";
 import getDocumentLanguage from "./utils/getDocumentLanguage.js";
 
 let g_isLoading = false;
@@ -23,7 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	provider = new ChatGptViewProvider(context);
 	const view = vscode.window.registerWebviewViewProvider(
-		"vscode-toonecode.view",
+		"toonecode.view",
 		provider,
 		{
 			webviewOptions: {
@@ -32,36 +32,36 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	);
 
-	const freeText = vscode.commands.registerCommand("vscode-toonecode.freeText", async () => {
-		const value = await vscode.window.showInputBox({
-			prompt: "请输入提示",
-		});
+	// const freeText = vscode.commands.registerCommand("toonecode.freeText", async () => {
+	// 	const value = await vscode.window.showInputBox({
+	// 		prompt: "请输入提示",
+	// 	});
 
-		if (value) {
-			provider?.sendApiRequest(value, { command: "freeText" });
-		}
-	});
+	// 	if (value) {
+	// 		provider?.sendApiRequest(value, { command: "freeText" });
+	// 	}
+	// });
 
-	/**
-	 * 清理对话
-	 */
-	const resetThread = vscode.commands.registerCommand("vscode-toonecode.clearConversation", async () => {
-		provider?.sendMessage({ type: 'clearConversation' }, true);
-	});
+	// /**
+	//  * 清理对话
+	//  */
+	// const resetThread = vscode.commands.registerCommand("toonecode.clearConversation", async () => {
+	// 	provider?.sendMessage({ type: 'clearConversation' }, true);
+	// });
 
-	/**
-	 * 导出对话
-	 */
-	const exportConversation = vscode.commands.registerCommand("vscode-toonecode.exportConversation", async () => {
-		provider?.sendMessage({ type: 'exportConversation' }, true);
-	});
+	// /**
+	//  * 导出对话
+	//  */
+	// const exportConversation = vscode.commands.registerCommand("toonecode.exportConversation", async () => {
+	// 	provider?.sendMessage({ type: 'exportConversation' }, true);
+	// });
 
-	/**
-	 * 清理session
-	 */
-	const clearSession = vscode.commands.registerCommand("vscode-toonecode.clearSession", () => {
-		provider?.clearSession();
-	});
+	// /**
+	//  * 清理session
+	//  */
+	// const clearSession = vscode.commands.registerCommand("toonecode.clearSession", () => {
+	// 	provider?.clearSession();
+	// });
 
 	/**
 	 * 配置改变，需要对参试应用
@@ -75,7 +75,7 @@ export function activate(context: vscode.ExtensionContext) {
 	/**
 	 * 临时提问
 	 */
-	const adhocCommand = vscode.commands.registerCommand("vscode-toonecode.adhoc", async () => {
+	const adhocCommand = vscode.commands.registerCommand("toonecode.adhoc", async () => {
 		const editor = vscode.window.activeTextEditor;
 
 		if (!editor) {
@@ -111,7 +111,7 @@ export function activate(context: vscode.ExtensionContext) {
 	/**
 	 * 生成代码
 	 */
-	const generateCodeCommand = vscode.commands.registerCommand(`vscode-toonecode.generateCode`, () => {
+	const generateCodeCommand = vscode.commands.registerCommand(`toonecode.generateCode`, () => {
 		const editor = vscode.window.activeTextEditor;
 
 		if (!editor) {
@@ -136,10 +136,10 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 	const statusBarItemCommandId = "toonecode.disable-enable";
 	context.subscriptions.push(
-        vscode.commands.registerCommand(statusBarItemCommandId, () => {
-            //disableEnable(myStatusBarItem, g_isLoading, originalColor, context);
-        })
-    );
+		vscode.commands.registerCommand(statusBarItemCommandId, () => {
+			//disableEnable(myStatusBarItem, g_isLoading, originalColor, context);
+		})
+	);
 	myStatusBarItem = vscode.window.createStatusBarItem(
 		vscode.StatusBarAlignment.Right,
 		100
@@ -159,20 +159,20 @@ export function activate(context: vscode.ExtensionContext) {
 		false,
 		originalColor,
 		context);
-	if (onlyKeyControl) {
-		context.globalState.update("DisableInlineCompletion", true);
-	} else {
-		context.globalState.update("DisableInlineCompletion", false);
-		//context.globalState.update("DisableInlineCompletion", true);
-		context.subscriptions.push(
-			vscode.languages.registerInlineCompletionItemProvider(
-				{ pattern: "**" },
-				inlineProvider
-			)
-		);
-	}
+	// if (onlyKeyControl) {
+	// 	context.globalState.update("DisableInlineCompletion", true);
+	// } else {
+	context.globalState.update("DisableInlineCompletion", false);
+	//context.globalState.update("DisableInlineCompletion", true);
+	context.subscriptions.push(
+		vscode.languages.registerInlineCompletionItemProvider(
+			{ pattern: "**" },
+			inlineProvider
+		)
+	);
+	// }
 
-	vscode.commands.registerCommand("vscode-toonecode.new-completions", () => {
+	vscode.commands.registerCommand("toonecode.new-completions", () => {
 		context.globalState.update("DisableInlineCompletion", false);
 		vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
 		// setTimeout(() => {
@@ -187,7 +187,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// 	originalColor,
 	// 	context);
 	// let oneTimeDispo: vscode.Disposable;
-	// vscode.commands.registerCommand("vscode-toonecode.new-completions", () => {
+	// vscode.commands.registerCommand("toonecode.new-completions", () => {
 	//     if (oneTimeDispo) {
 	//         oneTimeDispo.dispose();
 	//     }
@@ -202,7 +202,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 
 	//addComments
-	const addComments = vscode.commands.registerCommand(`vscode-toonecode.addComments`, () => {
+	const addComments = vscode.commands.registerCommand(`toonecode.addComments`, () => {
 		const prompt = vscode.workspace.getConfiguration("toonecode").get<string>(`promptPrefix.addComments`);
 		const editor = vscode.window.activeTextEditor;
 		if (prompt && editor) {
@@ -218,7 +218,7 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}
 	});
-	const addTestsCommand = vscode.commands.registerCommand(`vscode-toonecode.addTests`, () => {
+	const addTestsCommand = vscode.commands.registerCommand(`toonecode.addTests`, () => {
 		const editor = vscode.window.activeTextEditor;
 		if (!editor) {
 			return;
@@ -235,8 +235,8 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	// Skip AdHoc - as it was registered earlier
 	const registeredCommands = menuCommands.filter(command =>
-		command !== "addComments" && command !== "completeCode" && command !== "addTests" && command !== "adhoc" && command !== "generateCode").map((command) =>
-			vscode.commands.registerCommand(`vscode-toonecode.${command}`, () => {
+		command !== "addComments" && command !== "addTests" && command !== "adhoc" && command !== "generateCode").map((command) =>
+			vscode.commands.registerCommand(`toonecode.${command}`, () => {
 				const prompt = vscode.workspace.getConfiguration("toonecode").get<string>(`promptPrefix.${command}`);
 				const editor = vscode.window.activeTextEditor;
 
@@ -253,13 +253,19 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 			}));
 
-	context.subscriptions.push(view, freeText, resetThread, exportConversation, clearSession, configChanged,
+
+	registeredCommands.push(vscode.commands.registerCommand("toonecode.ask", async () => {
+		await provider?.showWebview();
+		provider?.sendMessage({ type: 'ask', value: "" });
+	}));
+
+	context.subscriptions.push(view, configChanged,
 		adhocCommand, addTestsCommand, addComments, generateCodeCommand, ...registeredCommands);
 
 	const setContext = () => {
 		menuCommands.forEach(command => {
 			// if (command === "generateCode") {
-			// 	let generateCodeEnabled = true;// !!vscode.workspace.getConfiguration("chatgpt").get<boolean>("gpt3.generateCode-enabled");
+			// 	let generateCodeEnabled = true;// !!vscode.workspace.getConfiguration("chatgpt").get<boolean>("generateCode-enabled");
 			// 	// const modelName = vscode.workspace.getConfiguration("chatgpt").get("gpt3.model") as string;
 			// 	// const method = vscode.workspace.getConfiguration("chatgpt").get("method") as string;
 			// 	// generateCodeEnabled = generateCodeEnabled && method === "GPT3 OpenAI API Key" && modelName.startsWith("code-");

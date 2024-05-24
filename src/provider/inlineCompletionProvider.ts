@@ -132,6 +132,7 @@ async function completetionEnabled(
 }
 
 function requestApi(question: string, lang?: string, chatCodeApi?: chatApi, filePath?: string, laterCode?: string, fim?: boolean): Promise<any> {
+    abortController?.abort();
     abortController = new AbortController();
     if (filePath) {
         filePath = Path.basename(filePath);
@@ -153,7 +154,7 @@ function requestApi(question: string, lang?: string, chatCodeApi?: chatApi, file
                 prefixCode: question,
                 suffixCode: laterCode,
             };
-            const chatApi2 = new ChatApi2(requesOption);
+
             let onProgress = (message: any) => {
                 response += message.text;
             };
@@ -162,28 +163,23 @@ function requestApi(question: string, lang?: string, chatCodeApi?: chatApi, file
                 resolve(response);
                 return false;
             };
-            await chatApi2.postToServer("", requesOption, onProgress, onDone);
+            //const chatApi2 = new ChatApi2(requesOption);
+            //await chatApi2.postToServer("", requesOption, onProgress, onDone);
 
             // 一下是之前访问code服务的实现方法，还可以用
-            // await chatCodeApi.sendMessage(question, {
-            //     abortSignal: abortController.signal,
-            //     stream: true,
-            //     chatType: 'code',
-            //     lang,
-            //     max_length: 256,
-            //     timeoutMs: 40 * 1000,
-            //     filePath,
-            //     laterCode,
-            //     url: "/code_generate" + (fim ? "_fim" : ""),
-            //     onProgress: (message) => {
-            //         response += message.text;
-            //     },
-            //     onDone: (message) => {
-            //         //response = message.text;
-            //         resolve(response);
-            //         return false;
-            //     }
-            // });
+            await chatCodeApi.sendMessage(question, {
+                abortSignal: abortController.signal,
+                stream: true,
+                chatType: 'code',
+                lang,
+                max_length: 256,
+                timeoutMs: 40 * 1000,
+                filePath,
+                laterCode,
+                url: "/code_generate" + (fim ? "_fim" : ""),
+                onProgress,
+                onDone
+            });
         } catch (error) {
             //出错了干点什么
             reject(error);

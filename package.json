@@ -2,7 +2,7 @@
   "name": "toone-code",
   "displayName": "toone-code",
   "publisher": "Toone",
-  "description": "Toone vscode-toonecode",
+  "description": "Toone toonecode",
   "version": "0.0.2",
   "icon": "images/ai-logo.png",
   "engines": {
@@ -22,99 +22,80 @@
     "menus": {
       "editor/context": [
         {
-          "submenu": "vscode-toonecode-view-submenus",
-          "when": "editorHasSelection",
+          "submenu": "toonecode-submenus",
           "group": "navigation"
         }
       ],
-      "vscode-toonecode-view-submenus": [
+      "toonecode-submenus": [
         {
-          "command": "vscode-toonecode.generateCode",
-          "group": "tooneCode@1",
+          "command": "toonecode.ask",
+          "group": "tooneCode@1"
+        },
+        {
+          "command": "toonecode.generateCode",
+          "group": "tooneCode@2",
           "when": "editorHasSelection && generateCode-enabled"
         },
         {
-          "command": "vscode-toonecode.addTests",
-          "group": "tooneCode@2",
+          "command": "toonecode.addTests",
+          "group": "tooneCode@3",
           "when": "editorHasSelection && addTests-enabled"
         },
         {
-          "command": "vscode-toonecode.explain",
-          "group": "tooneCode@5",
+          "command": "toonecode.explain",
+          "group": "tooneCode@4",
           "when": "editorHasSelection && explain-enabled"
         },
         {
-          "command": "vscode-toonecode.addComments",
-          "group": "tooneCode@6",
+          "command": "toonecode.addComments",
+          "group": "tooneCode@5",
           "when": "editorHasSelection && addComments-enabled"
         }
       ]
     },
     "submenus": [
       {
-        "id": "vscode-toonecode-view-submenus",
+        "id": "toonecode-submenus",
         "label": "TooneCode"
       }
     ],
     "keybindings": [
       {
-        "command": "vscode-toonecode.generateCode",
-        "key": "ctrl+shift+a",
-        "mac": "cmd+shift+a",
-        "when": "editorHasSelection"
-      },
-      {
-        "command": "vscode-toonecode.new-completions",
-        "key": "Alt+p",
+        "command": "toonecode.new-completions",
+        "key": "alt+p",
+        "mac": "alt+p",
         "when": "editorFocus && !editorReadonly"
       }
     ],
     "commands": [
       {
-        "command": "vscode-toonecode.freeText",
-        "title": "TooneCode: Ask anything"
+        "command": "toonecode.ask",
+        "title": "提问"
       },
       {
-        "command": "vscode-toonecode.clearSession",
-        "title": "TooneCode: Reset session"
-      },
-      {
-        "command": "vscode-toonecode.generateCode",
+        "command": "toonecode.generateCode",
         "title": "生成代码",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.addTests",
+        "command": "toonecode.addTests",
         "title": "生成测试",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.optimize",
-        "title": "TooneCode: 优化",
+        "command": "toonecode.optimize",
+        "title": "优化建议",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.explain",
+        "command": "toonecode.explain",
         "title": "解析代码",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "vscode-toonecode.addComments",
-        "title": "生成注释",
+        "command": "toonecode.addComments",
+        "title": "逐行注释",
         "enablement": "editorHasSelection && !editorReadonly"
-      },
-      {
-        "command": "vscode-toonecode.completeCode",
-        "title": "完成代码",
-        "enablement": "editorHasSelection"
-      },
-      {
-        "command": "vscode-toonecode.clearConversation",
-        "title": "TooneCode: Clear conversation"
-      },
-      {
-        "command": "vscode-toonecode.exportConversation",
-        "title": "TooneCode: Export conversation"
       },
       {
         "command": "toonecode.disable-enable",
@@ -124,17 +105,17 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "vscode-toonecode-view-container",
+          "id": "toonecode-view-container",
           "title": "TooneCode",
           "icon": "images/ai-logo-in.svg"
         }
       ]
     },
     "views": {
-      "vscode-toonecode-view-container": [
+      "toonecode-view-container": [
         {
           "type": "webview",
-          "id": "vscode-toonecode.view",
+          "id": "toonecode.view",
           "name": ""
         }
       ]
@@ -142,7 +123,7 @@
     "configuration": {
       "title": "toonecode",
       "properties": {
-        "toonecode.gpt3.generateCode-enabled": {
+        "toonecode.generateCode-enabled": {
           "type": "boolean",
           "default": false,
           "description": "选中代码后，在上下文菜单选项显示[生成代码或注释]。仅适用于 code-* 语言模型。",
@@ -189,29 +170,6 @@
           "default": "补全以下的代码",
           "description": "允许您选中代码后，让 GPT 针对此代码补全代码的快速 Prompt 前缀。",
           "order": 18
-        },
-        "toonecode.promptPrefix.completeCode-enabled": {
-          "type": "boolean",
-          "default": false,
-          "description": "选中代码后，是否在上下文菜单选项显示[补全代码]",
-          "order": 19
-        },
-        "toonecode.apiBaseUrl": {
-          "type": "string",
-          "default": "http://codeserver.t.vtoone.com/v1",
-          "markdownDescription": "服务地址",
-          "order": 31
-        },
-        "toonecode.response.autoScroll": {
-          "type": "boolean",
-          "default": true,
-          "description": "每当对话窗口添加新问题或响应时，扩展程序将自动滚动到底部。您可以通过禁用此设置来更改该行为。",
-          "order": 38
-        },
-        "toonecode.OnlyKeyControl": {
-          "type": "boolean",
-          "default": null,
-          "description": "如果您只想在隐身模式下按 alt/option+\\ 来获取需要的建议，请选中此选项"
         }
       }
     }

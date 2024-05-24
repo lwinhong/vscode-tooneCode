@@ -1,5 +1,7 @@
 import { workspace } from "vscode";
 
+export const useOnline = true; //使用在线服务器直连。否则使用测试地址
+
 const configuration = workspace.getConfiguration("toonecode", undefined);
 
 export const generationPreference = configuration.get("GenerationPreference");
@@ -39,7 +41,6 @@ export const enableExtension = configuration.get("EnableExtension", true);
 export const acceptedsurvey = configuration.get("Survey", null);
 export const completionDelay = configuration.get("CompletionDelay", 0.5);
 export const templates = configuration.get("PromptTemplates(Experimental)", {});
-export const onlyKeyControl = configuration.get("OnlyKeyControl");
 export const useModel = String(configuration.get("useModel", ""));
 export const controls = {
     interactiveMode: {

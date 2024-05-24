@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import CodeGenByTemplateUtil from './utils/codeGenByTemplateUtil.js';
 import chatApi from './toone-code/chat-api.js';
-import inlineCompletionProvider from "./provider/inlineCompletionProvider";
+// import inlineCompletionProvider from "./provider/inlineCompletionProvider";
 import inlineCompletionProvider1 from "./provider/inlineCompletionProvider1";
 import inlineCompletionProviderWithCommand from "./provider/inlineCompletionProviderWithCommand.js";
-import { useModel } from "./param/configures.js";
+import { useModel/*, useOnline*/ } from "./param/configures.js";
 import Path from 'path';
 
 export default class ToontCodeViewProvider implements vscode.WebviewViewProvider {
@@ -27,7 +27,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 	 * @param context vscode上下文
 	 */
 	constructor(private context: vscode.ExtensionContext) {
-		this.autoScroll = !!vscode.workspace.getConfiguration("toonecode").get("response.autoScroll");
+		this.autoScroll = true;//!!vscode.workspace.getConfiguration("toonecode").get("response.autoScroll");
 		this.setMethod();
 		this.login();
 	}
@@ -141,16 +141,23 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		});
 	}
 
-	private async showWebview() {
-		// If the ChatGPT view is not in focus/visible; focus on it to render Q&A
-		if (!this.webView) {
-			vscode.commands.executeCommand('vscode-toonecode.view.focus');
-			await new Promise((resole, reject) => setTimeout(() => {
-				resole(true);
-			}, 800));
-		} else {
-			this.webView?.show?.(true);
-		}
+	public showWebview() {
+		return new Promise((resole, reject) => {
+			try {
+				if (!this.webView) {
+					vscode.commands.executeCommand('toonecode.view.focus').then(v => {
+						setTimeout(() => {
+							resole(true);
+						}, 800);
+					});
+				} else {
+					this.webView?.show?.(true);
+					resole(true);
+				}
+			} catch (error) {
+				reject();
+			}
+		});
 	}
 
 	public async sendApiRequest(prompt: string, options: {
@@ -184,7 +191,6 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 
 		if (filePath) {
 			filePath = Path.basename(filePath);
-
 		}
 
 		if (this.chatCodeApi) {
@@ -282,7 +288,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 			return false;
 		}
 		const configuration = vscode.workspace.getConfiguration("toonecode");
-		const apiBaseUrl = configuration.get("apiBaseUrl") as string;
+		const apiBaseUrl = "";//configuration.get("apiBaseUrl") as string;
 
 		this.chatCodeApi = new chatApi({
 			apiBaseUrl: apiBaseUrl?.trim() || undefined,
@@ -326,8 +332,10 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 		reGetCompletions: boolean,
 		originalColor: string | vscode.ThemeColor | undefined,
 		extensionContext: vscode.ExtensionContext): vscode.InlineCompletionItemProvider {
-		//return inlineCompletionProvider(g_isLoading, myStatusBarItem, reGetCompletions, originalColor, extensionContext, this.chatCodeApi, this);
+		//if (useOnline) {
 		return inlineCompletionProvider1(g_isLoading, myStatusBarItem, reGetCompletions, originalColor, extensionContext);
+		//}
+		//return inlineCompletionProvider(g_isLoading, myStatusBarItem, reGetCompletions, originalColor, extensionContext, this.chatCodeApi, this);
 	}
 
 	public setMethod(): void {

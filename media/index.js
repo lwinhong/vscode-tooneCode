@@ -18207,31 +18207,9 @@ const _hoisted_3$4 = [
 function _sfc_render$4(_ctx, _cache) {
   return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_3$4);
 }
-const __unplugin_components_2 = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["render", _sfc_render$4]]);
+const __unplugin_components_1 = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["render", _sfc_render$4]]);
 const _sfc_main$4 = {};
 const _hoisted_1$3 = {
-  xmlns: "http://www.w3.org/2000/svg",
-  fill: "none",
-  viewBox: "0 0 24 24",
-  "data-license": "isc-gnc",
-  "stroke-width": "2",
-  stroke: "currentColor",
-  class: "w-3 h-3"
-};
-const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode("path", {
-  "stroke-linecap": "round",
-  "stroke-linejoin": "round",
-  d: "M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
-}, null, -1);
-const _hoisted_3$3 = [
-  _hoisted_2$3
-];
-function _sfc_render$3(_ctx, _cache) {
-  return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_3$3);
-}
-const __unplugin_components_1 = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$3]]);
-const _sfc_main$3 = {};
-const _hoisted_1$2 = {
   xmlns: "http://www.w3.org/2000/svg",
   fill: "none",
   viewBox: "0 0 24 24",
@@ -18240,18 +18218,18 @@ const _hoisted_1$2 = {
   stroke: "currentColor",
   class: "w-5 mr-2"
 };
-const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("path", {
+const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode("path", {
   "stroke-linecap": "round",
   "stroke-linejoin": "round",
   d: "M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"
 }, null, -1);
-const _hoisted_3$2 = [
-  _hoisted_2$2
+const _hoisted_3$3 = [
+  _hoisted_2$3
 ];
-function _sfc_render$2(_ctx, _cache) {
-  return openBlock(), createElementBlock("svg", _hoisted_1$2, _hoisted_3$2);
+function _sfc_render$3(_ctx, _cache) {
+  return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_3$3);
 }
-const __unplugin_components_0 = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["render", _sfc_render$2]]);
+const __unplugin_components_0 = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$3]]);
 var TEXT_PLAIN = "text/plain";
 function warnOrLog() {
   (console.warn || console.log).apply(console, arguments);
@@ -71814,17 +71792,14 @@ class ChatApi2 {
    */
   async postToServer(url, data, onProgress, onDone) {
     data.requestId = this.callBackResult.id;
-    const sseParser = this.createSseParser(onProgress, onDone);
+    const sseParser = this.createSseParser(onProgress, onDone, data);
     let timoutTask;
     try {
       timoutTask = setTimeout(() => this.abort(), this.requestConfig.timeout);
-      let response = await fetch(
-        url || this.apiUrl,
-        {
-          body: this.getRequestDataJson(data),
-          ...this.requestConfig
-        }
-      );
+      let response = await fetch(url || this.apiUrl, {
+        body: this.getRequestDataJson(data),
+        ...this.requestConfig
+      });
       if (!response.ok) {
         throw new Error(`无法连接到服务器：${response.status}-${response.statusText}`);
       }
@@ -71857,17 +71832,18 @@ class ChatApi2 {
    * @param {进度} onProgress 
    * @returns 
    */
-  createSseParser(onProgress, onDone) {
+  createSseParser(onProgress, onDone, data) {
+    let notOnline = data && data.useOnline === false;
     return createParser((sseEvent) => {
       if (sseEvent.type !== "event") {
         return;
       }
-      const { event, answer, message } = this.responseDataParser(sseEvent.data);
+      const { event, answer, message } = this.responseDataParser(sseEvent, !notOnline);
       if (event === "message") {
         this.callBackResult.text = answer;
-        console.log("SseParser-> message_end");
         onProgress == null ? void 0 : onProgress(this.callBackResult);
       } else if (event === "message_end") {
+        console.log("SseParser-> message_end");
         this.fireDone(onDone);
       } else if (event === "error") {
         console.log("SseParser->error--->: " + message);
@@ -71886,12 +71862,16 @@ class ChatApi2 {
    * @param {响应数据} data 
    * @returns 
    */
-  responseDataParser(data) {
-    try {
-      return JSON.parse(data);
-    } catch (error2) {
-      console.error(error2);
+  responseDataParser(sseEvent, useOnline) {
+    if (useOnline) {
+      try {
+        return JSON.parse(sseEvent.data);
+      } catch (error2) {
+        console.error(error2);
+      }
+      return;
     }
+    return { event: sseEvent.event, answer: sseEvent.data, message: sseEvent.data };
   }
   /**
    * 添加请求头
@@ -71912,6 +71892,9 @@ class ChatApi2 {
    * @returns 
    */
   getRequestData(originData) {
+    if (!originData.useOnline) {
+      return originData;
+    }
     let { chatType, lang, prompt, history: history2, prefixCode, suffixCode, max_length } = originData;
     let query = {
       "response_mode": "streaming",
@@ -74457,8 +74440,8 @@ const chatUtil = {
     onDone == null ? void 0 : onDone(responseResult);
   }
 };
-const _sfc_main$2 = {};
-const _hoisted_1$1 = {
+const _sfc_main$3 = {};
+const _hoisted_1$2 = {
   xmlns: "http://www.w3.org/2000/svg",
   fill: "none",
   viewBox: "0 0 24 24",
@@ -74467,10 +74450,32 @@ const _hoisted_1$1 = {
   stroke: "currentColor",
   class: "w-5 mr-2"
 };
-const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode("path", {
+const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("path", {
   "stroke-linecap": "round",
   "stroke-linejoin": "round",
   d: "M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"
+}, null, -1);
+const _hoisted_3$2 = [
+  _hoisted_2$2
+];
+function _sfc_render$2(_ctx, _cache) {
+  return openBlock(), createElementBlock("svg", _hoisted_1$2, _hoisted_3$2);
+}
+const IconUserSvg = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["render", _sfc_render$2]]);
+const _sfc_main$2 = {};
+const _hoisted_1$1 = {
+  xmlns: "http://www.w3.org/2000/svg",
+  fill: "none",
+  viewBox: "0 0 24 24",
+  "data-license": "isc-gnc",
+  "stroke-width": "2",
+  stroke: "currentColor",
+  class: "w-3 h-3"
+};
+const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode("path", {
+  "stroke-linecap": "round",
+  "stroke-linejoin": "round",
+  d: "M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
 }, null, -1);
 const _hoisted_3$1 = [
   _hoisted_2$1
@@ -74478,7 +74483,7 @@ const _hoisted_3$1 = [
 function _sfc_render$1(_ctx, _cache) {
   return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_3$1);
 }
-const IconUserSvg = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render$1]]);
+const IconPencilSvg = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render$1]]);
 const getLanguageExtByFilePath = (filePath) => {
   if (!filePath)
     return "";
@@ -75362,8 +75367,8 @@ const _sfc_main$1 = {
   name: "ChatView",
   components: {
     IconUserSvg,
-    IconPencilSvg: __unplugin_components_1,
-    IconAiSvg: __unplugin_components_2
+    IconPencilSvg,
+    IconAiSvg: __unplugin_components_1
     /*IconSendSvg, IconCancelSvg*/
   },
   data() {
@@ -75429,7 +75434,7 @@ const _sfc_main$1 = {
     onResendClick(message) {
       var _a7;
       this.resenEditdVisible = true;
-      this.questionInput = message.question;
+      this.questionInput = message.originQuestion;
       (_a7 = this.questionInputRef) == null ? void 0 : _a7.focus();
     },
     onQuestionKeyEnter(e) {
@@ -75515,7 +75520,9 @@ const _sfc_main$1 = {
         originAnswer: "",
         done: false
       });
-      util.autoScrollToBottom(this.qaElementList);
+      setTimeout(() => {
+        util.autoScrollToBottom(this.qaElementList);
+      }, 100);
     },
     addResponse(message) {
       this.addResponseCore(message);
@@ -75681,6 +75688,7 @@ const _sfc_main$1 = {
         case "textSelectionChanged":
           break;
         case "chat_code":
+        case "ask":
           message.cmd = message.type;
           this.busEventHandler(message);
           break;
@@ -75794,40 +75802,35 @@ const _hoisted_9 = {
   "data-license": "isc-gnc"
 };
 const _hoisted_10 = { class: "chat-card-bg" };
-const _hoisted_11 = { class: "p-4 self-end question-element-ext relative chat-card-content-bg" };
+const _hoisted_11 = { class: "p-2 self-end question-element-ext relative chat-card-content-bg" };
 const _hoisted_12 = {
   class: "mb-5 flex",
   "data-license": "isc-gnc"
 };
-const _hoisted_13 = {
-  class: "mb-2 flex items-center",
-  "data-license": "isc-gnc"
-};
-const _hoisted_14 = ["onClick"];
-const _hoisted_15 = ["innerHTML"];
-const _hoisted_16 = { class: "chat-card-bg" };
-const _hoisted_17 = {
+const _hoisted_13 = ["innerHTML"];
+const _hoisted_14 = { class: "chat-card-bg" };
+const _hoisted_15 = {
   key: 0,
   "data-license": "isc-gnc",
-  class: "p-4 self-end answer-element-ext chat-card-content-bg"
+  class: "p-2 self-end answer-element-ext chat-card-content-bg"
 };
-const _hoisted_18 = { class: "mb-5 flex" };
-const _hoisted_19 = ["onId", "innerHTML"];
-const _hoisted_20 = /* @__PURE__ */ createBaseVNode("div", null, null, -1);
-const _hoisted_21 = {
+const _hoisted_16 = { class: "mb-5 flex" };
+const _hoisted_17 = ["onId", "innerHTML"];
+const _hoisted_18 = /* @__PURE__ */ createBaseVNode("div", null, null, -1);
+const _hoisted_19 = {
   key: 1,
   class: "p-4 self-end mt-4 pb-8 error-element-ext",
   "data-license": "isc-gnc"
 };
-const _hoisted_22 = { class: "mb-5 flex" };
-const _hoisted_23 = { class: "text-red-400" };
-const _hoisted_24 = {
+const _hoisted_20 = { class: "mb-5 flex" };
+const _hoisted_21 = { class: "text-red-400" };
+const _hoisted_22 = {
   id: "in-progress",
   class: "pl-4 pt-2 flex items-center",
   "data-license": "isc-gnc"
 };
-const _hoisted_25 = /* @__PURE__ */ createStaticVNode('<div class="typing">正在思考</div><div class="spinner"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>', 2);
-const _hoisted_27 = /* @__PURE__ */ createBaseVNode("svg", {
+const _hoisted_23 = /* @__PURE__ */ createStaticVNode('<div class="typing">正在思考</div><div class="spinner"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>', 2);
+const _hoisted_25 = /* @__PURE__ */ createBaseVNode("svg", {
   xmlns: "http://www.w3.org/2000/svg",
   fill: "none",
   viewBox: "0 0 24 24",
@@ -75841,13 +75844,13 @@ const _hoisted_27 = /* @__PURE__ */ createBaseVNode("svg", {
     d: "M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
   })
 ], -1);
-const _hoisted_28 = {
+const _hoisted_26 = {
   class: "p-4 flex items-center pt-2",
   "data-license": "isc-gnc"
 };
-const _hoisted_29 = { class: "flex-1 textarea-wrapper" };
-const _hoisted_30 = ["disabled"];
-const _hoisted_31 = /* @__PURE__ */ createBaseVNode("svg", {
+const _hoisted_27 = { class: "flex-1 textarea-wrapper" };
+const _hoisted_28 = ["disabled"];
+const _hoisted_29 = /* @__PURE__ */ createBaseVNode("svg", {
   xmlns: "http://www.w3.org/2000/svg",
   fill: "none",
   viewBox: "0 0 24 24",
@@ -75861,7 +75864,7 @@ const _hoisted_31 = /* @__PURE__ */ createBaseVNode("svg", {
     d: "M12 4.5v15m7.5-7.5h-15"
   })
 ], -1);
-const _hoisted_32 = /* @__PURE__ */ createBaseVNode("svg", {
+const _hoisted_30 = /* @__PURE__ */ createBaseVNode("svg", {
   xmlns: "http://www.w3.org/2000/svg",
   fill: "none",
   viewBox: "0 0 24 24",
@@ -75875,11 +75878,11 @@ const _hoisted_32 = /* @__PURE__ */ createBaseVNode("svg", {
     d: "M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
   })
 ], -1);
-const _hoisted_33 = {
+const _hoisted_31 = {
   id: "question-input-buttons",
   class: "p-0.5 flex gap-2 send-erea-items-center"
 };
-const _hoisted_34 = /* @__PURE__ */ createBaseVNode("svg", {
+const _hoisted_32 = /* @__PURE__ */ createBaseVNode("svg", {
   xmlns: "http://www.w3.org/2000/svg",
   fill: "none",
   viewBox: "0 0 24 24",
@@ -75893,11 +75896,11 @@ const _hoisted_34 = /* @__PURE__ */ createBaseVNode("svg", {
     d: "M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
   })
 ], -1);
-const _hoisted_35 = [
-  _hoisted_34
+const _hoisted_33 = [
+  _hoisted_32
 ];
-const _hoisted_36 = ["disabled"];
-const _hoisted_37 = /* @__PURE__ */ createBaseVNode("svg", {
+const _hoisted_34 = ["disabled"];
+const _hoisted_35 = /* @__PURE__ */ createBaseVNode("svg", {
   xmlns: "http://www.w3.org/2000/svg",
   fill: "none",
   viewBox: "0 0 24 24",
@@ -75911,13 +75914,12 @@ const _hoisted_37 = /* @__PURE__ */ createBaseVNode("svg", {
     d: "M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
   })
 ], -1);
-const _hoisted_38 = [
-  _hoisted_37
+const _hoisted_36 = [
+  _hoisted_35
 ];
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_IconUserSvg = __unplugin_components_0;
-  const _component_IconPencilSvg = __unplugin_components_1;
-  const _component_IconAiSvg = __unplugin_components_2;
+  const _component_IconAiSvg = __unplugin_components_1;
   return openBlock(), createElementBlock("div", {
     class: normalizeClass(["flex flex-col h-screen", { "chat-box-600": !_ctx.isIdeaMode && !_ctx.isVsCodeMode }])
   }, [
@@ -75946,24 +75948,15 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
                 createVNode(_component_IconUserSvg),
                 createTextVNode("你 ")
               ]),
-              createBaseVNode("div", _hoisted_13, [
-                createBaseVNode("button", {
-                  title: "编辑并重新提问",
-                  onClick: ($event) => $options.onResendClick(message),
-                  class: "resend-element-ext p-1.5 flex items-center rounded-lg absolute right-6 top-6"
-                }, [
-                  createVNode(_component_IconPencilSvg)
-                ], 8, _hoisted_14)
-              ]),
               createBaseVNode("div", {
                 class: "overflow-y-auto",
                 innerHTML: message.question
-              }, null, 8, _hoisted_15)
+              }, null, 8, _hoisted_13)
             ])
           ]),
-          createBaseVNode("div", _hoisted_16, [
-            message.answer ? (openBlock(), createElementBlock("div", _hoisted_17, [
-              createBaseVNode("h2", _hoisted_18, [
+          createBaseVNode("div", _hoisted_14, [
+            message.answer ? (openBlock(), createElementBlock("div", _hoisted_15, [
+              createBaseVNode("h2", _hoisted_16, [
                 createVNode(_component_IconAiSvg),
                 createTextVNode("AI ")
               ]),
@@ -75971,15 +75964,15 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
                 class: normalizeClass({ "result-streaming": message.done !== true }),
                 onId: message.conversationId,
                 innerHTML: message.answer
-              }, null, 42, _hoisted_19),
-              _hoisted_20
+              }, null, 42, _hoisted_17),
+              _hoisted_18
             ])) : createCommentVNode("", true),
-            message.error ? (openBlock(), createElementBlock("div", _hoisted_21, [
-              createBaseVNode("h2", _hoisted_22, [
+            message.error ? (openBlock(), createElementBlock("div", _hoisted_19, [
+              createBaseVNode("h2", _hoisted_20, [
                 createVNode(_component_IconAiSvg),
                 createTextVNode("AI ")
               ]),
-              createBaseVNode("div", _hoisted_23, toDisplayString(message.error), 1)
+              createBaseVNode("div", _hoisted_21, toDisplayString(message.error), 1)
             ])) : createCommentVNode("", true)
           ])
         ], 64);
@@ -75987,14 +75980,14 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     ], 512), [
       [vShow, $options.isQAMode]
     ]),
-    withDirectives(createBaseVNode("div", _hoisted_24, [
-      _hoisted_25,
+    withDirectives(createBaseVNode("div", _hoisted_22, [
+      _hoisted_23,
       withDirectives(createBaseVNode("button", {
         id: "stop-button",
         class: "btn btn-primary flex items-end p-1 pr-2 rounded-md ml-5",
         onClick: _cache[0] || (_cache[0] = (...args) => $options.onStopClick && $options.onStopClick(...args))
       }, [
-        _hoisted_27,
+        _hoisted_25,
         createTextVNode("停止")
       ], 512), [
         [vShow, $data.showStopButton]
@@ -76002,8 +75995,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     ], 512), [
       [vShow, $data.isInProgress]
     ]),
-    createBaseVNode("div", _hoisted_28, [
-      createBaseVNode("div", _hoisted_29, [
+    createBaseVNode("div", _hoisted_26, [
+      createBaseVNode("div", _hoisted_27, [
         withDirectives(createBaseVNode("textarea", {
           ref: "questionInputRef",
           type: "text",
@@ -76014,7 +76007,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
           onKeydown: _cache[1] || (_cache[1] = withKeys(withModifiers((...args) => $options.onQuestionKeyEnter && $options.onQuestionKeyEnter(...args), ["prevent"]), ["enter"])),
           "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => $data.questionInput = $event),
           disabled: $data.questionInputDisabled
-        }, null, 40, _hoisted_30), [
+        }, null, 40, _hoisted_28), [
           [vModelText, $data.questionInput]
         ])
       ]),
@@ -76029,7 +76022,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
           id: "clear-button",
           onClick: _cache[3] || (_cache[3] = (...args) => $options.onClearClick && $options.onClearClick(...args))
         }, [
-          _hoisted_31,
+          _hoisted_29,
           createTextVNode(" 新的聊天")
         ]),
         _ctx.isVsCodeMode ? (openBlock(), createElementBlock("button", {
@@ -76038,27 +76031,27 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
           id: "export-button",
           onClick: _cache[4] || (_cache[4] = (...args) => $options.onExportConversation && $options.onExportConversation(...args))
         }, [
-          _hoisted_32,
+          _hoisted_30,
           createTextVNode(" 导出markdown")
         ])) : createCommentVNode("", true)
       ], 512), [
         [vShow, $data.questionInputButtonsMoreVisible]
       ]),
-      withDirectives(createBaseVNode("div", _hoisted_33, [
+      withDirectives(createBaseVNode("div", _hoisted_31, [
         createBaseVNode("button", {
           id: "more-button",
           title: "More actions",
           class: "rounded-lg p-0.5",
           "data-license": "isc-gnc",
           onClick: _cache[6] || (_cache[6] = ($event) => $data.questionInputButtonsMoreVisible = true)
-        }, _hoisted_35),
+        }, _hoisted_33),
         createBaseVNode("button", {
           id: "ask-button",
           title: "提交提示",
           class: "ask-button rounded-lg p-0.5",
           onClick: _cache[7] || (_cache[7] = (...args) => $options.onAskButtonClick && $options.onAskButtonClick(...args)),
           disabled: !$data.questionInput || $data.questionInput.length === 0
-        }, _hoisted_38, 8, _hoisted_36)
+        }, _hoisted_36, 8, _hoisted_34)
       ], 512), [
         [vShow, $data.questionInputButtonsVisible]
       ])
