@@ -123,10 +123,10 @@
     "configuration": {
       "title": "toonecode",
       "properties": {
-        "toonecode.generateCode-enabled": {
+        "toonecode.EnableExtension": {
           "type": "boolean",
           "default": false,
-          "description": "选中代码后，在上下文菜单选项显示[生成代码或注释]。仅适用于 code-* 语言模型。",
+          "description": "是否启用自动提示",
           "order": 7
         },
         "toonecode.promptPrefix.addTests": {
