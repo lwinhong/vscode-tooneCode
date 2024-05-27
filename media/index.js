@@ -71892,7 +71892,7 @@ class ChatApi2 {
    * @returns 
    */
   getRequestData(originData) {
-    if (!originData.useOnline) {
+    if (originData.useOnline === false) {
       return originData;
     }
     let { chatType, lang, prompt, history: history2, prefixCode, suffixCode, max_length } = originData;
@@ -71920,7 +71920,7 @@ class ChatApi2 {
   /**
    * 组装历史
    * @param {历史集合} histories [[]...]
-   * @param {*} messages 
+   * @param {*} promptMessages 
    */
   buildHistory(histories, promptMessages) {
     histories && histories.forEach((history2) => {

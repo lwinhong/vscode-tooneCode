@@ -193,7 +193,7 @@ export default class ChatApi2 {
      * @returns 
      */
     getRequestData(originData: any) {
-        if (!originData.useOnline) {
+        if (!originData.useOnline === false) {
             return originData;
         }
 
