@@ -155,7 +155,7 @@
         },
         "toonecode.promptPrefix.addComments": {
           "type": "string",
-          "default": "为以上代码每一行加上注释",
+          "default": "为以上每一行代码加上注释",
           "description": "允许您选中代码后，让 GPT 针对此代码添加注释的快速 Prompt 前缀。",
           "order": 16
         },

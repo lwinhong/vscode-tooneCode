@@ -10060,10 +10060,12 @@ Check your Browserslist config to be sure that your targets are set up correctly
 })();
 /*! https://mths.be/cssesc v3.0.0 by @mathias */
 /**
-* @vue/shared v3.4.21
+* @vue/shared v3.4.27
 * (c) 2018-present Yuxi (Evan) You and Vue contributors
 * @license MIT
 **/
+/*! #__NO_SIDE_EFFECTS__ */
+// @__NO_SIDE_EFFECTS__
 function makeMap(str, expectsLowerCase) {
   const set2 = new Set(str.split(","));
   return expectsLowerCase ? (val) => set2.has(val.toLowerCase()) : (val) => set2.has(val);
@@ -10134,10 +10136,11 @@ const invokeArrayFns = (fns, arg) => {
     fns[i](arg);
   }
 };
-const def$1 = (obj2, key, value) => {
+const def$1 = (obj2, key, value, writable = false) => {
   Object.defineProperty(obj2, key, {
     configurable: true,
     enumerable: false,
+    writable,
     value
   });
 };
@@ -10233,10 +10236,14 @@ const replacer = (_key, val) => {
 };
 const stringifySymbol = (v, i = "") => {
   var _a7;
-  return isSymbol(v) ? `Symbol(${(_a7 = v.description) != null ? _a7 : i})` : v;
+  return (
+    // Symbol.description in es2019+ so we need to cast here to pass
+    // the lib: es2016 check
+    isSymbol(v) ? `Symbol(${(_a7 = v.description) != null ? _a7 : i})` : v
+  );
 };
 /**
-* @vue/reactivity v3.4.21
+* @vue/reactivity v3.4.27
 * (c) 2018-present Yuxi (Evan) You and Vue contributors
 * @license MIT
 **/
@@ -10383,11 +10390,10 @@ class ReactiveEffect {
     }
   }
   stop() {
-    var _a7;
     if (this.active) {
       preCleanupEffect(this);
       postCleanupEffect(this);
-      (_a7 = this.onStop) == null ? void 0 : _a7.call(this);
+      this.onStop && this.onStop();
       this.active = false;
     }
   }
@@ -10553,8 +10559,8 @@ function trigger(target, type, key, newValue, oldValue, oldTarget) {
   resetScheduling();
 }
 function getDepFromReactive(object, key) {
-  var _a7;
-  return (_a7 = targetMap.get(object)) == null ? void 0 : _a7.get(key);
+  const depsMap = targetMap.get(object);
+  return depsMap && depsMap.get(key);
 }
 const isNonTrackableKeys = /* @__PURE__ */ makeMap(`__proto__,__v_isRef,__isVue`);
 const builtInSymbols = new Set(
@@ -10590,6 +10596,8 @@ function createArrayInstrumentations() {
   return instrumentations;
 }
 function hasOwnProperty$1(key) {
+  if (!isSymbol(key))
+    key = String(key);
   const obj2 = toRaw(this);
   track(obj2, "has", key);
   return obj2.hasOwnProperty(key);
@@ -10716,6 +10724,7 @@ const readonlyHandlers = /* @__PURE__ */ new ReadonlyReactiveHandler();
 const shallowReactiveHandlers = /* @__PURE__ */ new MutableReactiveHandler(
   true
 );
+const shallowReadonlyHandlers = /* @__PURE__ */ new ReadonlyReactiveHandler(true);
 const toShallow = (value) => value;
 const getProto = (v) => Reflect.getPrototypeOf(v);
 function get(target, key, isReadonly2 = false, isShallow2 = false) {
@@ -10916,23 +10925,16 @@ function createInstrumentations() {
     clear: createReadonlyMethod("clear"),
     forEach: createForEach(true, true)
   };
-  const iteratorMethods = ["keys", "values", "entries", Symbol.iterator];
+  const iteratorMethods = [
+    "keys",
+    "values",
+    "entries",
+    Symbol.iterator
+  ];
   iteratorMethods.forEach((method) => {
-    mutableInstrumentations2[method] = createIterableMethod(
-      method,
-      false,
-      false
-    );
-    readonlyInstrumentations2[method] = createIterableMethod(
-      method,
-      true,
-      false
-    );
-    shallowInstrumentations2[method] = createIterableMethod(
-      method,
-      false,
-      true
-    );
+    mutableInstrumentations2[method] = createIterableMethod(method, false, false);
+    readonlyInstrumentations2[method] = createIterableMethod(method, true, false);
+    shallowInstrumentations2[method] = createIterableMethod(method, false, true);
     shallowReadonlyInstrumentations2[method] = createIterableMethod(
       method,
       true,
@@ -10977,6 +10979,9 @@ const shallowCollectionHandlers = {
 };
 const readonlyCollectionHandlers = {
   get: /* @__PURE__ */ createInstrumentationGetter(true, false)
+};
+const shallowReadonlyCollectionHandlers = {
+  get: /* @__PURE__ */ createInstrumentationGetter(true, true)
 };
 const reactiveMap = /* @__PURE__ */ new WeakMap();
 const shallowReactiveMap = /* @__PURE__ */ new WeakMap();
@@ -11029,6 +11034,15 @@ function readonly(target) {
     readonlyMap
   );
 }
+function shallowReadonly(target) {
+  return createReactiveObject(
+    target,
+    true,
+    shallowReadonlyHandlers,
+    shallowReadonlyCollectionHandlers,
+    shallowReadonlyMap
+  );
+}
 function createReactiveObject(target, isReadonly2, baseHandlers, collectionHandlers, proxyMap) {
   if (!isObject$1(target)) {
     return target;
@@ -11064,7 +11078,7 @@ function isShallow(value) {
   return !!(value && value["__v_isShallow"]);
 }
 function isProxy(value) {
-  return isReactive(value) || isReadonly(value);
+  return value ? !!value["__v_raw"] : false;
 }
 function toRaw(observed) {
   const raw = observed && observed["__v_raw"];
@@ -11241,7 +11255,7 @@ function propertyToRef(source2, key, defaultValue) {
   return isRef(val) ? val : new ObjectRefImpl(source2, key, defaultValue);
 }
 /**
-* @vue/runtime-core v3.4.21
+* @vue/runtime-core v3.4.27
 * (c) 2018-present Yuxi (Evan) You and Vue contributors
 * @license MIT
 **/
@@ -11363,11 +11377,13 @@ function callWithAsyncErrorHandling(fn, instance, type, args) {
     }
     return res;
   }
-  const values = [];
-  for (let i = 0; i < fn.length; i++) {
-    values.push(callWithAsyncErrorHandling(fn[i], instance, type, args));
+  if (isArray$2(fn)) {
+    const values = [];
+    for (let i = 0; i < fn.length; i++) {
+      values.push(callWithAsyncErrorHandling(fn[i], instance, type, args));
+    }
+    return values;
   }
-  return values;
 }
 function handleError(err, instance, type, throwInDev = true) {
   const contextVNode = instance ? instance.vnode : null;
@@ -11388,12 +11404,14 @@ function handleError(err, instance, type, throwInDev = true) {
     }
     const appErrorHandler = instance.appContext.config.errorHandler;
     if (appErrorHandler) {
+      pauseTracking();
       callWithErrorHandling(
         appErrorHandler,
         null,
         10,
         [err, exposedInstance, errorInfo]
       );
+      resetTracking();
       return;
     }
   }
@@ -11676,21 +11694,21 @@ function renderComponentRoot(instance) {
     vnode,
     proxy,
     withProxy,
-    props,
     propsOptions: [propsOptions],
     slots,
     attrs,
     emit: emit2,
     render,
     renderCache,
+    props,
     data,
     setupState,
     ctx,
     inheritAttrs
   } = instance;
+  const prev = setCurrentRenderingInstance(instance);
   let result;
   let fallthroughAttrs;
-  const prev = setCurrentRenderingInstance(instance);
   try {
     if (vnode.shapeFlag & 4) {
       const proxyToUse = withProxy || proxy;
@@ -11709,7 +11727,7 @@ function renderComponentRoot(instance) {
           thisProxy,
           proxyToUse,
           renderCache,
-          props,
+          false ? shallowReadonly(props) : props,
           setupState,
           data,
           ctx
@@ -11722,19 +11740,18 @@ function renderComponentRoot(instance) {
         ;
       result = normalizeVNode(
         render2.length > 1 ? render2(
-          props,
+          false ? shallowReadonly(props) : props,
           false ? {
             get attrs() {
               markAttrsAccessed();
-              return attrs;
+              return shallowReadonly(attrs);
             },
             slots,
             emit: emit2
           } : { attrs, slots, emit: emit2 }
         ) : render2(
-          props,
+          false ? shallowReadonly(props) : props,
           null
-          /* we know it doesn't need it */
         )
       );
       fallthroughAttrs = Component.props ? attrs : getFunctionalFallthrough(attrs);
@@ -11756,12 +11773,12 @@ function renderComponentRoot(instance) {
             propsOptions
           );
         }
-        root2 = cloneVNode(root2, fallthroughAttrs);
+        root2 = cloneVNode(root2, fallthroughAttrs, false, true);
       }
     }
   }
   if (vnode.dirs) {
-    root2 = cloneVNode(root2);
+    root2 = cloneVNode(root2, null, false, true);
     root2.dirs = root2.dirs ? root2.dirs.concat(vnode.dirs) : vnode.dirs;
   }
   if (vnode.transition) {
@@ -12063,34 +12080,29 @@ function createPathGetter(ctx, path) {
     return cur;
   };
 }
-function traverse(value, depth, currentDepth = 0, seen) {
-  if (!isObject$1(value) || value["__v_skip"]) {
+function traverse(value, depth = Infinity, seen) {
+  if (depth <= 0 || !isObject$1(value) || value["__v_skip"]) {
     return value;
-  }
-  if (depth && depth > 0) {
-    if (currentDepth >= depth) {
-      return value;
-    }
-    currentDepth++;
   }
   seen = seen || /* @__PURE__ */ new Set();
   if (seen.has(value)) {
     return value;
   }
   seen.add(value);
+  depth--;
   if (isRef(value)) {
-    traverse(value.value, depth, currentDepth, seen);
+    traverse(value.value, depth, seen);
   } else if (isArray$2(value)) {
     for (let i = 0; i < value.length; i++) {
-      traverse(value[i], depth, currentDepth, seen);
+      traverse(value[i], depth, seen);
     }
   } else if (isSet(value) || isMap(value)) {
     value.forEach((v) => {
-      traverse(v, depth, currentDepth, seen);
+      traverse(v, depth, seen);
     });
   } else if (isPlainObject$2(value)) {
     for (const key in value) {
-      traverse(value[key], depth, currentDepth, seen);
+      traverse(value[key], depth, seen);
     }
   }
   return value;
@@ -12307,6 +12319,9 @@ const publicPropertiesMap = (
 const hasSetupBinding = (state, key) => state !== EMPTY_OBJ && !state.__isScriptSetup && hasOwn(state, key);
 const PublicInstanceProxyHandlers = {
   get({ _: instance }, key) {
+    if (key === "__v_skip") {
+      return true;
+    }
     const { ctx, setupState, data, props, accessCache, type, appContext } = instance;
     let normalizedProps;
     if (key[0] !== "$") {
@@ -12346,7 +12361,7 @@ const PublicInstanceProxyHandlers = {
     let cssModule, globalProperties;
     if (publicGetter) {
       if (key === "$attrs") {
-        track(instance, "get", key);
+        track(instance.attrs, "get", "");
       }
       return publicGetter(instance);
     } else if (
@@ -12898,10 +12913,12 @@ function inject(key, defaultValue, treatDefaultAsFactory = false) {
 function hasInjectionContext() {
   return !!(currentInstance || currentRenderingInstance || currentApp);
 }
+const internalObjectProto = {};
+const createInternalObject = () => Object.create(internalObjectProto);
+const isInternalObject = (obj2) => Object.getPrototypeOf(obj2) === internalObjectProto;
 function initProps(instance, rawProps, isStateful, isSSR = false) {
   const props = {};
-  const attrs = {};
-  def$1(attrs, InternalObjectKey, 1);
+  const attrs = createInternalObject();
   instance.propsDefaults = /* @__PURE__ */ Object.create(null);
   setFullProps(instance, rawProps, props, attrs);
   for (const key in instance.propsOptions[0]) {
@@ -13006,7 +13023,7 @@ function updateProps(instance, rawProps, rawPrevProps, optimized) {
     }
   }
   if (hasAttrsChanged) {
-    trigger(instance, "set", "$attrs");
+    trigger(instance.attrs, "set", "");
   }
 }
 function setFullProps(instance, rawProps, props, attrs) {
@@ -13222,24 +13239,18 @@ const normalizeVNodeSlots = (instance, children) => {
   instance.slots.default = () => normalized;
 };
 const initSlots = (instance, children) => {
+  const slots = instance.slots = createInternalObject();
   if (instance.vnode.shapeFlag & 32) {
     const type = children._;
     if (type) {
-      instance.slots = toRaw(children);
-      def$1(children, "_", type);
+      extend$2(slots, children);
+      def$1(slots, "_", type, true);
     } else {
-      normalizeObjectSlots(
-        children,
-        instance.slots = {}
-      );
+      normalizeObjectSlots(children, slots);
     }
-  } else {
-    instance.slots = {};
-    if (children) {
-      normalizeVNodeSlots(instance, children);
-    }
+  } else if (children) {
+    normalizeVNodeSlots(instance, children);
   }
-  def$1(instance.slots, InternalObjectKey, 1);
 };
 const updateSlots = (instance, children, optimized) => {
   const { vnode, slots } = instance;
@@ -14786,7 +14797,6 @@ function isVNode(value) {
 function isSameVNodeType(n1, n2) {
   return n1.type === n2.type && n1.key === n2.key;
 }
-const InternalObjectKey = `__vInternal`;
 const normalizeKey = ({ key }) => key != null ? key : null;
 const normalizeRef = ({
   ref: ref3,
@@ -14904,10 +14914,10 @@ function _createVNode(type, props = null, children = null, patchFlag = 0, dynami
 function guardReactiveProps(props) {
   if (!props)
     return null;
-  return isProxy(props) || InternalObjectKey in props ? extend$2({}, props) : props;
+  return isProxy(props) || isInternalObject(props) ? extend$2({}, props) : props;
 }
-function cloneVNode(vnode, extraProps, mergeRef = false) {
-  const { props, ref: ref3, patchFlag, children } = vnode;
+function cloneVNode(vnode, extraProps, mergeRef = false, cloneTransition = false) {
+  const { props, ref: ref3, patchFlag, children, transition } = vnode;
   const mergedProps = extraProps ? mergeProps(props || {}, extraProps) : props;
   const cloned = {
     __v_isVNode: true,
@@ -14937,7 +14947,7 @@ function cloneVNode(vnode, extraProps, mergeRef = false) {
     dynamicChildren: vnode.dynamicChildren,
     appContext: vnode.appContext,
     dirs: vnode.dirs,
-    transition: vnode.transition,
+    transition,
     // These should technically only be non-null on mounted VNodes. However,
     // they *should* be copied for kept-alive vnodes. So we just always copy
     // them since them being non-null during a mount doesn't affect the logic as
@@ -14951,6 +14961,9 @@ function cloneVNode(vnode, extraProps, mergeRef = false) {
     ctx: vnode.ctx,
     ce: vnode.ce
   };
+  if (transition && cloneTransition) {
+    cloned.transition = transition.clone(cloned);
+  }
   return cloned;
 }
 function createTextVNode(text = " ", flag = 0) {
@@ -15002,7 +15015,7 @@ function normalizeChildren(vnode, children) {
     } else {
       type = 32;
       const slotFlag = children._;
-      if (!slotFlag && !(InternalObjectKey in children)) {
+      if (!slotFlag && !isInternalObject(children)) {
         children._ctx = currentRenderingInstance;
       } else if (slotFlag === 3 && currentRenderingInstance) {
         if (currentRenderingInstance.slots._ === 1) {
@@ -15205,7 +15218,7 @@ function setupComponent(instance, isSSR = false) {
 function setupStatefulComponent(instance, isSSR) {
   const Component = instance.type;
   instance.accessCache = /* @__PURE__ */ Object.create(null);
-  instance.proxy = markRaw(new Proxy(instance.ctx, PublicInstanceProxyHandlers));
+  instance.proxy = new Proxy(instance.ctx, PublicInstanceProxyHandlers);
   const { setup } = Component;
   if (setup) {
     const setupContext = instance.setupContext = setup.length > 1 ? createSetupContext(instance) : null;
@@ -15288,26 +15301,19 @@ function finishComponentSetup(instance, isSSR, skipOptions) {
     }
   }
 }
-function getAttrsProxy(instance) {
-  return instance.attrsProxy || (instance.attrsProxy = new Proxy(
-    instance.attrs,
-    {
-      get(target, key) {
-        track(instance, "get", "$attrs");
-        return target[key];
-      }
-    }
-  ));
-}
+const attrsProxyHandlers = {
+  get(target, key) {
+    track(target, "get", "");
+    return target[key];
+  }
+};
 function createSetupContext(instance) {
   const expose = (exposed) => {
     instance.exposed = exposed || {};
   };
   {
     return {
-      get attrs() {
-        return getAttrsProxy(instance);
-      },
+      attrs: new Proxy(instance.attrs, attrsProxyHandlers),
       slots: instance.slots,
       emit: instance.emit,
       expose
@@ -15384,9 +15390,9 @@ function h(type, propsOrChildren, children) {
     return createVNode(type, propsOrChildren, children);
   }
 }
-const version$1 = "3.4.21";
+const version$1 = "3.4.27";
 /**
-* @vue/runtime-dom v3.4.21
+* @vue/runtime-dom v3.4.27
 * (c) 2018-present Yuxi (Evan) You and Vue contributors
 * @license MIT
 **/
@@ -15678,7 +15684,10 @@ function patchEvent(el, rawName, prevValue, nextValue, instance = null) {
   } else {
     const [name, options] = parseName(rawName);
     if (nextValue) {
-      const invoker = invokers[rawName] = createInvoker(nextValue, instance);
+      const invoker = invokers[rawName] = createInvoker(
+        nextValue,
+        instance
+      );
       addEventListener(el, name, invoker, options);
     } else if (existingInvoker) {
       removeEventListener(el, name, existingInvoker, options);
@@ -15728,7 +15737,9 @@ function patchStopImmediatePropagation(e, value) {
       originalStop.call(e);
       e._stopped = true;
     };
-    return value.map((fn) => (e2) => !e2._stopped && fn && fn(e2));
+    return value.map(
+      (fn) => (e2) => !e2._stopped && fn && fn(e2)
+    );
   } else {
     return value;
   }
@@ -15847,7 +15858,7 @@ const vModelText = {
     el[assignKey] = getModelAssigner(vnode);
     if (el.composing)
       return;
-    const elValue = number || el.type === "number" ? looseToNumber(el.value) : el.value;
+    const elValue = (number || el.type === "number") && !/^0\d/.test(el.value) ? looseToNumber(el.value) : el.value;
     const newValue = value == null ? "" : value;
     if (elValue === newValue) {
       return;
@@ -16313,7 +16324,7 @@ function mapState(useStore2, keysOrMapper) {
   }, {});
 }
 /*!
-  * vue-router v4.3.0
+  * vue-router v4.3.2
   * (c) 2024 Eduardo San Martin Morote
   * @license MIT
   */
@@ -17412,7 +17423,10 @@ function isRouteComponent(component) {
 function useLink(props) {
   const router2 = inject(routerKey);
   const currentRoute = inject(routeLocationKey);
-  const route = computed(() => router2.resolve(unref(props.to)));
+  const route = computed(() => {
+    const to = unref(props.to);
+    return router2.resolve(to);
+  });
   const activeRecordIndex = computed(() => {
     const { matched } = route.value;
     const { length } = matched;
@@ -18188,24 +18202,38 @@ const _export_sfc = (sfc, props) => {
 };
 const _sfc_main$5 = {};
 const _hoisted_1$4 = {
+  t: "1714113113132",
+  class: "icon",
+  viewBox: "0 0 1024 1024",
+  version: "1.1",
   xmlns: "http://www.w3.org/2000/svg",
-  fill: "none",
-  viewBox: "0 0 24 24",
-  "data-license": "isc-gnc",
-  "stroke-width": "1.5",
-  stroke: "currentColor",
-  class: "w-5 mr-2"
+  "p-id": "41067",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  width: "20",
+  height: "20"
 };
 const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode("path", {
-  "stroke-linecap": "round",
-  "stroke-linejoin": "round",
-  d: "M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z"
+  d: "M755.022595 722.911167a390.129159 390.129159 0 0 1-123.92338 285.023773 442.911339 442.911339 0 0 1-119.104137 16.064142A452.779312 452.779312 0 0 1 59.904229 571.908234a436.026707 436.026707 0 0 1 13.080802-107.400263 388.293257 388.293257 0 0 1 291.908405-131.725963 390.129159 390.129159 0 0 1 390.129159 390.129159z",
+  fill: "#FFD000",
+  "p-id": "41068"
 }, null, -1);
-const _hoisted_3$4 = [
-  _hoisted_2$4
+const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode("path", {
+  d: "M511.995078 1023.769594a452.090848 452.090848 0 1 1 452.090848-451.86136 452.549824 452.549824 0 0 1-452.090848 451.86136z m0-835.105887a383.244526 383.244526 0 1 0 383.244526 383.244527 383.703502 383.703502 0 0 0-383.244526-383.244527z",
+  fill: "#000000",
+  "p-id": "41069"
+}, null, -1);
+const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode("path", {
+  d: "M762.366203 235.479206a33.964186 33.964186 0 0 1-17.211581-4.589755 34.423161 34.423161 0 0 1-12.392338-47.044986L828.917647 17.236365a34.423161 34.423161 0 1 1 59.666813 34.423161l-96.384851 166.6081a33.734698 33.734698 0 0 1-29.833406 17.21158zM261.623953 235.479206a34.193673 34.193673 0 0 1-29.833406-17.21158L135.635184 51.659526A34.423161 34.423161 0 0 1 195.301996 17.236365l96.155363 166.6081a34.193673 34.193673 0 0 1-12.621825 47.044986 32.816747 32.816747 0 0 1-17.211581 4.589755zM511.995078 795.429293a34.423161 34.423161 0 0 1-34.423161-34.423161V465.884898a34.423161 34.423161 0 0 1 68.846322 0v295.121234a34.423161 34.423161 0 0 1-34.423161 34.423161z",
+  fill: "#000000",
+  "p-id": "41070"
+}, null, -1);
+const _hoisted_5$1 = [
+  _hoisted_2$4,
+  _hoisted_3$4,
+  _hoisted_4$1
 ];
 function _sfc_render$4(_ctx, _cache) {
-  return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_3$4);
+  return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_5$1);
 }
 const __unplugin_components_1 = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["render", _sfc_render$4]]);
 const _sfc_main$4 = {};
@@ -19478,7 +19506,8 @@ class _Tokenizer {
   blockquote(src) {
     const cap = this.rules.block.blockquote.exec(src);
     if (cap) {
-      const text = rtrim(cap[0].replace(/^ *>[ \t]?/gm, ""), "\n");
+      let text = cap[0].replace(/\n {0,3}((?:=+|-+) *)(?=\n|$)/g, "\n    $1");
+      text = rtrim(text.replace(/^ *>[ \t]?/gm, ""), "\n");
       const top = this.lexer.state.top;
       this.lexer.state.top = true;
       const tokens = this.lexer.blockTokens(text);
@@ -71582,7 +71611,11 @@ const util = {
   },
   autoScrollToBottom(element) {
     var _a7;
-    (_a7 = element == null ? void 0 : element.scrollTo) == null ? void 0 : _a7.call(element, { behavior: "smooth", top: element.scrollHeight });
+    (_a7 = element == null ? void 0 : element.scrollTo) == null ? void 0 : _a7.call(element, {
+      behavior: "smooth",
+      block: "nearest"
+      /*, top: element.scrollHeight */
+    });
   },
   markedParser(value) {
     return marked.parse(value);
@@ -71739,7 +71772,7 @@ const ONLINE_CODE_APIKEY = "app-HZSqJWyZI6xjqkbyXUIcLErR";
 const ONLINE_CODE_API = "http://ai.t.vtoone.com/api/v1/completion-messages";
 class ChatApi2 {
   constructor(options) {
-    let { abortSignal, abortController, timeoutMs = 60 * 1e3, chatType = "chat" } = options;
+    let { abortSignal, abortController, timeoutMs = 60 * 1e3, chatType = "chat", serverConversationId = "" } = options;
     if (timeoutMs && !abortSignal) {
       abortController = new AbortController();
       abortSignal = abortController.signal;
@@ -71757,9 +71790,12 @@ class ChatApi2 {
     this.callBackResult = {
       role: "assistant",
       id: v4(),
+      serverConversationId,
+      serverTaskId: "",
       text: "",
       error: ""
     };
+    this.serverConversationId = serverConversationId;
     this.isDone = false;
   }
   /**
@@ -71838,7 +71874,8 @@ class ChatApi2 {
       if (sseEvent.type !== "event") {
         return;
       }
-      const { event, answer, message } = this.responseDataParser(sseEvent, !notOnline);
+      const { event, answer, message, conversation_id, task_id } = this.responseDataParser(sseEvent, !notOnline);
+      this.callBackResult.serverConversationId = conversation_id;
       if (event === "message") {
         this.callBackResult.text = answer;
         onProgress == null ? void 0 : onProgress(this.callBackResult);
@@ -71895,7 +71932,7 @@ class ChatApi2 {
     if (originData.useOnline === false) {
       return originData;
     }
-    let { chatType, lang, prompt, history: history2, prefixCode, suffixCode, max_length } = originData;
+    let { chatType, lang, prompt, history: history2, prefixCode, suffixCode, max_length, serverConversationId } = originData;
     let query = {
       "response_mode": "streaming",
       "conversation_id": "",
@@ -71904,13 +71941,9 @@ class ChatApi2 {
     if (chatType === "code") {
       query.inputs = { "prefix_code": prefixCode, "suffix_code": suffixCode, max_length };
     } else if (chatType === "chat") {
+      query.conversation_id = serverConversationId;
       query.inputs = {};
-      let promptMessages = query.query = [];
-      promptMessages.push(
-        { role: "system", content: 'You are a helpful assistant. 请用中文回答，你的名字叫"同望编码助手"。' }
-      );
-      this.buildHistory(history2, promptMessages);
-      promptMessages.push({ role: "user", content: prompt });
+      query.query = prompt;
     }
     return query;
   }
@@ -74277,32 +74310,34 @@ const chatUtil = {
     if (this.inProgress) {
       return;
     }
-    let { conversationId, abortController, history: history2 } = options || {};
+    let { conversationId, abortController, history: history2, serverConversationId } = options || {};
     let question = chatUtil.processQuestion(prompt);
     this.inProgress = true;
     if (!abortController)
       abortController = new AbortController();
-    this.currentMessageId = v4();
     let err;
     let responseResult = {
       type: "addResponse",
       value: "",
       conversationId,
       done: false,
-      currentMessageId: this.currentMessageId,
+      //currentMessageId: this.currentMessageId, 
       autoScroll: true,
       responseInMarkdown: true,
-      history: []
+      serverConversationId
+      //history: []
     };
     try {
       await chatUtil.sendMessage(question, {
         messageId: conversationId,
+        serverConversationId,
         abortSignal: abortController.signal,
         stream: true,
         chatType: "chat",
         history: history2,
         onProgress: (message) => {
           try {
+            responseResult.serverConversationId = message.serverConversationId;
             responseResult.value = message.text;
             onProgress == null ? void 0 : onProgress(responseResult);
           } catch (error2) {
@@ -74350,6 +74385,7 @@ const chatUtil = {
       chatType,
       "prompt": text,
       stream: true,
+      serverConversationId: opts.serverConversationId,
       history: opts.history || []
     };
   },
@@ -75380,7 +75416,9 @@ const _sfc_main$1 = {
       questionInputDisabled: false,
       showStopButton: false,
       questionInputButtonsVisible: true,
-      questionInputButtonsMoreVisible: false
+      questionInputButtonsMoreVisible: false,
+      serverConversationId: ""
+      //和服务器通讯的对话结果id，又服务器返回，用于定位这次对话的标识，可以不用传历史。新聊天的时候记得清空它
     };
   },
   computed: {
@@ -75399,12 +75437,13 @@ const _sfc_main$1 = {
   setup() {
     let qaElementList = ref();
     let questionInputRef = ref();
-    return { qaElementList, questionInputRef };
+    let questionInputButtonsMore = ref();
+    return { qaElementList, questionInputRef, questionInputButtonsMore };
   },
   methods: {
     onClearClick() {
       this.qaData.list = [];
-      this.currentViewType = viewType.introduction;
+      this.serverConversationId = "", this.currentViewType = viewType.introduction;
       util.postMessageToCodeEditor({
         type: "clearConversation"
       });
@@ -75412,24 +75451,19 @@ const _sfc_main$1 = {
     onStopClick(e) {
       var _a7;
       e.preventDefault();
-      const result = util.postMessageToCodeEditor({
-        type: "stopGenerating"
-      });
-      if (result !== true) {
-        (_a7 = this.abortController) == null ? void 0 : _a7.abort();
-        this.showInProgress({ inProgress: false });
-        let existingMessageData = this.qaData.list.find((f) => f.conversationId === this.conversationId);
-        if (!existingMessageData && this.qaData.list.length > 0) {
-          existingMessageData = this.qaData.list[this.qaData.list.length - 1];
-        }
-        this.addResponse({
-          value: existingMessageData.answer,
-          done: true,
-          id: (existingMessageData == null ? void 0 : existingMessageData.id) ?? this.conversationId,
-          autoScroll: true,
-          responseInMarkdown: true
-        });
+      (_a7 = this.abortController) == null ? void 0 : _a7.abort();
+      this.showInProgress({ inProgress: false });
+      let existData = this.qaData.list.find((f) => f.conversationId === this.conversationId);
+      if (!existData && this.qaData.list.length > 0) {
+        existData = this.qaData.list[this.qaData.list.length - 1];
       }
+      this.addResponse({
+        value: existData.answer,
+        done: true,
+        id: (existData == null ? void 0 : existData.id) ?? this.conversationId,
+        autoScroll: true,
+        responseInMarkdown: true
+      });
     },
     onResendClick(message) {
       var _a7;
@@ -75474,6 +75508,7 @@ const _sfc_main$1 = {
         message.value,
         {
           conversationId: this.conversationId,
+          serverConversationId: this.serverConversationId,
           abortController: this.abortController,
           history: history2 || []
         },
@@ -75498,17 +75533,17 @@ const _sfc_main$1 = {
     addQuestion(message) {
       this.currentViewType = viewType.qa;
       this.conversationId = message.conversationId ?? v4();
-      let { prompt, language, filePath, value } = message;
+      let { prompt, language, filePath, value, isMarked } = message;
       let question = value;
       let marked2 = false;
-      if (prompt && value) {
+      if (!isMarked && prompt && value) {
         language = language || getLanguageExtByFilePath(filePath);
         value = "```" + language + "\r\n" + value + "\n\n```\n\n" + prompt;
         marked2 = true;
         message.value = value + "\n" + prompt + "\n";
       }
       question = util.escapeHtml(value);
-      if (marked2) {
+      if (isMarked || marked2) {
         question = util.markedParser(question);
       }
       this.qaData.list.push({
@@ -75518,6 +75553,7 @@ const _sfc_main$1 = {
         answer: "",
         error: "",
         originAnswer: "",
+        answer: " ",
         done: false
       });
       setTimeout(() => {
@@ -75534,6 +75570,7 @@ const _sfc_main$1 = {
       if (!existingMessageData) {
         return;
       }
+      this.serverConversationId = message.serverConversationId;
       existingMessageData.originAnswer += message.value;
       let updatedValue = "";
       if (!message.responseInMarkdown) {
@@ -75590,7 +75627,7 @@ const _sfc_main$1 = {
           (_a7 = this.questionInputRef) == null ? void 0 : _a7.focus();
         }, 100);
       }
-      if (message.autoScroll) {
+      if (message.autoScroll && (message.done || markedResponse.endsWith("\n"))) {
         util.autoScrollToBottom(list2);
       }
     },
@@ -75661,6 +75698,8 @@ const _sfc_main$1 = {
           util.postMessageToCodeEditor(data);
         return;
       }
+      if (targetButton !== this.questionInputButtonsMore)
+        this.questionInputButtonsMoreVisible = false;
     },
     messageHandler(event) {
       const message = event.data;
@@ -75757,7 +75796,7 @@ const _hoisted_1 = {
   id: "introduction",
   class: "flex flex-col justify-between h-full justify-center px-6 w-full relative login-screen overflow-auto"
 };
-const _hoisted_2 = /* @__PURE__ */ createStaticVNode('<div data-license="isc-gnc-hi-there" class="flex items-start text-center features-block my-5"><div class="flex flex-col gap-3.5 flex-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" class="w-6 h-6 m-auto"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"></path></svg><h2>特性</h2><ul class="flex flex-col gap-3.5 text-xs"><li class="features-li w-full border border-zinc-700 p-3 rounded-md">改进你的代码，添加测试并发现bug</li><li class="features-li w-full border border-zinc-700 p-3 rounded-md">自动复制或创建新文件</li><li class="features-li w-full border border-zinc-700 p-3 rounded-md">语法高亮与自动语言检测</li></ul></div></div>', 1);
+const _hoisted_2 = /* @__PURE__ */ createStaticVNode('<div data-license="isc-gnc-hi-there" class="flex items-start text-center features-block my-5"><div class="flex flex-col gap-3.5 flex-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" class="w-6 h-6 m-auto"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"></path></svg><h2>特性</h2><ul class="flex flex-col gap-3.5 text-xs"><li class="features-li w-full border border-zinc-700 p-3 rounded-md">改进你的代码，生成测试</li><li class="features-li w-full border border-zinc-700 p-3 rounded-md">解析和注释代码</li><li class="features-li w-full border border-zinc-700 p-3 rounded-md">自动复制或创建新文件</li></ul></div></div>', 1);
 const _hoisted_3 = { class: "flex flex-col gap-4 h-full items-center justify-end text-center" };
 const _hoisted_4 = {
   id: "login-button",
@@ -75957,8 +75996,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
           createBaseVNode("div", _hoisted_14, [
             message.answer ? (openBlock(), createElementBlock("div", _hoisted_15, [
               createBaseVNode("h2", _hoisted_16, [
-                createVNode(_component_IconAiSvg),
-                createTextVNode("AI ")
+                createVNode(_component_IconAiSvg, { style: { "margin-right": "0.5rem" } }),
+                createTextVNode("TooneCode ")
               ]),
               createBaseVNode("div", {
                 class: normalizeClass({ "result-streaming": message.done !== true }),
@@ -76043,8 +76082,9 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
           title: "More actions",
           class: "rounded-lg p-0.5",
           "data-license": "isc-gnc",
-          onClick: _cache[6] || (_cache[6] = ($event) => $data.questionInputButtonsMoreVisible = true)
-        }, _hoisted_33),
+          onClick: _cache[6] || (_cache[6] = ($event) => $data.questionInputButtonsMoreVisible = true),
+          ref: "questionInputButtonsMore"
+        }, _hoisted_33, 512),
         createBaseVNode("button", {
           id: "ask-button",
           title: "提交提示",
