@@ -10,7 +10,7 @@ export const ONLINE_CODE_API = "http://ai.t.vtoone.com/api/v1/completion-message
 //export const ONLINE_CODE_APIKEY = "app-app-OU5P1wr9ErUs0VBsuK5CBk5I";
 //export const ONLINE_CODE_API = "http://10.1.30.43:5001/v1/completion-messages";
 
-export default class ChatApi2 {
+export class ChatApi2 {
     private requestConfig;
     private apiUrl: string;
     private callBackResult;
@@ -239,6 +239,49 @@ export default class ChatApi2 {
     buildHistory(histories: any, promptMessages: any) {
         histories && histories.forEach((history: any) => {
             promptMessages.push({ role: history["role"], content: history["content"] });
+        });
+    }
+}
+
+export class StopChatApi {
+    private requestInit: RequestInit;
+    private url: string;
+    private abortController: AbortController | undefined;
+
+    constructor(option: any) {
+        this.url = `${ONLINE_CHAT_API}/:${option.taskId}/stop`;
+        this.abortController = new AbortController();
+        this.requestInit = {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${ONLINE_CHAT_APIKEY}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user: "abc-123" }),
+            signal: this.abortController.signal,
+        };
+    }
+
+    stop(): Promise<any> {
+        return new Promise<any>(async (resolve, reject) => {
+            try {
+                setTimeout(() => {
+                    this.abortController?.abort();
+                    this.abortController = undefined;
+                }, 4 * 1000);
+
+                const response = await fetch(this.url, this.requestInit);
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log("stop:" + JSON.stringify(result));
+                    resolve(result);
+                    return;
+                }
+                reject({ result: "error", msg: response.status + "-" + response.statusText });
+            } catch (error) {
+                console.error(error);
+                reject({ result: "error", msg: error });
+            }
         });
     }
 }

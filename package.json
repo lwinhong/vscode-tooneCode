@@ -32,24 +32,24 @@
           "group": "tooneCode@1"
         },
         {
-          "command": "toonecode.generateCode",
-          "group": "tooneCode@2",
-          "when": "editorHasSelection && generateCode-enabled"
-        },
-        {
-          "command": "toonecode.addTests",
-          "group": "tooneCode@3",
-          "when": "editorHasSelection && addTests-enabled"
-        },
-        {
           "command": "toonecode.explain",
-          "group": "tooneCode@4",
+          "group": "tooneCode@2",
           "when": "editorHasSelection && explain-enabled"
         },
         {
           "command": "toonecode.addComments",
-          "group": "tooneCode@5",
+          "group": "tooneCode@3",
           "when": "editorHasSelection && addComments-enabled"
+        },
+        {
+          "command": "toonecode.optimize",
+          "group": "tooneCode@4",
+          "when": "editorHasSelection && optimize-enabled"
+        },
+        {
+          "command": "toonecode.addTests",
+          "group": "tooneCode@5",
+          "when": "editorHasSelection && addTests-enabled"
         }
       ]
     },
@@ -79,22 +79,22 @@
       },
       {
         "command": "toonecode.addTests",
-        "title": "生成测试",
+        "title": "生成单元测试",
         "enablement": "editorHasSelection"
       },
       {
         "command": "toonecode.optimize",
-        "title": "优化建议",
+        "title": "生成优化建议",
         "enablement": "editorHasSelection"
       },
       {
         "command": "toonecode.explain",
-        "title": "解析代码",
+        "title": "解释代码",
         "enablement": "editorHasSelection"
       },
       {
         "command": "toonecode.addComments",
-        "title": "逐行注释",
+        "title": "生成代码注释",
         "enablement": "editorHasSelection && !editorReadonly"
       },
       {
@@ -121,55 +121,61 @@
       ]
     },
     "configuration": {
-      "title": "toonecode",
+      "title": "Toone Code",
       "properties": {
-        "toonecode.EnableExtension": {
+        "toonecode.inlineCompletionEnabled": {
           "type": "boolean",
           "default": false,
           "description": "是否启用自动提示",
-          "order": 7
+          "order": 1
         },
         "toonecode.promptPrefix.addTests": {
           "type": "string",
           "default": "为以上代码生成单元测试",
-          "description": "允许您选中代码后，让 GPT 针对此代码提供测试的快速 Prompt 前缀。",
-          "order": 8
+          "description": "允许您选中代码后，让助手针对此代码提供测试的快速 Prompt 前缀。",
+          "order": 2
         },
         "toonecode.promptPrefix.addTests-enabled": {
           "type": "boolean",
           "default": true,
-          "description": "选中代码后，是否在上下文菜单选项显示[添加测试]",
-          "order": 9
+          "description": "选中代码后，是否在上下文菜单选项显示[生成单元测试]",
+          "order": 3
         },
         "toonecode.promptPrefix.explain": {
           "type": "string",
-          "default": "解析以上代码",
-          "description": "允许您选中代码后，让 GPT 针对此代码分析功能的快速 Prompt 前缀。",
-          "order": 14
+          "default": "解释以上代码",
+          "description": "允许您选中代码后，让助手针对此代码分析功能的快速 Prompt 前缀。",
+          "order": 4
         },
         "toonecode.promptPrefix.explain-enabled": {
           "type": "boolean",
           "default": true,
           "description": "选中代码后，是否在上下文菜单选项显示[解释代码]",
-          "order": 15
+          "order": 5
+        },
+        "toonecode.promptPrefix.optimize": {
+          "type": "string",
+          "default": "生成优化建议，并生成优化之后的代码",
+          "description": "允许您选中代码后，让助手针对此代码生成优化建议功能的快速 Prompt 前缀。",
+          "order": 6
+        },
+        "toonecode.promptPrefix.optimize-enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "选中代码后，是否在上下文菜单选项显示[生成优化建议]",
+          "order": 7
         },
         "toonecode.promptPrefix.addComments": {
           "type": "string",
           "default": "为以上每一行代码加上注释",
-          "description": "允许您选中代码后，让 GPT 针对此代码添加注释的快速 Prompt 前缀。",
-          "order": 16
+          "description": "允许您选中代码后，让助手针对此代码添加注释的快速 Prompt 前缀。",
+          "order": 8
         },
         "toonecode.promptPrefix.addComments-enabled": {
           "type": "boolean",
           "default": true,
           "description": "选中代码后，是否在上下文菜单选项显示[添加注释]",
-          "order": 17
-        },
-        "toonecode.promptPrefix.completeCode": {
-          "type": "string",
-          "default": "补全以下的代码",
-          "description": "允许您选中代码后，让 GPT 针对此代码补全代码的快速 Prompt 前缀。",
-          "order": 18
+          "order": 9
         }
       }
     }

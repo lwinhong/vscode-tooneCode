@@ -7,6 +7,10 @@ export async function updateStatusBarItem(
     isLoading: boolean,
     info: string
 ): Promise<void> {
+    if (!myStatusBarItem) {
+        return;
+    }
+
     myStatusBarItem.show();
     if (statusbartimer) {
         clearTimeout(statusbartimer);

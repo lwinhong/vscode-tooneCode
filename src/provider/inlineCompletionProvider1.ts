@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { candidateNum, completionDelay, disabledFor, useOnline } from "../param/configures";
 
 import ChatGptViewProvider from '../toontcode-view-provider';
-import ChatApi2 from "../toone-code/chat-api2";
+import { ChatApi2, StopChatApi } from "../toone-code/chat-api2";
 import Path from 'path';
 import { updateStatusBarItem } from "../utils/updateStatusBarItem";
 import getDocumentLanguage from "../utils/getDocumentLanguage";
@@ -11,6 +11,7 @@ let delay: number = completionDelay * 1000;
 let lastChatApi2: ChatApi2 | undefined;
 let abortController: AbortController;
 let lastRequest = null;
+let serverTaskId: string | undefined;
 
 const inlineCompletionProvider1 = (
     g_isLoading: boolean,
@@ -94,16 +95,16 @@ const delayRequest = async () => {
 };
 
 const completetionEnabled = async (extensionContext: vscode.ExtensionContext, editor: vscode.TextEditor) => {
-    const enableExtension = await extensionContext.globalState.get("EnableExtension");
+    const inlineCompletionEnabled = await extensionContext.globalState.get("inlineCompletionEnabled");
     const disableInlineCompletion = await extensionContext.globalState.get("DisableInlineCompletion");
     //插件不可用 || inline不可用
-    if (!enableExtension || disableInlineCompletion || !editor) {
+    if (!inlineCompletionEnabled || disableInlineCompletion || !editor) {
         return false;
     }
 
     //语言是否支持
     const language = (disabledFor as any)[editor.document.languageId || "undefined"];
-    if (language === true || language === "true" || !enableExtension) {
+    if (language === true || language === "true" || !inlineCompletionEnabled) {
         //当前语言不支持
         return false;
     }
@@ -111,6 +112,10 @@ const completetionEnabled = async (extensionContext: vscode.ExtensionContext, ed
 };
 
 const cancelLastRequest = () => {
+    if (useOnline) {
+        new StopChatApi({ taskId: serverTaskId }).stop();
+    }
+
     lastChatApi2?.abort();
     lastChatApi2 = undefined;
     abortController?.abort();
@@ -144,7 +149,10 @@ const requestApi = async (question: string, lang?: string,
             }
             const chatApi2 = lastChatApi2 = new ChatApi2(requesOption);
             await chatApi2.postToServer(url, requesOption,
-                (message: any) => response += message.text,
+                (message: any) => {
+                    response += message.text;
+                    serverTaskId = message.serverTaskId;
+                },
                 (message: any) => {
                     resolve(response);
                     return false;

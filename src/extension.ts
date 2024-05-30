@@ -4,14 +4,14 @@ import * as vscode from 'vscode';
 import ChatGptViewProvider from './toontcode-view-provider.js';
 import changeIconColor from "./utils/changeIconColor.js";
 import { isCurrentLanguageDisable } from "./utils/isCurrentLanguageDisable.js";
-import { enableExtension } from "./param/configures.js";
+import { inlineCompletionEnabled } from "./param/configures.js";
 import getDocumentLanguage from "./utils/getDocumentLanguage.js";
 
 let g_isLoading = false;
 let originalColor: string | vscode.ThemeColor | undefined;
 let myStatusBarItem: vscode.StatusBarItem;
 let provider: ChatGptViewProvider | void;
-const menuCommands = ["addTests", "explain", "addComments", "completeCode", "generateCode"];
+const menuCommands = ["addTests", "explain", "addComments", /*"completeCode",*/ "generateCode", "optimize"];
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -67,8 +67,16 @@ export function activate(context: vscode.ExtensionContext) {
 	 * 配置改变，需要对参试应用
 	 */
 	const configChanged = vscode.workspace.onDidChangeConfiguration(e => {
-		if (e.affectsConfiguration('chatgpt.response.showNotification')) {
-
+		if (e.affectsConfiguration('toonecode.inlineCompletionEnabled')) {
+			let enabled = !!vscode.workspace.getConfiguration("toonecode").get<boolean>(`inlineCompletionEnabled`);
+			context.globalState.update("inlineCompletionEnabled", enabled);
+			context.globalState.update("DisableInlineCompletion", !enabled);
+		}
+		if (e.affectsConfiguration('toonecode.promptPrefix.addTests-enabled')
+			|| e.affectsConfiguration('toonecode.promptPrefix.optimize-enabled')
+			|| e.affectsConfiguration('toonecode.promptPrefix.explain-enabled')
+			|| e.affectsConfiguration('toonecode.promptPrefix.addComments-enabled')) {
+			setContext();
 		}
 	});
 
@@ -129,29 +137,32 @@ export function activate(context: vscode.ExtensionContext) {
 		provider?.sendMessage({ type: 'textSelectionChanged', text, language: e.textEditor.document.languageId }, true);
 	});
 
-	if (enableExtension) {
-		context.globalState.update("EnableExtension", true);
-	} else {
-		context.globalState.update("EnableExtension", false);
-	}
-	const statusBarItemCommandId = "toonecode.disable-enable";
-	context.subscriptions.push(
-		vscode.commands.registerCommand(statusBarItemCommandId, () => {
-			//disableEnable(myStatusBarItem, g_isLoading, originalColor, context);
-		})
-	);
-	myStatusBarItem = vscode.window.createStatusBarItem(
-		vscode.StatusBarAlignment.Right,
-		100
-	);
-	myStatusBarItem.command = statusBarItemCommandId;
-	context.subscriptions.push(myStatusBarItem);
-	changeIconColor(
-		enableExtension,
-		myStatusBarItem,
-		originalColor,
-		isCurrentLanguageDisable()
-	);
+	context.globalState.update("inlineCompletionEnabled", inlineCompletionEnabled);
+
+	//一下状态栏图标暂时不开放
+	// const statusBarItemCommandId = "toonecode.disable-enable";
+	// context.subscriptions.push(
+	// 	vscode.commands.registerCommand(statusBarItemCommandId, () => {
+	// 		//disableEnable(myStatusBarItem, g_isLoading, originalColor, context);
+	// 	})
+	// );
+	// myStatusBarItem = vscode.window.createStatusBarItem(
+	// 	vscode.StatusBarAlignment.Right,
+	// 	100
+	// );
+
+	// context.subscriptions.push(myStatusBarItem);
+
+	// const setStatusBarItemCmd = (_inlineCompletionEnabled: boolean) => {
+	// 	myStatusBarItem.command = _inlineCompletionEnabled ? statusBarItemCommandId : undefined;
+	// 	changeIconColor(
+	// 		_inlineCompletionEnabled,
+	// 		myStatusBarItem,
+	// 		originalColor,
+	// 		isCurrentLanguageDisable()
+	// 	);
+	// };
+	// setStatusBarItemCmd(inlineCompletionEnabled);
 
 	let inlineProvider: vscode.InlineCompletionItemProvider;
 	inlineProvider = provider.inlineCompletionProvider(g_isLoading,
@@ -264,16 +275,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const setContext = () => {
 		menuCommands.forEach(command => {
-			// if (command === "generateCode") {
-			// 	let generateCodeEnabled = true;// !!vscode.workspace.getConfiguration("chatgpt").get<boolean>("generateCode-enabled");
-			// 	// const modelName = vscode.workspace.getConfiguration("chatgpt").get("gpt3.model") as string;
-			// 	// const method = vscode.workspace.getConfiguration("chatgpt").get("method") as string;
-			// 	// generateCodeEnabled = generateCodeEnabled && method === "GPT3 OpenAI API Key" && modelName.startsWith("code-");
-			// 	vscode.commands.executeCommand('setContext', "generateCode-enabled", generateCodeEnabled);
-			// } else {
 			const enabled = !!vscode.workspace.getConfiguration("toonecode.promptPrefix").get<boolean>(`${command}-enabled`);
 			vscode.commands.executeCommand('setContext', `${command}-enabled`, enabled);
-			//}
 		});
 	};
 	setContext();

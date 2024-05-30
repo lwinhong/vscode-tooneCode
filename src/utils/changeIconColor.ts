@@ -9,6 +9,9 @@ export default function changeIconColor(
     isLangDisabled?: boolean,
     switchTab?: boolean
 ): void {
+    if (!myStatusBarItem) {
+        return;
+    }
     myStatusBarItem.show();
     updateStatusBarItem(myStatusBarItem, false, false, "");
     if (switchTab) {

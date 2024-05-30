@@ -22,7 +22,7 @@ export const disabledLangs = () => {
 //get number of candidates
 const candidateNum_str = String(configuration.get("CandidateNum", "1"));
 export const candidateNum = parseInt(candidateNum_str);
-export const enableExtension = configuration.get("EnableExtension", true);
+export const inlineCompletionEnabled = configuration.get("inlineCompletionEnabled", false);
 export const completionDelay = configuration.get("CompletionDelay", 0.5);
 
 export const useOnline = true; //使用在线服务器直连。否则使用测试地址

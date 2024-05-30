@@ -2,12 +2,12 @@ import * as vscode from "vscode";
 
 import getDocumentLanguage from "../utils/getDocumentLanguage.js";
 import { updateStatusBarItem } from "../utils/updateStatusBarItem.js";
-import { disabledFor, enableExtension } from "../param/configures.js";
+import { disabledFor, inlineCompletionEnabled } from "../param/configures.js";
 import { Trie } from "../trie.js";
 import ChatGptViewProvider from '../toontcode-view-provider.js';
 import chatApi from '../toone-code/chat-api.js';
 import Path from 'path';
-import ChatApi2 from "../toone-code/chat-api2.js";
+import { ChatApi2 } from "../toone-code/chat-api2.js";
 
 let lastRequest = null;
 let someTrackingIdCounter = 0;
@@ -20,14 +20,14 @@ async function completetionEnabled(
     editor: vscode.TextEditor
 ) {
     console.log("new event!");
-    const enableExtension = await extensionContext.globalState.get(
-        "EnableExtension"
+    const inlineCompletionEnabled = await extensionContext.globalState.get(
+        "inlineCompletionEnabled"
     );
     const isOneCommand = await extensionContext.globalState.get(
         "isOneCommand"
     );
 
-    if (!isOneCommand || !enableExtension) {
+    if (!isOneCommand || !inlineCompletionEnabled) {
         extensionContext.globalState.update("isOneCommand", false);
         extensionContext.globalState.update("DisableInlineCompletion", false);
         return;
@@ -81,7 +81,7 @@ function requestApi(question: string, lang?: string, chatCodeApi?: chatApi, file
             };
             let onDone = (message: any) => {
                 //response = message.text;
-                resolve(response); 
+                resolve(response);
                 return false;
             };
             await chatApi2.postToServer("", requesOption, onProgress, onDone);

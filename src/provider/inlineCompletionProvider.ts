@@ -10,7 +10,7 @@ import { Trie } from "../trie.js";
 import ChatGptViewProvider from '../toontcode-view-provider.js';
 import chatApi from '../toone-code/chat-api.js';
 import Path from 'path';
-import ChatApi2 from "../toone-code/chat-api2";
+import { ChatApi2 } from "../toone-code/chat-api2";
 
 let lastRequest = null;
 let delay: number = completionDelay * 1000;
@@ -108,14 +108,14 @@ async function completetionEnabled(
     editor: vscode.TextEditor
 ) {
     console.log("new event!");
-    const enableExtension = await extensionContext.globalState.get(
-        "EnableExtension"
+    const inlineCompletionEnabled = await extensionContext.globalState.get(
+        "inlineCompletionEnabled"
     );
     const disableInlineCompletion = await extensionContext.globalState.get(
         "DisableInlineCompletion"
     );
 
-    if (!enableExtension || disableInlineCompletion || !editor) {
+    if (!inlineCompletionEnabled || disableInlineCompletion || !editor) {
         return false;
     }
 
@@ -124,7 +124,7 @@ async function completetionEnabled(
     if (
         (disabledFor as any)[languageId] === true ||
         (disabledFor as any)[languageId] === "true" ||
-        !enableExtension
+        !inlineCompletionEnabled
     ) {
         return false;
     }
