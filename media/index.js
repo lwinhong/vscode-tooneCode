@@ -71967,7 +71967,6 @@ class StopChatApi {
     this.url = `${ONLINE_CHAT_API}/:${option.taskId}/stop`;
     this.requestInit = {
       method: "POST",
-      timeout: 3 * 1e3,
       headers: {
         "Authorization": `Bearer ${ONLINE_CHAT_APIKEY}`,
         "Content-Type": "application/json"
