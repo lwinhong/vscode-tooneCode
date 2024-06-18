@@ -95,6 +95,8 @@ const delayRequest = async () => {
 };
 
 const completetionEnabled = async (extensionContext: vscode.ExtensionContext, editor: vscode.TextEditor) => {
+    return false;//代码提示自动完成，先关闭
+
     const inlineCompletionEnabled = await extensionContext.globalState.get("inlineCompletionEnabled");
     const disableInlineCompletion = await extensionContext.globalState.get("DisableInlineCompletion");
     //插件不可用 || inline不可用

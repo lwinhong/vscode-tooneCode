@@ -1,9 +1,9 @@
 {
-  "name": "toone-code",
-  "displayName": "toone-code",
+  "name": "vscode-toonecode",
+  "displayName": "vscode-toone-code",
   "publisher": "Toone",
   "description": "Toone toonecode",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "icon": "images/ai-logo.png",
   "engines": {
     "vscode": "^1.68.0"

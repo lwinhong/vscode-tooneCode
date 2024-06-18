@@ -10148,6 +10148,10 @@ const looseToNumber = (val) => {
   const n = parseFloat(val);
   return isNaN(n) ? val : n;
 };
+const toNumber = (val) => {
+  const n = isString$1(val) ? Number(val) : NaN;
+  return isNaN(n) ? val : n;
+};
 let _globalThis;
 const getGlobalThis = () => {
   return _globalThis || (_globalThis = typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : {});
@@ -11325,13 +11329,13 @@ function formatTrace(trace) {
 function formatTraceEntry({ vnode, recurseCount }) {
   const postfix = recurseCount > 0 ? `... (${recurseCount} recursive calls)` : ``;
   const isRoot = vnode.component ? vnode.component.parent == null : false;
-  const open = ` at <${formatComponentName(
+  const open2 = ` at <${formatComponentName(
     vnode.component,
     vnode.type,
     isRoot
   )}`;
   const close = `>` + postfix;
-  return vnode.props ? [open, ...formatProps(vnode.props), close] : [open + close];
+  return vnode.props ? [open2, ...formatProps(vnode.props), close] : [open2 + close];
 }
 function formatProps(props) {
   const res = [];
@@ -11659,6 +11663,12 @@ function setCurrentRenderingInstance(instance) {
   currentScopeId = instance && instance.type.__scopeId || null;
   return prev;
 }
+function pushScopeId(id) {
+  currentScopeId = id;
+}
+function popScopeId() {
+  currentScopeId = null;
+}
 function withCtx(fn, ctx = currentRenderingInstance, isNonScopedSlot) {
   if (!ctx)
     return fn;
@@ -11698,7 +11708,7 @@ function renderComponentRoot(instance) {
     slots,
     attrs,
     emit: emit2,
-    render,
+    render: render2,
     renderCache,
     props,
     data,
@@ -11723,7 +11733,7 @@ function renderComponentRoot(instance) {
         }
       }) : proxyToUse;
       result = normalizeVNode(
-        render.call(
+        render2.call(
           thisProxy,
           proxyToUse,
           renderCache,
@@ -11735,11 +11745,11 @@ function renderComponentRoot(instance) {
       );
       fallthroughAttrs = attrs;
     } else {
-      const render2 = Component;
+      const render22 = Component;
       if (false)
         ;
       result = normalizeVNode(
-        render2.length > 1 ? render2(
+        render22.length > 1 ? render22(
           false ? shallowReadonly(props) : props,
           false ? {
             get attrs() {
@@ -11749,7 +11759,7 @@ function renderComponentRoot(instance) {
             slots,
             emit: emit2
           } : { attrs, slots, emit: emit2 }
-        ) : render2(
+        ) : render22(
           false ? shallowReadonly(props) : props,
           null
         )
@@ -12158,6 +12168,223 @@ function invokeDirectiveHook(vnode, prevVNode, instance, name) {
     }
   }
 }
+const leaveCbKey = Symbol("_leaveCb");
+const enterCbKey$1 = Symbol("_enterCb");
+function useTransitionState() {
+  const state = {
+    isMounted: false,
+    isLeaving: false,
+    isUnmounting: false,
+    leavingVNodes: /* @__PURE__ */ new Map()
+  };
+  onMounted(() => {
+    state.isMounted = true;
+  });
+  onBeforeUnmount(() => {
+    state.isUnmounting = true;
+  });
+  return state;
+}
+const TransitionHookValidator = [Function, Array];
+const BaseTransitionPropsValidators = {
+  mode: String,
+  appear: Boolean,
+  persisted: Boolean,
+  // enter
+  onBeforeEnter: TransitionHookValidator,
+  onEnter: TransitionHookValidator,
+  onAfterEnter: TransitionHookValidator,
+  onEnterCancelled: TransitionHookValidator,
+  // leave
+  onBeforeLeave: TransitionHookValidator,
+  onLeave: TransitionHookValidator,
+  onAfterLeave: TransitionHookValidator,
+  onLeaveCancelled: TransitionHookValidator,
+  // appear
+  onBeforeAppear: TransitionHookValidator,
+  onAppear: TransitionHookValidator,
+  onAfterAppear: TransitionHookValidator,
+  onAppearCancelled: TransitionHookValidator
+};
+function getLeavingNodesForType(state, vnode) {
+  const { leavingVNodes } = state;
+  let leavingVNodesCache = leavingVNodes.get(vnode.type);
+  if (!leavingVNodesCache) {
+    leavingVNodesCache = /* @__PURE__ */ Object.create(null);
+    leavingVNodes.set(vnode.type, leavingVNodesCache);
+  }
+  return leavingVNodesCache;
+}
+function resolveTransitionHooks(vnode, props, state, instance) {
+  const {
+    appear,
+    mode,
+    persisted = false,
+    onBeforeEnter,
+    onEnter,
+    onAfterEnter,
+    onEnterCancelled,
+    onBeforeLeave,
+    onLeave,
+    onAfterLeave,
+    onLeaveCancelled,
+    onBeforeAppear,
+    onAppear,
+    onAfterAppear,
+    onAppearCancelled
+  } = props;
+  const key = String(vnode.key);
+  const leavingVNodesCache = getLeavingNodesForType(state, vnode);
+  const callHook2 = (hook, args) => {
+    hook && callWithAsyncErrorHandling(
+      hook,
+      instance,
+      9,
+      args
+    );
+  };
+  const callAsyncHook = (hook, args) => {
+    const done = args[1];
+    callHook2(hook, args);
+    if (isArray$2(hook)) {
+      if (hook.every((hook2) => hook2.length <= 1))
+        done();
+    } else if (hook.length <= 1) {
+      done();
+    }
+  };
+  const hooks = {
+    mode,
+    persisted,
+    beforeEnter(el) {
+      let hook = onBeforeEnter;
+      if (!state.isMounted) {
+        if (appear) {
+          hook = onBeforeAppear || onBeforeEnter;
+        } else {
+          return;
+        }
+      }
+      if (el[leaveCbKey]) {
+        el[leaveCbKey](
+          true
+          /* cancelled */
+        );
+      }
+      const leavingVNode = leavingVNodesCache[key];
+      if (leavingVNode && isSameVNodeType(vnode, leavingVNode) && leavingVNode.el[leaveCbKey]) {
+        leavingVNode.el[leaveCbKey]();
+      }
+      callHook2(hook, [el]);
+    },
+    enter(el) {
+      let hook = onEnter;
+      let afterHook = onAfterEnter;
+      let cancelHook = onEnterCancelled;
+      if (!state.isMounted) {
+        if (appear) {
+          hook = onAppear || onEnter;
+          afterHook = onAfterAppear || onAfterEnter;
+          cancelHook = onAppearCancelled || onEnterCancelled;
+        } else {
+          return;
+        }
+      }
+      let called = false;
+      const done = el[enterCbKey$1] = (cancelled) => {
+        if (called)
+          return;
+        called = true;
+        if (cancelled) {
+          callHook2(cancelHook, [el]);
+        } else {
+          callHook2(afterHook, [el]);
+        }
+        if (hooks.delayedLeave) {
+          hooks.delayedLeave();
+        }
+        el[enterCbKey$1] = void 0;
+      };
+      if (hook) {
+        callAsyncHook(hook, [el, done]);
+      } else {
+        done();
+      }
+    },
+    leave(el, remove2) {
+      const key2 = String(vnode.key);
+      if (el[enterCbKey$1]) {
+        el[enterCbKey$1](
+          true
+          /* cancelled */
+        );
+      }
+      if (state.isUnmounting) {
+        return remove2();
+      }
+      callHook2(onBeforeLeave, [el]);
+      let called = false;
+      const done = el[leaveCbKey] = (cancelled) => {
+        if (called)
+          return;
+        called = true;
+        remove2();
+        if (cancelled) {
+          callHook2(onLeaveCancelled, [el]);
+        } else {
+          callHook2(onAfterLeave, [el]);
+        }
+        el[leaveCbKey] = void 0;
+        if (leavingVNodesCache[key2] === vnode) {
+          delete leavingVNodesCache[key2];
+        }
+      };
+      leavingVNodesCache[key2] = vnode;
+      if (onLeave) {
+        callAsyncHook(onLeave, [el, done]);
+      } else {
+        done();
+      }
+    },
+    clone(vnode2) {
+      return resolveTransitionHooks(vnode2, props, state, instance);
+    }
+  };
+  return hooks;
+}
+function setTransitionHooks(vnode, hooks) {
+  if (vnode.shapeFlag & 6 && vnode.component) {
+    setTransitionHooks(vnode.component.subTree, hooks);
+  } else if (vnode.shapeFlag & 128) {
+    vnode.ssContent.transition = hooks.clone(vnode.ssContent);
+    vnode.ssFallback.transition = hooks.clone(vnode.ssFallback);
+  } else {
+    vnode.transition = hooks;
+  }
+}
+function getTransitionRawChildren(children, keepComment = false, parentKey) {
+  let ret = [];
+  let keyedFragmentCount = 0;
+  for (let i = 0; i < children.length; i++) {
+    let child = children[i];
+    const key = parentKey == null ? child.key : String(parentKey) + String(child.key != null ? child.key : i);
+    if (child.type === Fragment) {
+      if (child.patchFlag & 128)
+        keyedFragmentCount++;
+      ret = ret.concat(
+        getTransitionRawChildren(child.children, keepComment, key)
+      );
+    } else if (keepComment || child.type !== Comment) {
+      ret.push(key != null ? cloneVNode(child, { key }) : child);
+    }
+  }
+  if (keyedFragmentCount > 1) {
+    for (let i = 0; i < ret.length; i++) {
+      ret[i].patchFlag = -2;
+    }
+  }
+  return ret;
+}
 /*! #__NO_SIDE_EFFECTS__ */
 // @__NO_SIDE_EFFECTS__
 function defineComponent(options, extraOptions) {
@@ -12285,6 +12512,47 @@ function renderList(source2, renderItem, cache, index) {
     cache[index] = ret;
   }
   return ret;
+}
+function renderSlot(slots, name, props = {}, fallback, noSlotted) {
+  if (currentRenderingInstance.isCE || currentRenderingInstance.parent && isAsyncWrapper(currentRenderingInstance.parent) && currentRenderingInstance.parent.isCE) {
+    if (name !== "default")
+      props.name = name;
+    return createVNode("slot", props, fallback && fallback());
+  }
+  let slot = slots[name];
+  if (slot && slot._c) {
+    slot._d = false;
+  }
+  openBlock();
+  const validSlotContent = slot && ensureValidVNode(slot(props));
+  const rendered = createBlock(
+    Fragment,
+    {
+      key: props.key || // slot content array of a dynamic conditional slot may have a branch
+      // key attached in the `createSlots` helper, respect that
+      validSlotContent && validSlotContent.key || `_${name}`
+    },
+    validSlotContent || (fallback ? fallback() : []),
+    validSlotContent && slots._ === 1 ? 64 : -2
+  );
+  if (!noSlotted && rendered.scopeId) {
+    rendered.slotScopeIds = [rendered.scopeId + "-s"];
+  }
+  if (slot && slot._c) {
+    slot._d = true;
+  }
+  return rendered;
+}
+function ensureValidVNode(vnodes) {
+  return vnodes.some((child) => {
+    if (!isVNode(child))
+      return true;
+    if (child.type === Comment)
+      return false;
+    if (child.type === Fragment && !ensureValidVNode(child.children))
+      return false;
+    return true;
+  }) ? vnodes : null;
 }
 const getPublicInstance = (i) => {
   if (!i)
@@ -12430,7 +12698,7 @@ function applyOptions(instance) {
   const ctx = instance.ctx;
   shouldCacheAccess = false;
   if (options.beforeCreate) {
-    callHook(options.beforeCreate, instance, "bc");
+    callHook$1(options.beforeCreate, instance, "bc");
   }
   const {
     // state
@@ -12452,7 +12720,7 @@ function applyOptions(instance) {
     beforeUnmount,
     destroyed,
     unmounted,
-    render,
+    render: render2,
     renderTracked,
     renderTriggered,
     errorCaptured,
@@ -12517,7 +12785,7 @@ function applyOptions(instance) {
     });
   }
   if (created) {
-    callHook(created, instance, "c");
+    callHook$1(created, instance, "c");
   }
   function registerLifecycleHook(register, hook) {
     if (isArray$2(hook)) {
@@ -12551,8 +12819,8 @@ function applyOptions(instance) {
       instance.exposed = {};
     }
   }
-  if (render && instance.render === NOOP) {
-    instance.render = render;
+  if (render2 && instance.render === NOOP) {
+    instance.render = render2;
   }
   if (inheritAttrs != null) {
     instance.inheritAttrs = inheritAttrs;
@@ -12594,7 +12862,7 @@ function resolveInjections(injectOptions, ctx, checkDuplicateProperties = NOOP) 
     }
   }
 }
-function callHook(hook, instance, type) {
+function callHook$1(hook, instance, type) {
   callWithAsyncErrorHandling(
     isArray$2(hook) ? hook.map((h2) => h2.bind(instance.proxy)) : hook.bind(instance.proxy),
     instance,
@@ -12783,7 +13051,7 @@ function createAppContext() {
   };
 }
 let uid$1 = 0;
-function createAppAPI(render, hydrate) {
+function createAppAPI(render2, hydrate) {
   return function createApp2(rootComponent, rootProps = null) {
     if (!isFunction$1(rootComponent)) {
       rootComponent = extend$2({}, rootComponent);
@@ -12854,7 +13122,7 @@ function createAppAPI(render, hydrate) {
           if (isHydrate && hydrate) {
             hydrate(vnode, rootContainer);
           } else {
-            render(vnode, rootContainer, namespace);
+            render2(vnode, rootContainer, namespace);
           }
           isMounted = true;
           app2._container = rootContainer;
@@ -12864,7 +13132,7 @@ function createAppAPI(render, hydrate) {
       },
       unmount() {
         if (isMounted) {
-          render(null, app2._container);
+          render2(null, app2._container);
           delete app2._container.__vue_app__;
         }
       },
@@ -14611,7 +14879,7 @@ function baseCreateRenderer(options, createHydrationFns) {
     return hostNextSibling(vnode.anchor || vnode.el);
   };
   let isFlushing2 = false;
-  const render = (vnode, container, namespace) => {
+  const render2 = (vnode, container, namespace) => {
     if (vnode == null) {
       if (container._vnode) {
         unmount(container._vnode, null, null, true);
@@ -14655,9 +14923,9 @@ function baseCreateRenderer(options, createHydrationFns) {
     );
   }
   return {
-    render,
+    render: render2,
     hydrate,
-    createApp: createAppAPI(render, hydrate)
+    createApp: createAppAPI(render2, hydrate)
   };
 }
 function resolveChildrenNamespace({ type, props }, currentNamespace) {
@@ -15163,6 +15431,7 @@ function createComponentInstance(vnode, parent, suspense) {
   return instance;
 }
 let currentInstance = null;
+const getCurrentInstance = () => currentInstance || currentRenderingInstance;
 let internalSetCurrentInstance;
 let setInSSRSetupState;
 {
@@ -15463,7 +15732,269 @@ const nodeOps = {
     ];
   }
 };
+const TRANSITION = "transition";
+const ANIMATION = "animation";
 const vtcKey = Symbol("_vtc");
+const DOMTransitionPropsValidators = {
+  name: String,
+  type: String,
+  css: {
+    type: Boolean,
+    default: true
+  },
+  duration: [String, Number, Object],
+  enterFromClass: String,
+  enterActiveClass: String,
+  enterToClass: String,
+  appearFromClass: String,
+  appearActiveClass: String,
+  appearToClass: String,
+  leaveFromClass: String,
+  leaveActiveClass: String,
+  leaveToClass: String
+};
+const TransitionPropsValidators = /* @__PURE__ */ extend$2(
+  {},
+  BaseTransitionPropsValidators,
+  DOMTransitionPropsValidators
+);
+const callHook = (hook, args = []) => {
+  if (isArray$2(hook)) {
+    hook.forEach((h2) => h2(...args));
+  } else if (hook) {
+    hook(...args);
+  }
+};
+const hasExplicitCallback = (hook) => {
+  return hook ? isArray$2(hook) ? hook.some((h2) => h2.length > 1) : hook.length > 1 : false;
+};
+function resolveTransitionProps(rawProps) {
+  const baseProps = {};
+  for (const key in rawProps) {
+    if (!(key in DOMTransitionPropsValidators)) {
+      baseProps[key] = rawProps[key];
+    }
+  }
+  if (rawProps.css === false) {
+    return baseProps;
+  }
+  const {
+    name = "v",
+    type,
+    duration,
+    enterFromClass = `${name}-enter-from`,
+    enterActiveClass = `${name}-enter-active`,
+    enterToClass = `${name}-enter-to`,
+    appearFromClass = enterFromClass,
+    appearActiveClass = enterActiveClass,
+    appearToClass = enterToClass,
+    leaveFromClass = `${name}-leave-from`,
+    leaveActiveClass = `${name}-leave-active`,
+    leaveToClass = `${name}-leave-to`
+  } = rawProps;
+  const durations = normalizeDuration(duration);
+  const enterDuration = durations && durations[0];
+  const leaveDuration = durations && durations[1];
+  const {
+    onBeforeEnter,
+    onEnter,
+    onEnterCancelled,
+    onLeave,
+    onLeaveCancelled,
+    onBeforeAppear = onBeforeEnter,
+    onAppear = onEnter,
+    onAppearCancelled = onEnterCancelled
+  } = baseProps;
+  const finishEnter = (el, isAppear, done) => {
+    removeTransitionClass(el, isAppear ? appearToClass : enterToClass);
+    removeTransitionClass(el, isAppear ? appearActiveClass : enterActiveClass);
+    done && done();
+  };
+  const finishLeave = (el, done) => {
+    el._isLeaving = false;
+    removeTransitionClass(el, leaveFromClass);
+    removeTransitionClass(el, leaveToClass);
+    removeTransitionClass(el, leaveActiveClass);
+    done && done();
+  };
+  const makeEnterHook = (isAppear) => {
+    return (el, done) => {
+      const hook = isAppear ? onAppear : onEnter;
+      const resolve = () => finishEnter(el, isAppear, done);
+      callHook(hook, [el, resolve]);
+      nextFrame(() => {
+        removeTransitionClass(el, isAppear ? appearFromClass : enterFromClass);
+        addTransitionClass(el, isAppear ? appearToClass : enterToClass);
+        if (!hasExplicitCallback(hook)) {
+          whenTransitionEnds(el, type, enterDuration, resolve);
+        }
+      });
+    };
+  };
+  return extend$2(baseProps, {
+    onBeforeEnter(el) {
+      callHook(onBeforeEnter, [el]);
+      addTransitionClass(el, enterFromClass);
+      addTransitionClass(el, enterActiveClass);
+    },
+    onBeforeAppear(el) {
+      callHook(onBeforeAppear, [el]);
+      addTransitionClass(el, appearFromClass);
+      addTransitionClass(el, appearActiveClass);
+    },
+    onEnter: makeEnterHook(false),
+    onAppear: makeEnterHook(true),
+    onLeave(el, done) {
+      el._isLeaving = true;
+      const resolve = () => finishLeave(el, done);
+      addTransitionClass(el, leaveFromClass);
+      addTransitionClass(el, leaveActiveClass);
+      forceReflow();
+      nextFrame(() => {
+        if (!el._isLeaving) {
+          return;
+        }
+        removeTransitionClass(el, leaveFromClass);
+        addTransitionClass(el, leaveToClass);
+        if (!hasExplicitCallback(onLeave)) {
+          whenTransitionEnds(el, type, leaveDuration, resolve);
+        }
+      });
+      callHook(onLeave, [el, resolve]);
+    },
+    onEnterCancelled(el) {
+      finishEnter(el, false);
+      callHook(onEnterCancelled, [el]);
+    },
+    onAppearCancelled(el) {
+      finishEnter(el, true);
+      callHook(onAppearCancelled, [el]);
+    },
+    onLeaveCancelled(el) {
+      finishLeave(el);
+      callHook(onLeaveCancelled, [el]);
+    }
+  });
+}
+function normalizeDuration(duration) {
+  if (duration == null) {
+    return null;
+  } else if (isObject$1(duration)) {
+    return [NumberOf(duration.enter), NumberOf(duration.leave)];
+  } else {
+    const n = NumberOf(duration);
+    return [n, n];
+  }
+}
+function NumberOf(val) {
+  const res = toNumber(val);
+  return res;
+}
+function addTransitionClass(el, cls) {
+  cls.split(/\s+/).forEach((c) => c && el.classList.add(c));
+  (el[vtcKey] || (el[vtcKey] = /* @__PURE__ */ new Set())).add(cls);
+}
+function removeTransitionClass(el, cls) {
+  cls.split(/\s+/).forEach((c) => c && el.classList.remove(c));
+  const _vtc = el[vtcKey];
+  if (_vtc) {
+    _vtc.delete(cls);
+    if (!_vtc.size) {
+      el[vtcKey] = void 0;
+    }
+  }
+}
+function nextFrame(cb) {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(cb);
+  });
+}
+let endId = 0;
+function whenTransitionEnds(el, expectedType, explicitTimeout, resolve) {
+  const id = el._endId = ++endId;
+  const resolveIfNotStale = () => {
+    if (id === el._endId) {
+      resolve();
+    }
+  };
+  if (explicitTimeout) {
+    return setTimeout(resolveIfNotStale, explicitTimeout);
+  }
+  const { type, timeout, propCount } = getTransitionInfo(el, expectedType);
+  if (!type) {
+    return resolve();
+  }
+  const endEvent = type + "end";
+  let ended = 0;
+  const end = () => {
+    el.removeEventListener(endEvent, onEnd);
+    resolveIfNotStale();
+  };
+  const onEnd = (e) => {
+    if (e.target === el && ++ended >= propCount) {
+      end();
+    }
+  };
+  setTimeout(() => {
+    if (ended < propCount) {
+      end();
+    }
+  }, timeout + 1);
+  el.addEventListener(endEvent, onEnd);
+}
+function getTransitionInfo(el, expectedType) {
+  const styles = window.getComputedStyle(el);
+  const getStyleProperties = (key) => (styles[key] || "").split(", ");
+  const transitionDelays = getStyleProperties(`${TRANSITION}Delay`);
+  const transitionDurations = getStyleProperties(`${TRANSITION}Duration`);
+  const transitionTimeout = getTimeout(transitionDelays, transitionDurations);
+  const animationDelays = getStyleProperties(`${ANIMATION}Delay`);
+  const animationDurations = getStyleProperties(`${ANIMATION}Duration`);
+  const animationTimeout = getTimeout(animationDelays, animationDurations);
+  let type = null;
+  let timeout = 0;
+  let propCount = 0;
+  if (expectedType === TRANSITION) {
+    if (transitionTimeout > 0) {
+      type = TRANSITION;
+      timeout = transitionTimeout;
+      propCount = transitionDurations.length;
+    }
+  } else if (expectedType === ANIMATION) {
+    if (animationTimeout > 0) {
+      type = ANIMATION;
+      timeout = animationTimeout;
+      propCount = animationDurations.length;
+    }
+  } else {
+    timeout = Math.max(transitionTimeout, animationTimeout);
+    type = timeout > 0 ? transitionTimeout > animationTimeout ? TRANSITION : ANIMATION : null;
+    propCount = type ? type === TRANSITION ? transitionDurations.length : animationDurations.length : 0;
+  }
+  const hasTransform = type === TRANSITION && /\b(transform|all)(,|$)/.test(
+    getStyleProperties(`${TRANSITION}Property`).toString()
+  );
+  return {
+    type,
+    timeout,
+    propCount,
+    hasTransform
+  };
+}
+function getTimeout(delays, durations) {
+  while (delays.length < durations.length) {
+    delays = delays.concat(delays);
+  }
+  return Math.max(...durations.map((d, i) => toMs(d) + toMs(delays[i])));
+}
+function toMs(s) {
+  if (s === "auto")
+    return 0;
+  return Number(s.slice(0, -1).replace(",", ".")) * 1e3;
+}
+function forceReflow() {
+  return document.body.offsetHeight;
+}
 function patchClass(el, value, isSVG) {
   const transitionClasses = el[vtcKey];
   if (transitionClasses) {
@@ -15808,6 +16339,138 @@ function shouldSetAsProp(el, key, value, isSVG) {
   }
   return key in el;
 }
+const positionMap = /* @__PURE__ */ new WeakMap();
+const newPositionMap = /* @__PURE__ */ new WeakMap();
+const moveCbKey = Symbol("_moveCb");
+const enterCbKey = Symbol("_enterCb");
+const TransitionGroupImpl = {
+  name: "TransitionGroup",
+  props: /* @__PURE__ */ extend$2({}, TransitionPropsValidators, {
+    tag: String,
+    moveClass: String
+  }),
+  setup(props, { slots }) {
+    const instance = getCurrentInstance();
+    const state = useTransitionState();
+    let prevChildren;
+    let children;
+    onUpdated(() => {
+      if (!prevChildren.length) {
+        return;
+      }
+      const moveClass = props.moveClass || `${props.name || "v"}-move`;
+      if (!hasCSSTransform(
+        prevChildren[0].el,
+        instance.vnode.el,
+        moveClass
+      )) {
+        return;
+      }
+      prevChildren.forEach(callPendingCbs);
+      prevChildren.forEach(recordPosition);
+      const movedChildren = prevChildren.filter(applyTranslation);
+      forceReflow();
+      movedChildren.forEach((c) => {
+        const el = c.el;
+        const style = el.style;
+        addTransitionClass(el, moveClass);
+        style.transform = style.webkitTransform = style.transitionDuration = "";
+        const cb = el[moveCbKey] = (e) => {
+          if (e && e.target !== el) {
+            return;
+          }
+          if (!e || /transform$/.test(e.propertyName)) {
+            el.removeEventListener("transitionend", cb);
+            el[moveCbKey] = null;
+            removeTransitionClass(el, moveClass);
+          }
+        };
+        el.addEventListener("transitionend", cb);
+      });
+    });
+    return () => {
+      const rawProps = toRaw(props);
+      const cssTransitionProps = resolveTransitionProps(rawProps);
+      let tag2 = rawProps.tag || Fragment;
+      prevChildren = [];
+      if (children) {
+        for (let i = 0; i < children.length; i++) {
+          const child = children[i];
+          if (child.el && child.el instanceof Element) {
+            prevChildren.push(child);
+            setTransitionHooks(
+              child,
+              resolveTransitionHooks(
+                child,
+                cssTransitionProps,
+                state,
+                instance
+              )
+            );
+            positionMap.set(
+              child,
+              child.el.getBoundingClientRect()
+            );
+          }
+        }
+      }
+      children = slots.default ? getTransitionRawChildren(slots.default()) : [];
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        if (child.key != null) {
+          setTransitionHooks(
+            child,
+            resolveTransitionHooks(child, cssTransitionProps, state, instance)
+          );
+        }
+      }
+      return createVNode(tag2, null, children);
+    };
+  }
+};
+const removeMode = (props) => delete props.mode;
+/* @__PURE__ */ removeMode(TransitionGroupImpl.props);
+const TransitionGroup = TransitionGroupImpl;
+function callPendingCbs(c) {
+  const el = c.el;
+  if (el[moveCbKey]) {
+    el[moveCbKey]();
+  }
+  if (el[enterCbKey]) {
+    el[enterCbKey]();
+  }
+}
+function recordPosition(c) {
+  newPositionMap.set(c, c.el.getBoundingClientRect());
+}
+function applyTranslation(c) {
+  const oldPos = positionMap.get(c);
+  const newPos = newPositionMap.get(c);
+  const dx = oldPos.left - newPos.left;
+  const dy = oldPos.top - newPos.top;
+  if (dx || dy) {
+    const s = c.el.style;
+    s.transform = s.webkitTransform = `translate(${dx}px,${dy}px)`;
+    s.transitionDuration = "0s";
+    return c;
+  }
+}
+function hasCSSTransform(el, root2, moveClass) {
+  const clone = el.cloneNode();
+  const _vtc = el[vtcKey];
+  if (_vtc) {
+    _vtc.forEach((cls) => {
+      cls.split(/\s+/).forEach((c) => c && clone.classList.remove(c));
+    });
+  }
+  moveClass.split(/\s+/).forEach((c) => c && clone.classList.add(c));
+  clone.style.display = "none";
+  const container = root2.nodeType === 1 ? root2 : root2.parentNode;
+  container.appendChild(clone);
+  const { hasTransform } = getTransitionInfo(clone);
+  container.removeChild(clone);
+  return hasTransform;
+}
 const getModelAssigner = (vnode) => {
   const fn = vnode.props["onUpdate:modelValue"] || false;
   return isArray$2(fn) ? (value) => invokeArrayFns(fn, value) : fn;
@@ -15927,6 +16590,9 @@ let renderer;
 function ensureRenderer() {
   return renderer || (renderer = createRenderer(rendererOptions));
 }
+const render = (...args) => {
+  ensureRenderer().render(...args);
+};
 const createApp = (...args) => {
   const app2 = ensureRenderer().createApp(...args);
   const { mount } = app2;
@@ -16650,15 +17316,15 @@ function useHistoryStateNavigation(base) {
   }
   function changeLocation(to, state, replace2) {
     const hashIndex = base.indexOf("#");
-    const url = hashIndex > -1 ? (location2.host && document.querySelector("base") ? base : base.slice(hashIndex)) + to : createBaseLocation() + base + to;
+    const url2 = hashIndex > -1 ? (location2.host && document.querySelector("base") ? base : base.slice(hashIndex)) + to : createBaseLocation() + base + to;
     try {
-      history2[replace2 ? "replaceState" : "pushState"](state, "", url);
+      history2[replace2 ? "replaceState" : "pushState"](state, "", url2);
       historyState.value = state;
     } catch (err) {
       {
         console.error(err);
       }
-      location2[replace2 ? "replace" : "assign"](url);
+      location2[replace2 ? "replace" : "assign"](url2);
     }
   }
   function replace(to, data) {
@@ -16943,8 +17609,8 @@ function tokenizePath(path) {
   if (!path.startsWith("/")) {
     throw new Error(`Invalid path "${path}"`);
   }
-  function crash(message) {
-    throw new Error(`ERR (${state})/"${buffer}": ${message}`);
+  function crash(message2) {
+    throw new Error(`ERR (${state})/"${buffer}": ${message2}`);
   }
   let state = 0;
   let previousState = state;
@@ -18127,13 +18793,28 @@ function extractChangingRecords(to, from) {
   }
   return [leavingRecords, updatingRecords, enteringRecords];
 }
+function useRoute() {
+  return inject(routeLocationKey);
+}
+const _sfc_main$e = {
+  __name: "App",
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(RouterView));
+    };
+  }
+};
 const useStore = defineStore("useStore", {
   state: () => ({
     isVsCodeMode: false,
     isIdeaMode: false,
-    isInCodeIDE: false
+    isInCodeIDE: false,
+    chatInProgress: false
   }),
   actions: {
+    setChatInProgress(ing) {
+      this.chatInProgress = ing;
+    },
     setVsCodeMode(mode) {
       this.isVsCodeMode = mode;
       if (mode)
@@ -18167,32 +18848,6 @@ const useStore = defineStore("useStore", {
     }
   }
 });
-const _sfc_main$6 = {
-  __name: "App",
-  setup(__props) {
-    onMounted(() => {
-      try {
-        const vscode = window.acquireVsCodeApi();
-        window.vscodeInstance = vscode;
-        useStore().setVsCodeMode(vscode ? true : false);
-      } catch (error2) {
-        console.log("不在vscode内");
-      }
-      try {
-        var params = new URLSearchParams(window.location.search);
-        if (params.get("idea") === "1") {
-          useStore().setIdeaMode(true);
-          console.log("在idea内");
-        }
-      } catch (error2) {
-        console.log("不在idea内");
-      }
-    });
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(RouterView));
-    };
-  }
-};
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -18200,8 +18855,414 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const _sfc_main$5 = {};
-const _hoisted_1$4 = {
+const _hoisted_1$a = ["title", "disabled"];
+const _hoisted_2$9 = { class: "toolbox_prompt_title" };
+const _hoisted_3$9 = { class: "toolbox_prompt_subtitle" };
+const _sfc_main$d = {
+  __name: "ToolView",
+  props: {
+    data: {
+      title: String,
+      subtitle: String,
+      icon: String,
+      color: String,
+      bgcolor: String,
+      click: Function,
+      disabled: Boolean,
+      tooltip: String
+    }
+  },
+  setup(__props) {
+    const props = __props;
+    function handleClick() {
+      var _a7, _b2;
+      (_b2 = (_a7 = props.data).click) == null ? void 0 : _b2.call(_a7, props.data);
+    }
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("div", {
+        class: "prompt_block",
+        onClick: handleClick,
+        title: props.data.tooltip,
+        disabled: props.data.disabled
+      }, [
+        createBaseVNode("div", _hoisted_2$9, toDisplayString(props.data.title), 1),
+        createBaseVNode("div", _hoisted_3$9, toDisplayString(props.data.subtitle), 1),
+        renderSlot(_ctx.$slots, "default", {}, void 0, true)
+      ], 8, _hoisted_1$a);
+    };
+  }
+};
+const ToolView = /* @__PURE__ */ _export_sfc(_sfc_main$d, [["__scopeId", "data-v-fa761217"]]);
+var commonjsGlobal = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
+function getDefaultExportFromCjs(x) {
+  return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
+}
+var FileSaver_min = { exports: {} };
+(function(module, exports) {
+  (function(a, b) {
+    b();
+  })(commonjsGlobal, function() {
+    function b(a2, b2) {
+      return "undefined" == typeof b2 ? b2 = { autoBom: false } : "object" != typeof b2 && (console.warn("Deprecated: Expected third argument to be a object"), b2 = { autoBom: !b2 }), b2.autoBom && /^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(a2.type) ? new Blob(["\uFEFF", a2], { type: a2.type }) : a2;
+    }
+    function c(a2, b2, c2) {
+      var d2 = new XMLHttpRequest();
+      d2.open("GET", a2), d2.responseType = "blob", d2.onload = function() {
+        g(d2.response, b2, c2);
+      }, d2.onerror = function() {
+        console.error("could not download file");
+      }, d2.send();
+    }
+    function d(a2) {
+      var b2 = new XMLHttpRequest();
+      b2.open("HEAD", a2, false);
+      try {
+        b2.send();
+      } catch (a3) {
+      }
+      return 200 <= b2.status && 299 >= b2.status;
+    }
+    function e(a2) {
+      try {
+        a2.dispatchEvent(new MouseEvent("click"));
+      } catch (c2) {
+        var b2 = document.createEvent("MouseEvents");
+        b2.initMouseEvent("click", true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null), a2.dispatchEvent(b2);
+      }
+    }
+    var f = "object" == typeof window && window.window === window ? window : "object" == typeof self && self.self === self ? self : "object" == typeof commonjsGlobal && commonjsGlobal.global === commonjsGlobal ? commonjsGlobal : void 0, a = f.navigator && /Macintosh/.test(navigator.userAgent) && /AppleWebKit/.test(navigator.userAgent) && !/Safari/.test(navigator.userAgent), g = f.saveAs || ("object" != typeof window || window !== f ? function() {
+    } : "download" in HTMLAnchorElement.prototype && !a ? function(b2, g2, h2) {
+      var i = f.URL || f.webkitURL, j = document.createElement("a");
+      g2 = g2 || b2.name || "download", j.download = g2, j.rel = "noopener", "string" == typeof b2 ? (j.href = b2, j.origin === location.origin ? e(j) : d(j.href) ? c(b2, g2, h2) : e(j, j.target = "_blank")) : (j.href = i.createObjectURL(b2), setTimeout(function() {
+        i.revokeObjectURL(j.href);
+      }, 4e4), setTimeout(function() {
+        e(j);
+      }, 0));
+    } : "msSaveOrOpenBlob" in navigator ? function(f2, g2, h2) {
+      if (g2 = g2 || f2.name || "download", "string" != typeof f2)
+        navigator.msSaveOrOpenBlob(b(f2, h2), g2);
+      else if (d(f2))
+        c(f2, g2, h2);
+      else {
+        var i = document.createElement("a");
+        i.href = f2, i.target = "_blank", setTimeout(function() {
+          e(i);
+        });
+      }
+    } : function(b2, d2, e2, g2) {
+      if (g2 = g2 || open("", "_blank"), g2 && (g2.document.title = g2.document.body.innerText = "downloading..."), "string" == typeof b2)
+        return c(b2, d2, e2);
+      var h2 = "application/octet-stream" === b2.type, i = /constructor/i.test(f.HTMLElement) || f.safari, j = /CriOS\/[\d]+/.test(navigator.userAgent);
+      if ((j || h2 && i || a) && "undefined" != typeof FileReader) {
+        var k = new FileReader();
+        k.onloadend = function() {
+          var a2 = k.result;
+          a2 = j ? a2 : a2.replace(/^data:[^;]*;/, "data:attachment/file;"), g2 ? g2.location.href = a2 : location = a2, g2 = null;
+        }, k.readAsDataURL(b2);
+      } else {
+        var l = f.URL || f.webkitURL, m = l.createObjectURL(b2);
+        g2 ? g2.location = m : location.href = m, g2 = null, setTimeout(function() {
+          l.revokeObjectURL(m);
+        }, 4e4);
+      }
+    });
+    f.saveAs = g.saveAs = g, module.exports = g;
+  });
+})(FileSaver_min);
+var FileSaver_minExports = FileSaver_min.exports;
+class FileHandlerCore {
+  async uploadFile(url2, file, options) {
+    if (!url2) {
+      throw new Error(`url 不能空`);
+    }
+    if (!file) {
+      throw new Error(`file 不能空`);
+    }
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("options", JSON.stringify(options));
+    const response = await fetch(url2, {
+      method: "POST",
+      body: formData
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data;
+  }
+  async saveFileByFileId(fileId, savePath) {
+    const response = await fetch(url, {
+      method: "POST",
+      body: JSON.stringify({ fileId })
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.statusText}`);
+    }
+    const blob = await response.blob();
+    FileSaver_minExports.saveAs(blob, filePath);
+  }
+  async saveAsFile(url2, filePath2) {
+    const response = await fetch(url2);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.statusText}`);
+    }
+    const blob = await response.blob();
+    FileSaver_minExports.saveAs(blob, filePath2);
+  }
+}
+const defaltOption = {
+  "dataType": "sql",
+  "authorName": "toone",
+  "packageName": "com.toone.masterdata",
+  "returnUtilSuccess": "Return.success",
+  "returnUtilFailure": "Return.error",
+  "isPackageType": true,
+  "isSwagger": false,
+  "isAutoImport": true,
+  "isWithPackage": false,
+  "isComment": true,
+  "isLombok": true,
+  "ignorePrefix": "sys_",
+  "tinyintTransType": "Date"
+};
+class Translate2j {
+  async sql2j(sql, options, fileName) {
+    const param = {
+      tableSql: sql,
+      options: this.mergeOptions(options)
+    };
+    let url2 = "/code/generate4SQL";
+    {
+      url2 = "http://codegen.t.vtoone.com/generator" + url2;
+    }
+    let abor = new AbortController();
+    const timerout = setTimeout(() => {
+      abor == null ? void 0 : abor.abort();
+    }, 1e3 * 10);
+    const response = await fetch(url2, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: abor.signal,
+      body: JSON.stringify(param)
+    });
+    abor = null;
+    timerout && clearTimeout(timerout);
+    if (response.ok) {
+      let { code, msg } = await response.json();
+      if (code === 0) {
+        await new Promise((resolve) => setTimeout(resolve, 1e3));
+        await this.downloadByUrl(msg[0].fileUrl, fileName);
+        return;
+      }
+      throw new Error(msg);
+    }
+    throw new Error("服务异常");
+  }
+  async excelFile2J(file, options) {
+    let url2 = "/code/generate4file";
+    {
+      url2 = "http://codegen.t.vtoone.com/generator" + url2;
+    }
+    const fileHandler = new FileHandlerCore();
+    let { code, msg } = await fileHandler.uploadFile(
+      url2,
+      file,
+      this.mergeOptions(options)
+    );
+    if (code === 0) {
+      await this.downloadResult(msg[0].fileId, file.name, fileHandler);
+    } else {
+      throw new Error(msg);
+    }
+  }
+  async downloadResult(fileId, saveName, fileHandler) {
+    let url2 = "/code/download";
+    {
+      url2 = "http://codegen.t.vtoone.com/generator" + url2;
+    }
+    url2 += `?fileId=${fileId}`;
+    await this.downloadByUrl(url2, saveName, fileHandler);
+  }
+  async downloadByUrl(url2, saveName, fileHandler) {
+    if (saveName) {
+      saveName = saveName.substring(0, saveName.lastIndexOf(".")) + ".zip";
+    }
+    await (fileHandler || new FileHandlerCore()).saveAsFile(url2, saveName);
+  }
+  mergeOptions(options) {
+    return Object.assign(defaltOption, options || {});
+  }
+}
+const SQL2JavaTool$1 = /* @__PURE__ */ defineComponent({
+  components: {
+    ToolView
+  },
+  data() {
+    return {
+      data: {
+        title: "SQL转Java类",
+        subtitle: "根据SQL数据生成Java类型",
+        name: "sql2java",
+        click: this.onToolClick,
+        disabled: false
+      }
+    };
+  },
+  setup() {
+    let fileUploadInputRef = ref();
+    return { fileUploadInputRef };
+  },
+  methods: {
+    onToolClick(item) {
+      if (this.data.disabled) {
+        this.$toast.loading("正在生成,请稍候...");
+        return;
+      }
+      this.fileUploadInputRef.click();
+    },
+    async onUploadFileChange(e) {
+      const file = e.target.files[0];
+      try {
+        this.data.disabled = true;
+        this.$toast.loading("正在生成,请稍候...");
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            await new Translate2j().sql2j(reader.result, null, file.name);
+          } catch (e2) {
+            this.$toast.error("SQL转java失败");
+            console.error(e2);
+          }
+          this.data.disabled = false;
+        };
+        reader.onerror = () => {
+          this.$toast.error("文件读取失败");
+          this.data.disabled = false;
+        };
+        reader.readAsText(file, "utf-8");
+      } catch (e2) {
+        this.$toast.error("文件格式错误");
+        console.error(e2);
+      } finally {
+        this.fileUploadInputRef.value = "";
+      }
+    }
+  }
+});
+const _sfc_main$c = SQL2JavaTool$1;
+function _sfc_render$6(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_ToolView = ToolView;
+  return openBlock(), createBlock(_component_ToolView, { data: _ctx.data }, {
+    default: withCtx(() => [
+      createBaseVNode("input", {
+        ref: "fileUploadInputRef",
+        type: "file",
+        class: "fileInput-hide",
+        id: "file-upload-input",
+        onChange: _cache[0] || (_cache[0] = (...args) => _ctx.onUploadFileChange && _ctx.onUploadFileChange(...args)),
+        accept: ".sql",
+        required: ""
+      }, null, 544)
+    ]),
+    _: 1
+  }, 8, ["data"]);
+}
+const SQL2JavaTool = /* @__PURE__ */ _export_sfc(_sfc_main$c, [["render", _sfc_render$6], ["__scopeId", "data-v-6a25fc69"]]);
+const _hoisted_1$9 = { class: "toolbox-container" };
+const _hoisted_2$8 = { calss: "chatbox" };
+const _hoisted_3$8 = { class: "toolbox_prompt_box" };
+const _sfc_main$b = {
+  __name: "ToolsView",
+  setup(__props) {
+    const tools = ref([
+      // {
+      //     title: 'SQL转Java类', subtitle: '根据SQL数据生成Java类型', name: '123123',
+      //     click: (item) => {
+      //         console.log('123' + item.name + item.title)
+      //     }
+      // },
+      { title: "更多...", subtitle: "敬请期待", name: "123123", tooltip: "敬请期待", disabled: true }
+    ]);
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("div", _hoisted_1$9, [
+        createBaseVNode("div", _hoisted_2$8, [
+          createBaseVNode("div", _hoisted_3$8, [
+            createVNode(SQL2JavaTool),
+            (openBlock(true), createElementBlock(Fragment, null, renderList(tools.value, (item, i) => {
+              return openBlock(), createBlock(ToolView, {
+                key: i,
+                data: item
+              }, null, 8, ["data"]);
+            }), 128))
+          ])
+        ])
+      ]);
+    };
+  }
+};
+const ToolsView = /* @__PURE__ */ _export_sfc(_sfc_main$b, [["__scopeId", "data-v-b467f472"]]);
+const _hoisted_1$8 = { class: "u-header" };
+const _hoisted_2$7 = { class: "u-viewsHd" };
+const _hoisted_3$7 = { class: "u-tab-extends" };
+const _hoisted_4$3 = { class: "u-tab-extends-items" };
+const _hoisted_5$3 = { class: "u-tab-extends-items" };
+const _hoisted_6$2 = { class: "u-viewsBd" };
+const _hoisted_7$2 = { class: "tabContent" };
+const _hoisted_8$2 = { class: "tabContent" };
+const _sfc_main$a = {
+  __name: "FrameView",
+  setup(__props) {
+    const activeName = ref("aiTab");
+    const tabHeanderClick = (tab, event) => {
+      activeName.value = tab;
+    };
+    const isAiMode = computed(() => activeName.value === "aiTab");
+    const isToolsMode = computed(() => activeName.value === "toolsTab");
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock(Fragment, null, [
+        createBaseVNode("header", _hoisted_1$8, [
+          createBaseVNode("div", _hoisted_2$7, [
+            createBaseVNode("h2", {
+              onClick: _cache[0] || (_cache[0] = ($event) => tabHeanderClick("aiTab")),
+              class: normalizeClass({ "s-selected": isAiMode.value })
+            }, "AI 问答", 2),
+            createBaseVNode("h2", {
+              onClick: _cache[1] || (_cache[1] = ($event) => tabHeanderClick("toolsTab")),
+              class: normalizeClass({ "s-selected": isToolsMode.value })
+            }, "工具箱", 2)
+          ]),
+          createBaseVNode("div", _hoisted_3$7, [
+            withDirectives(createBaseVNode("div", _hoisted_4$3, [
+              renderSlot(_ctx.$slots, "aiExt")
+            ], 512), [
+              [vShow, isAiMode.value]
+            ]),
+            withDirectives(createBaseVNode("div", _hoisted_5$3, [
+              renderSlot(_ctx.$slots, "toolsExt")
+            ], 512), [
+              [vShow, isToolsMode.value]
+            ])
+          ])
+        ]),
+        createBaseVNode("main", _hoisted_6$2, [
+          withDirectives(createBaseVNode("div", _hoisted_7$2, [
+            renderSlot(_ctx.$slots, "ai")
+          ], 512), [
+            [vShow, isAiMode.value]
+          ]),
+          withDirectives(createBaseVNode("div", _hoisted_8$2, [
+            createVNode(ToolsView)
+          ], 512), [
+            [vShow, isToolsMode.value]
+          ])
+        ])
+      ], 64);
+    };
+  }
+};
+const _sfc_main$9 = {};
+const _hoisted_1$7 = {
   t: "1714113113132",
   class: "icon",
   viewBox: "0 0 1024 1024",
@@ -18212,32 +19273,32 @@ const _hoisted_1$4 = {
   width: "20",
   height: "20"
 };
-const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode("path", {
+const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode("path", {
   d: "M755.022595 722.911167a390.129159 390.129159 0 0 1-123.92338 285.023773 442.911339 442.911339 0 0 1-119.104137 16.064142A452.779312 452.779312 0 0 1 59.904229 571.908234a436.026707 436.026707 0 0 1 13.080802-107.400263 388.293257 388.293257 0 0 1 291.908405-131.725963 390.129159 390.129159 0 0 1 390.129159 390.129159z",
   fill: "#FFD000",
   "p-id": "41068"
 }, null, -1);
-const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode("path", {
+const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode("path", {
   d: "M511.995078 1023.769594a452.090848 452.090848 0 1 1 452.090848-451.86136 452.549824 452.549824 0 0 1-452.090848 451.86136z m0-835.105887a383.244526 383.244526 0 1 0 383.244526 383.244527 383.703502 383.703502 0 0 0-383.244526-383.244527z",
   fill: "#000000",
   "p-id": "41069"
 }, null, -1);
-const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode("path", {
+const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode("path", {
   d: "M762.366203 235.479206a33.964186 33.964186 0 0 1-17.211581-4.589755 34.423161 34.423161 0 0 1-12.392338-47.044986L828.917647 17.236365a34.423161 34.423161 0 1 1 59.666813 34.423161l-96.384851 166.6081a33.734698 33.734698 0 0 1-29.833406 17.21158zM261.623953 235.479206a34.193673 34.193673 0 0 1-29.833406-17.21158L135.635184 51.659526A34.423161 34.423161 0 0 1 195.301996 17.236365l96.155363 166.6081a34.193673 34.193673 0 0 1-12.621825 47.044986 32.816747 32.816747 0 0 1-17.211581 4.589755zM511.995078 795.429293a34.423161 34.423161 0 0 1-34.423161-34.423161V465.884898a34.423161 34.423161 0 0 1 68.846322 0v295.121234a34.423161 34.423161 0 0 1-34.423161 34.423161z",
   fill: "#000000",
   "p-id": "41070"
 }, null, -1);
-const _hoisted_5$1 = [
-  _hoisted_2$4,
-  _hoisted_3$4,
-  _hoisted_4$1
+const _hoisted_5$2 = [
+  _hoisted_2$6,
+  _hoisted_3$6,
+  _hoisted_4$2
 ];
-function _sfc_render$4(_ctx, _cache) {
-  return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_5$1);
+function _sfc_render$5(_ctx, _cache) {
+  return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_5$2);
 }
-const __unplugin_components_1 = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["render", _sfc_render$4]]);
-const _sfc_main$4 = {};
-const _hoisted_1$3 = {
+const __unplugin_components_1 = /* @__PURE__ */ _export_sfc(_sfc_main$9, [["render", _sfc_render$5]]);
+const _sfc_main$8 = {};
+const _hoisted_1$6 = {
   xmlns: "http://www.w3.org/2000/svg",
   fill: "none",
   viewBox: "0 0 24 24",
@@ -18246,18 +19307,18 @@ const _hoisted_1$3 = {
   stroke: "currentColor",
   class: "w-5 mr-2"
 };
-const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode("path", {
+const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode("path", {
   "stroke-linecap": "round",
   "stroke-linejoin": "round",
   d: "M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"
 }, null, -1);
-const _hoisted_3$3 = [
-  _hoisted_2$3
+const _hoisted_3$5 = [
+  _hoisted_2$5
 ];
-function _sfc_render$3(_ctx, _cache) {
-  return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_3$3);
+function _sfc_render$4(_ctx, _cache) {
+  return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_3$5);
 }
-const __unplugin_components_0 = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$3]]);
+const __unplugin_components_0 = /* @__PURE__ */ _export_sfc(_sfc_main$8, [["render", _sfc_render$4]]);
 var TEXT_PLAIN = "text/plain";
 function warnOrLog() {
   (console.warn || console.log).apply(console, arguments);
@@ -18705,9 +19766,11 @@ rules.inlineLink = {
   },
   replacement: function(content, node) {
     var href = node.getAttribute("href");
+    if (href)
+      href = href.replace(/([()])/g, "\\$1");
     var title = cleanAttribute(node.getAttribute("title"));
     if (title)
-      title = ' "' + title + '"';
+      title = ' "' + title.replace(/"/g, '\\"') + '"';
     return "[" + content + "](" + href + title + ")";
   }
 };
@@ -21252,9 +22315,6 @@ marked$1.walkTokens;
 marked$1.parseInline;
 _Parser.parse;
 _Lexer.lex;
-function getDefaultExportFromCjs(x) {
-  return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
-}
 function deepFreeze(obj2) {
   if (obj2 instanceof Map) {
     obj2.clear = obj2.delete = obj2.set = function() {
@@ -21508,15 +22568,15 @@ function source(re) {
   return re.source;
 }
 function lookahead(re) {
-  return concat$1("(?=", re, ")");
+  return concat("(?=", re, ")");
 }
 function anyNumberOfTimes(re) {
-  return concat$1("(?:", re, ")*");
+  return concat("(?:", re, ")*");
 }
 function optional(re) {
-  return concat$1("(?:", re, ")?");
+  return concat("(?:", re, ")?");
 }
-function concat$1(...args) {
+function concat(...args) {
   const joined = args.map((x) => source(x)).join("");
   return joined;
 }
@@ -21579,7 +22639,7 @@ const RE_STARTERS_RE = "!|!=|!==|%|%=|&|&&|&=|\\*|\\*=|\\+|\\+=|,|-|-=|/=|/|:|;|
 const SHEBANG = (opts = {}) => {
   const beginShebang = /^#![ ]*\//;
   if (opts.binary) {
-    opts.begin = concat$1(
+    opts.begin = concat(
       beginShebang,
       /.*\b/,
       opts.binary,
@@ -21674,7 +22734,7 @@ const COMMENT = function(begin, end, modeOptions = {}) {
       //
       // for a visual example please see:
       // https://github.com/highlightjs/highlight.js/issues/2827
-      begin: concat$1(
+      begin: concat(
         /[ ]+/,
         // necessary to prevent us gobbling up doctags like /* @author Bob Mcgill */
         "(",
@@ -21828,7 +22888,7 @@ const beforeMatchExt = (mode, parent) => {
     delete mode[key];
   });
   mode.keywords = originalMode.keywords;
-  mode.begin = concat$1(originalMode.beforeMatch, lookahead(originalMode.begin));
+  mode.begin = concat(originalMode.beforeMatch, lookahead(originalMode.begin));
   mode.starts = {
     relevance: 0,
     contains: [
@@ -21890,17 +22950,17 @@ function commonKeyword(keyword) {
   return COMMON_KEYWORDS.includes(keyword.toLowerCase());
 }
 const seenDeprecations = {};
-const error = (message) => {
-  console.error(message);
+const error = (message2) => {
+  console.error(message2);
 };
-const warn = (message, ...args) => {
-  console.log(`WARN: ${message}`, ...args);
+const warn = (message2, ...args) => {
+  console.log(`WARN: ${message2}`, ...args);
 };
-const deprecated = (version2, message) => {
-  if (seenDeprecations[`${version2}/${message}`])
+const deprecated = (version2, message2) => {
+  if (seenDeprecations[`${version2}/${message2}`])
     return;
-  console.log(`Deprecated as of ${version2}. ${message}`);
-  seenDeprecations[`${version2}/${message}`] = true;
+  console.log(`Deprecated as of ${version2}. ${message2}`);
+  seenDeprecations[`${version2}/${message2}`] = true;
 };
 const MultiClassError = new Error();
 function remapScopeNames(mode, regexes, { key }) {
@@ -22812,7 +23872,7 @@ const HLJS = function(hljs2) {
   };
   hljs2.versionString = version;
   hljs2.regex = {
-    concat: concat$1,
+    concat,
     lookahead,
     either,
     optional,
@@ -53172,11 +54232,11 @@ function requirePerl() {
       /#/
       // valid but infrequent and weird
     ];
-    const PAIRED_DOUBLE_RE = (prefix, open, close = "\\1") => {
-      const middle = close === "\\1" ? close : regex.concat(close, open);
+    const PAIRED_DOUBLE_RE = (prefix, open2, close = "\\1") => {
+      const middle = close === "\\1" ? close : regex.concat(close, open2);
       return regex.concat(
         regex.concat("(?:", prefix, ")"),
-        open,
+        open2,
         /(?:\\.|[^\\\/])*?/,
         middle,
         /(?:\\.|[^\\\/])*?/,
@@ -53184,10 +54244,10 @@ function requirePerl() {
         REGEX_MODIFIERS
       );
     };
-    const PAIRED_RE = (prefix, open, close) => {
+    const PAIRED_RE = (prefix, open2, close) => {
       return regex.concat(
         regex.concat("(?:", prefix, ")"),
-        open,
+        open2,
         /(?:\\.|[^\\\/])*?/,
         close,
         REGEX_MODIFIERS
@@ -71584,8 +72644,6 @@ const marked = new Marked(
   })
 );
 const clipboardSvg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" data-license="isc-gnc" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" /></svg>`;
-const plusSvg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" data-license="isc-gnc" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>`;
-const insertSvg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" data-license="isc-gnc" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 4.5l7.5 7.5-7.5 7.5m-6-15l7.5 7.5-7.5 7.5" /></svg>`;
 const checkSvg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" data-license="isc-gnc" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>`;
 const util = {
   postMessageToCodeEditor(data) {
@@ -71822,13 +72880,13 @@ class ChatApi2 {
    * @param {进度回调} onProgress 
    * @param {完成回调} onDone 
    */
-  async postToServer(url, data, onProgress, onDone) {
+  async postToServer(url2, data, onProgress, onDone) {
     data.requestId = this.callBackResult.id;
     const sseParser = this.createSseParser(onProgress, onDone, data);
     let timoutTask;
     try {
       timoutTask = setTimeout(() => this.abort(), this.requestConfig.timeout);
-      let response = await this.post(url || this.apiUrl, {
+      let response = await this.post(url2 || this.apiUrl, {
         body: this.getRequestDataJson(data),
         ...this.requestConfig
       });
@@ -71859,8 +72917,8 @@ class ChatApi2 {
       clearTimeout(timoutTask);
     }
   }
-  post(url, requestInit) {
-    const response = fetch(url || this.apiUrl, requestInit);
+  post(url2, requestInit) {
+    const response = fetch(url2 || this.apiUrl, requestInit);
     return response;
   }
   /**
@@ -71874,9 +72932,11 @@ class ChatApi2 {
       if (sseEvent.type !== "event") {
         return;
       }
-      const { event, answer, message, conversation_id, task_id } = this.responseDataParser(sseEvent, !notOnline);
+      const serverData = this.responseDataParser(sseEvent, !notOnline);
+      const { event, answer, message: message2, conversation_id, task_id } = serverData;
       this.callBackResult.serverConversationId = conversation_id;
       this.callBackResult.serverTaskId = task_id;
+      this.callBackResult.serverData = serverData;
       if (event === "message") {
         this.callBackResult.text = answer;
         onProgress == null ? void 0 : onProgress(this.callBackResult);
@@ -71884,8 +72944,8 @@ class ChatApi2 {
         console.log("SseParser-> message_end");
         this.fireDone(onDone);
       } else if (event === "error") {
-        console.log("SseParser->error--->: " + message);
-        this.callBackResult.error = message;
+        console.log("SseParser->error--->: " + message2);
+        this.callBackResult.error = message2;
         this.fireDone(onDone);
       }
     });
@@ -71997,2350 +73057,6 @@ class StopChatApi {
     });
   }
 }
-function bind(fn, thisArg) {
-  return function wrap() {
-    return fn.apply(thisArg, arguments);
-  };
-}
-const { toString } = Object.prototype;
-const { getPrototypeOf } = Object;
-const kindOf = /* @__PURE__ */ ((cache) => (thing) => {
-  const str = toString.call(thing);
-  return cache[str] || (cache[str] = str.slice(8, -1).toLowerCase());
-})(/* @__PURE__ */ Object.create(null));
-const kindOfTest = (type) => {
-  type = type.toLowerCase();
-  return (thing) => kindOf(thing) === type;
-};
-const typeOfTest = (type) => (thing) => typeof thing === type;
-const { isArray } = Array;
-const isUndefined = typeOfTest("undefined");
-function isBuffer(val) {
-  return val !== null && !isUndefined(val) && val.constructor !== null && !isUndefined(val.constructor) && isFunction(val.constructor.isBuffer) && val.constructor.isBuffer(val);
-}
-const isArrayBuffer = kindOfTest("ArrayBuffer");
-function isArrayBufferView(val) {
-  let result;
-  if (typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView) {
-    result = ArrayBuffer.isView(val);
-  } else {
-    result = val && val.buffer && isArrayBuffer(val.buffer);
-  }
-  return result;
-}
-const isString = typeOfTest("string");
-const isFunction = typeOfTest("function");
-const isNumber = typeOfTest("number");
-const isObject = (thing) => thing !== null && typeof thing === "object";
-const isBoolean = (thing) => thing === true || thing === false;
-const isPlainObject = (val) => {
-  if (kindOf(val) !== "object") {
-    return false;
-  }
-  const prototype2 = getPrototypeOf(val);
-  return (prototype2 === null || prototype2 === Object.prototype || Object.getPrototypeOf(prototype2) === null) && !(Symbol.toStringTag in val) && !(Symbol.iterator in val);
-};
-const isDate = kindOfTest("Date");
-const isFile = kindOfTest("File");
-const isBlob = kindOfTest("Blob");
-const isFileList = kindOfTest("FileList");
-const isStream = (val) => isObject(val) && isFunction(val.pipe);
-const isFormData = (thing) => {
-  let kind;
-  return thing && (typeof FormData === "function" && thing instanceof FormData || isFunction(thing.append) && ((kind = kindOf(thing)) === "formdata" || // detect form-data instance
-  kind === "object" && isFunction(thing.toString) && thing.toString() === "[object FormData]"));
-};
-const isURLSearchParams = kindOfTest("URLSearchParams");
-const trim = (str) => str.trim ? str.trim() : str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
-function forEach(obj2, fn, { allOwnKeys = false } = {}) {
-  if (obj2 === null || typeof obj2 === "undefined") {
-    return;
-  }
-  let i;
-  let l;
-  if (typeof obj2 !== "object") {
-    obj2 = [obj2];
-  }
-  if (isArray(obj2)) {
-    for (i = 0, l = obj2.length; i < l; i++) {
-      fn.call(null, obj2[i], i, obj2);
-    }
-  } else {
-    const keys = allOwnKeys ? Object.getOwnPropertyNames(obj2) : Object.keys(obj2);
-    const len = keys.length;
-    let key;
-    for (i = 0; i < len; i++) {
-      key = keys[i];
-      fn.call(null, obj2[key], key, obj2);
-    }
-  }
-}
-function findKey(obj2, key) {
-  key = key.toLowerCase();
-  const keys = Object.keys(obj2);
-  let i = keys.length;
-  let _key;
-  while (i-- > 0) {
-    _key = keys[i];
-    if (key === _key.toLowerCase()) {
-      return _key;
-    }
-  }
-  return null;
-}
-const _global = (() => {
-  if (typeof globalThis !== "undefined")
-    return globalThis;
-  return typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : global;
-})();
-const isContextDefined = (context) => !isUndefined(context) && context !== _global;
-function merge() {
-  const { caseless } = isContextDefined(this) && this || {};
-  const result = {};
-  const assignValue = (val, key) => {
-    const targetKey = caseless && findKey(result, key) || key;
-    if (isPlainObject(result[targetKey]) && isPlainObject(val)) {
-      result[targetKey] = merge(result[targetKey], val);
-    } else if (isPlainObject(val)) {
-      result[targetKey] = merge({}, val);
-    } else if (isArray(val)) {
-      result[targetKey] = val.slice();
-    } else {
-      result[targetKey] = val;
-    }
-  };
-  for (let i = 0, l = arguments.length; i < l; i++) {
-    arguments[i] && forEach(arguments[i], assignValue);
-  }
-  return result;
-}
-const extend = (a, b, thisArg, { allOwnKeys } = {}) => {
-  forEach(b, (val, key) => {
-    if (thisArg && isFunction(val)) {
-      a[key] = bind(val, thisArg);
-    } else {
-      a[key] = val;
-    }
-  }, { allOwnKeys });
-  return a;
-};
-const stripBOM = (content) => {
-  if (content.charCodeAt(0) === 65279) {
-    content = content.slice(1);
-  }
-  return content;
-};
-const inherits = (constructor, superConstructor, props, descriptors2) => {
-  constructor.prototype = Object.create(superConstructor.prototype, descriptors2);
-  constructor.prototype.constructor = constructor;
-  Object.defineProperty(constructor, "super", {
-    value: superConstructor.prototype
-  });
-  props && Object.assign(constructor.prototype, props);
-};
-const toFlatObject = (sourceObj, destObj, filter2, propFilter) => {
-  let props;
-  let i;
-  let prop;
-  const merged = {};
-  destObj = destObj || {};
-  if (sourceObj == null)
-    return destObj;
-  do {
-    props = Object.getOwnPropertyNames(sourceObj);
-    i = props.length;
-    while (i-- > 0) {
-      prop = props[i];
-      if ((!propFilter || propFilter(prop, sourceObj, destObj)) && !merged[prop]) {
-        destObj[prop] = sourceObj[prop];
-        merged[prop] = true;
-      }
-    }
-    sourceObj = filter2 !== false && getPrototypeOf(sourceObj);
-  } while (sourceObj && (!filter2 || filter2(sourceObj, destObj)) && sourceObj !== Object.prototype);
-  return destObj;
-};
-const endsWith = (str, searchString, position) => {
-  str = String(str);
-  if (position === void 0 || position > str.length) {
-    position = str.length;
-  }
-  position -= searchString.length;
-  const lastIndex = str.indexOf(searchString, position);
-  return lastIndex !== -1 && lastIndex === position;
-};
-const toArray = (thing) => {
-  if (!thing)
-    return null;
-  if (isArray(thing))
-    return thing;
-  let i = thing.length;
-  if (!isNumber(i))
-    return null;
-  const arr = new Array(i);
-  while (i-- > 0) {
-    arr[i] = thing[i];
-  }
-  return arr;
-};
-const isTypedArray = /* @__PURE__ */ ((TypedArray) => {
-  return (thing) => {
-    return TypedArray && thing instanceof TypedArray;
-  };
-})(typeof Uint8Array !== "undefined" && getPrototypeOf(Uint8Array));
-const forEachEntry = (obj2, fn) => {
-  const generator = obj2 && obj2[Symbol.iterator];
-  const iterator = generator.call(obj2);
-  let result;
-  while ((result = iterator.next()) && !result.done) {
-    const pair = result.value;
-    fn.call(obj2, pair[0], pair[1]);
-  }
-};
-const matchAll = (regExp, str) => {
-  let matches;
-  const arr = [];
-  while ((matches = regExp.exec(str)) !== null) {
-    arr.push(matches);
-  }
-  return arr;
-};
-const isHTMLForm = kindOfTest("HTMLFormElement");
-const toCamelCase = (str) => {
-  return str.toLowerCase().replace(
-    /[-_\s]([a-z\d])(\w*)/g,
-    function replacer2(m, p1, p2) {
-      return p1.toUpperCase() + p2;
-    }
-  );
-};
-const hasOwnProperty = (({ hasOwnProperty: hasOwnProperty2 }) => (obj2, prop) => hasOwnProperty2.call(obj2, prop))(Object.prototype);
-const isRegExp = kindOfTest("RegExp");
-const reduceDescriptors = (obj2, reducer) => {
-  const descriptors2 = Object.getOwnPropertyDescriptors(obj2);
-  const reducedDescriptors = {};
-  forEach(descriptors2, (descriptor, name) => {
-    let ret;
-    if ((ret = reducer(descriptor, name, obj2)) !== false) {
-      reducedDescriptors[name] = ret || descriptor;
-    }
-  });
-  Object.defineProperties(obj2, reducedDescriptors);
-};
-const freezeMethods = (obj2) => {
-  reduceDescriptors(obj2, (descriptor, name) => {
-    if (isFunction(obj2) && ["arguments", "caller", "callee"].indexOf(name) !== -1) {
-      return false;
-    }
-    const value = obj2[name];
-    if (!isFunction(value))
-      return;
-    descriptor.enumerable = false;
-    if ("writable" in descriptor) {
-      descriptor.writable = false;
-      return;
-    }
-    if (!descriptor.set) {
-      descriptor.set = () => {
-        throw Error("Can not rewrite read-only method '" + name + "'");
-      };
-    }
-  });
-};
-const toObjectSet = (arrayOrString, delimiter) => {
-  const obj2 = {};
-  const define = (arr) => {
-    arr.forEach((value) => {
-      obj2[value] = true;
-    });
-  };
-  isArray(arrayOrString) ? define(arrayOrString) : define(String(arrayOrString).split(delimiter));
-  return obj2;
-};
-const noop = () => {
-};
-const toFiniteNumber = (value, defaultValue) => {
-  value = +value;
-  return Number.isFinite(value) ? value : defaultValue;
-};
-const ALPHA = "abcdefghijklmnopqrstuvwxyz";
-const DIGIT = "0123456789";
-const ALPHABET = {
-  DIGIT,
-  ALPHA,
-  ALPHA_DIGIT: ALPHA + ALPHA.toUpperCase() + DIGIT
-};
-const generateString = (size2 = 16, alphabet = ALPHABET.ALPHA_DIGIT) => {
-  let str = "";
-  const { length } = alphabet;
-  while (size2--) {
-    str += alphabet[Math.random() * length | 0];
-  }
-  return str;
-};
-function isSpecCompliantForm(thing) {
-  return !!(thing && isFunction(thing.append) && thing[Symbol.toStringTag] === "FormData" && thing[Symbol.iterator]);
-}
-const toJSONObject = (obj2) => {
-  const stack2 = new Array(10);
-  const visit = (source2, i) => {
-    if (isObject(source2)) {
-      if (stack2.indexOf(source2) >= 0) {
-        return;
-      }
-      if (!("toJSON" in source2)) {
-        stack2[i] = source2;
-        const target = isArray(source2) ? [] : {};
-        forEach(source2, (value, key) => {
-          const reducedValue = visit(value, i + 1);
-          !isUndefined(reducedValue) && (target[key] = reducedValue);
-        });
-        stack2[i] = void 0;
-        return target;
-      }
-    }
-    return source2;
-  };
-  return visit(obj2, 0);
-};
-const isAsyncFn = kindOfTest("AsyncFunction");
-const isThenable = (thing) => thing && (isObject(thing) || isFunction(thing)) && isFunction(thing.then) && isFunction(thing.catch);
-const utils$1 = {
-  isArray,
-  isArrayBuffer,
-  isBuffer,
-  isFormData,
-  isArrayBufferView,
-  isString,
-  isNumber,
-  isBoolean,
-  isObject,
-  isPlainObject,
-  isUndefined,
-  isDate,
-  isFile,
-  isBlob,
-  isRegExp,
-  isFunction,
-  isStream,
-  isURLSearchParams,
-  isTypedArray,
-  isFileList,
-  forEach,
-  merge,
-  extend,
-  trim,
-  stripBOM,
-  inherits,
-  toFlatObject,
-  kindOf,
-  kindOfTest,
-  endsWith,
-  toArray,
-  forEachEntry,
-  matchAll,
-  isHTMLForm,
-  hasOwnProperty,
-  hasOwnProp: hasOwnProperty,
-  // an alias to avoid ESLint no-prototype-builtins detection
-  reduceDescriptors,
-  freezeMethods,
-  toObjectSet,
-  toCamelCase,
-  noop,
-  toFiniteNumber,
-  findKey,
-  global: _global,
-  isContextDefined,
-  ALPHABET,
-  generateString,
-  isSpecCompliantForm,
-  toJSONObject,
-  isAsyncFn,
-  isThenable
-};
-function AxiosError(message, code, config, request, response) {
-  Error.call(this);
-  if (Error.captureStackTrace) {
-    Error.captureStackTrace(this, this.constructor);
-  } else {
-    this.stack = new Error().stack;
-  }
-  this.message = message;
-  this.name = "AxiosError";
-  code && (this.code = code);
-  config && (this.config = config);
-  request && (this.request = request);
-  response && (this.response = response);
-}
-utils$1.inherits(AxiosError, Error, {
-  toJSON: function toJSON() {
-    return {
-      // Standard
-      message: this.message,
-      name: this.name,
-      // Microsoft
-      description: this.description,
-      number: this.number,
-      // Mozilla
-      fileName: this.fileName,
-      lineNumber: this.lineNumber,
-      columnNumber: this.columnNumber,
-      stack: this.stack,
-      // Axios
-      config: utils$1.toJSONObject(this.config),
-      code: this.code,
-      status: this.response && this.response.status ? this.response.status : null
-    };
-  }
-});
-const prototype$1 = AxiosError.prototype;
-const descriptors = {};
-[
-  "ERR_BAD_OPTION_VALUE",
-  "ERR_BAD_OPTION",
-  "ECONNABORTED",
-  "ETIMEDOUT",
-  "ERR_NETWORK",
-  "ERR_FR_TOO_MANY_REDIRECTS",
-  "ERR_DEPRECATED",
-  "ERR_BAD_RESPONSE",
-  "ERR_BAD_REQUEST",
-  "ERR_CANCELED",
-  "ERR_NOT_SUPPORT",
-  "ERR_INVALID_URL"
-  // eslint-disable-next-line func-names
-].forEach((code) => {
-  descriptors[code] = { value: code };
-});
-Object.defineProperties(AxiosError, descriptors);
-Object.defineProperty(prototype$1, "isAxiosError", { value: true });
-AxiosError.from = (error2, code, config, request, response, customProps) => {
-  const axiosError = Object.create(prototype$1);
-  utils$1.toFlatObject(error2, axiosError, function filter2(obj2) {
-    return obj2 !== Error.prototype;
-  }, (prop) => {
-    return prop !== "isAxiosError";
-  });
-  AxiosError.call(axiosError, error2.message, code, config, request, response);
-  axiosError.cause = error2;
-  axiosError.name = error2.name;
-  customProps && Object.assign(axiosError, customProps);
-  return axiosError;
-};
-const httpAdapter = null;
-function isVisitable(thing) {
-  return utils$1.isPlainObject(thing) || utils$1.isArray(thing);
-}
-function removeBrackets(key) {
-  return utils$1.endsWith(key, "[]") ? key.slice(0, -2) : key;
-}
-function renderKey(path, key, dots) {
-  if (!path)
-    return key;
-  return path.concat(key).map(function each(token, i) {
-    token = removeBrackets(token);
-    return !dots && i ? "[" + token + "]" : token;
-  }).join(dots ? "." : "");
-}
-function isFlatArray(arr) {
-  return utils$1.isArray(arr) && !arr.some(isVisitable);
-}
-const predicates = utils$1.toFlatObject(utils$1, {}, null, function filter(prop) {
-  return /^is[A-Z]/.test(prop);
-});
-function toFormData(obj2, formData, options) {
-  if (!utils$1.isObject(obj2)) {
-    throw new TypeError("target must be an object");
-  }
-  formData = formData || new FormData();
-  options = utils$1.toFlatObject(options, {
-    metaTokens: true,
-    dots: false,
-    indexes: false
-  }, false, function defined(option, source2) {
-    return !utils$1.isUndefined(source2[option]);
-  });
-  const metaTokens = options.metaTokens;
-  const visitor = options.visitor || defaultVisitor;
-  const dots = options.dots;
-  const indexes = options.indexes;
-  const _Blob = options.Blob || typeof Blob !== "undefined" && Blob;
-  const useBlob = _Blob && utils$1.isSpecCompliantForm(formData);
-  if (!utils$1.isFunction(visitor)) {
-    throw new TypeError("visitor must be a function");
-  }
-  function convertValue(value) {
-    if (value === null)
-      return "";
-    if (utils$1.isDate(value)) {
-      return value.toISOString();
-    }
-    if (!useBlob && utils$1.isBlob(value)) {
-      throw new AxiosError("Blob is not supported. Use a Buffer instead.");
-    }
-    if (utils$1.isArrayBuffer(value) || utils$1.isTypedArray(value)) {
-      return useBlob && typeof Blob === "function" ? new Blob([value]) : Buffer.from(value);
-    }
-    return value;
-  }
-  function defaultVisitor(value, key, path) {
-    let arr = value;
-    if (value && !path && typeof value === "object") {
-      if (utils$1.endsWith(key, "{}")) {
-        key = metaTokens ? key : key.slice(0, -2);
-        value = JSON.stringify(value);
-      } else if (utils$1.isArray(value) && isFlatArray(value) || (utils$1.isFileList(value) || utils$1.endsWith(key, "[]")) && (arr = utils$1.toArray(value))) {
-        key = removeBrackets(key);
-        arr.forEach(function each(el, index) {
-          !(utils$1.isUndefined(el) || el === null) && formData.append(
-            // eslint-disable-next-line no-nested-ternary
-            indexes === true ? renderKey([key], index, dots) : indexes === null ? key : key + "[]",
-            convertValue(el)
-          );
-        });
-        return false;
-      }
-    }
-    if (isVisitable(value)) {
-      return true;
-    }
-    formData.append(renderKey(path, key, dots), convertValue(value));
-    return false;
-  }
-  const stack2 = [];
-  const exposedHelpers = Object.assign(predicates, {
-    defaultVisitor,
-    convertValue,
-    isVisitable
-  });
-  function build(value, path) {
-    if (utils$1.isUndefined(value))
-      return;
-    if (stack2.indexOf(value) !== -1) {
-      throw Error("Circular reference detected in " + path.join("."));
-    }
-    stack2.push(value);
-    utils$1.forEach(value, function each(el, key) {
-      const result = !(utils$1.isUndefined(el) || el === null) && visitor.call(
-        formData,
-        el,
-        utils$1.isString(key) ? key.trim() : key,
-        path,
-        exposedHelpers
-      );
-      if (result === true) {
-        build(el, path ? path.concat(key) : [key]);
-      }
-    });
-    stack2.pop();
-  }
-  if (!utils$1.isObject(obj2)) {
-    throw new TypeError("data must be an object");
-  }
-  build(obj2);
-  return formData;
-}
-function encode$1(str) {
-  const charMap = {
-    "!": "%21",
-    "'": "%27",
-    "(": "%28",
-    ")": "%29",
-    "~": "%7E",
-    "%20": "+",
-    "%00": "\0"
-  };
-  return encodeURIComponent(str).replace(/[!'()~]|%20|%00/g, function replacer2(match) {
-    return charMap[match];
-  });
-}
-function AxiosURLSearchParams(params, options) {
-  this._pairs = [];
-  params && toFormData(params, this, options);
-}
-const prototype = AxiosURLSearchParams.prototype;
-prototype.append = function append(name, value) {
-  this._pairs.push([name, value]);
-};
-prototype.toString = function toString2(encoder) {
-  const _encode = encoder ? function(value) {
-    return encoder.call(this, value, encode$1);
-  } : encode$1;
-  return this._pairs.map(function each(pair) {
-    return _encode(pair[0]) + "=" + _encode(pair[1]);
-  }, "").join("&");
-};
-function encode(val) {
-  return encodeURIComponent(val).replace(/%3A/gi, ":").replace(/%24/g, "$").replace(/%2C/gi, ",").replace(/%20/g, "+").replace(/%5B/gi, "[").replace(/%5D/gi, "]");
-}
-function buildURL(url, params, options) {
-  if (!params) {
-    return url;
-  }
-  const _encode = options && options.encode || encode;
-  const serializeFn = options && options.serialize;
-  let serializedParams;
-  if (serializeFn) {
-    serializedParams = serializeFn(params, options);
-  } else {
-    serializedParams = utils$1.isURLSearchParams(params) ? params.toString() : new AxiosURLSearchParams(params, options).toString(_encode);
-  }
-  if (serializedParams) {
-    const hashmarkIndex = url.indexOf("#");
-    if (hashmarkIndex !== -1) {
-      url = url.slice(0, hashmarkIndex);
-    }
-    url += (url.indexOf("?") === -1 ? "?" : "&") + serializedParams;
-  }
-  return url;
-}
-class InterceptorManager {
-  constructor() {
-    this.handlers = [];
-  }
-  /**
-   * Add a new interceptor to the stack
-   *
-   * @param {Function} fulfilled The function to handle `then` for a `Promise`
-   * @param {Function} rejected The function to handle `reject` for a `Promise`
-   *
-   * @return {Number} An ID used to remove interceptor later
-   */
-  use(fulfilled, rejected, options) {
-    this.handlers.push({
-      fulfilled,
-      rejected,
-      synchronous: options ? options.synchronous : false,
-      runWhen: options ? options.runWhen : null
-    });
-    return this.handlers.length - 1;
-  }
-  /**
-   * Remove an interceptor from the stack
-   *
-   * @param {Number} id The ID that was returned by `use`
-   *
-   * @returns {Boolean} `true` if the interceptor was removed, `false` otherwise
-   */
-  eject(id) {
-    if (this.handlers[id]) {
-      this.handlers[id] = null;
-    }
-  }
-  /**
-   * Clear all interceptors from the stack
-   *
-   * @returns {void}
-   */
-  clear() {
-    if (this.handlers) {
-      this.handlers = [];
-    }
-  }
-  /**
-   * Iterate over all the registered interceptors
-   *
-   * This method is particularly useful for skipping over any
-   * interceptors that may have become `null` calling `eject`.
-   *
-   * @param {Function} fn The function to call for each interceptor
-   *
-   * @returns {void}
-   */
-  forEach(fn) {
-    utils$1.forEach(this.handlers, function forEachHandler(h2) {
-      if (h2 !== null) {
-        fn(h2);
-      }
-    });
-  }
-}
-const transitionalDefaults = {
-  silentJSONParsing: true,
-  forcedJSONParsing: true,
-  clarifyTimeoutError: false
-};
-const URLSearchParams$1 = typeof URLSearchParams !== "undefined" ? URLSearchParams : AxiosURLSearchParams;
-const FormData$1 = typeof FormData !== "undefined" ? FormData : null;
-const Blob$1 = typeof Blob !== "undefined" ? Blob : null;
-const platform$1 = {
-  isBrowser: true,
-  classes: {
-    URLSearchParams: URLSearchParams$1,
-    FormData: FormData$1,
-    Blob: Blob$1
-  },
-  protocols: ["http", "https", "file", "blob", "url", "data"]
-};
-const hasBrowserEnv = typeof window !== "undefined" && typeof document !== "undefined";
-const hasStandardBrowserEnv = ((product) => {
-  return hasBrowserEnv && ["ReactNative", "NativeScript", "NS"].indexOf(product) < 0;
-})(typeof navigator !== "undefined" && navigator.product);
-const hasStandardBrowserWebWorkerEnv = (() => {
-  return typeof WorkerGlobalScope !== "undefined" && // eslint-disable-next-line no-undef
-  self instanceof WorkerGlobalScope && typeof self.importScripts === "function";
-})();
-const utils = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
-  __proto__: null,
-  hasBrowserEnv,
-  hasStandardBrowserEnv,
-  hasStandardBrowserWebWorkerEnv
-}, Symbol.toStringTag, { value: "Module" }));
-const platform = {
-  ...utils,
-  ...platform$1
-};
-function toURLEncodedForm(data, options) {
-  return toFormData(data, new platform.classes.URLSearchParams(), Object.assign({
-    visitor: function(value, key, path, helpers) {
-      if (platform.isNode && utils$1.isBuffer(value)) {
-        this.append(key, value.toString("base64"));
-        return false;
-      }
-      return helpers.defaultVisitor.apply(this, arguments);
-    }
-  }, options));
-}
-function parsePropPath(name) {
-  return utils$1.matchAll(/\w+|\[(\w*)]/g, name).map((match) => {
-    return match[0] === "[]" ? "" : match[1] || match[0];
-  });
-}
-function arrayToObject(arr) {
-  const obj2 = {};
-  const keys = Object.keys(arr);
-  let i;
-  const len = keys.length;
-  let key;
-  for (i = 0; i < len; i++) {
-    key = keys[i];
-    obj2[key] = arr[key];
-  }
-  return obj2;
-}
-function formDataToJSON(formData) {
-  function buildPath(path, value, target, index) {
-    let name = path[index++];
-    if (name === "__proto__")
-      return true;
-    const isNumericKey = Number.isFinite(+name);
-    const isLast = index >= path.length;
-    name = !name && utils$1.isArray(target) ? target.length : name;
-    if (isLast) {
-      if (utils$1.hasOwnProp(target, name)) {
-        target[name] = [target[name], value];
-      } else {
-        target[name] = value;
-      }
-      return !isNumericKey;
-    }
-    if (!target[name] || !utils$1.isObject(target[name])) {
-      target[name] = [];
-    }
-    const result = buildPath(path, value, target[name], index);
-    if (result && utils$1.isArray(target[name])) {
-      target[name] = arrayToObject(target[name]);
-    }
-    return !isNumericKey;
-  }
-  if (utils$1.isFormData(formData) && utils$1.isFunction(formData.entries)) {
-    const obj2 = {};
-    utils$1.forEachEntry(formData, (name, value) => {
-      buildPath(parsePropPath(name), value, obj2, 0);
-    });
-    return obj2;
-  }
-  return null;
-}
-function stringifySafely(rawValue, parser, encoder) {
-  if (utils$1.isString(rawValue)) {
-    try {
-      (parser || JSON.parse)(rawValue);
-      return utils$1.trim(rawValue);
-    } catch (e) {
-      if (e.name !== "SyntaxError") {
-        throw e;
-      }
-    }
-  }
-  return (encoder || JSON.stringify)(rawValue);
-}
-const defaults = {
-  transitional: transitionalDefaults,
-  adapter: ["xhr", "http"],
-  transformRequest: [function transformRequest(data, headers) {
-    const contentType = headers.getContentType() || "";
-    const hasJSONContentType = contentType.indexOf("application/json") > -1;
-    const isObjectPayload = utils$1.isObject(data);
-    if (isObjectPayload && utils$1.isHTMLForm(data)) {
-      data = new FormData(data);
-    }
-    const isFormData2 = utils$1.isFormData(data);
-    if (isFormData2) {
-      return hasJSONContentType ? JSON.stringify(formDataToJSON(data)) : data;
-    }
-    if (utils$1.isArrayBuffer(data) || utils$1.isBuffer(data) || utils$1.isStream(data) || utils$1.isFile(data) || utils$1.isBlob(data)) {
-      return data;
-    }
-    if (utils$1.isArrayBufferView(data)) {
-      return data.buffer;
-    }
-    if (utils$1.isURLSearchParams(data)) {
-      headers.setContentType("application/x-www-form-urlencoded;charset=utf-8", false);
-      return data.toString();
-    }
-    let isFileList2;
-    if (isObjectPayload) {
-      if (contentType.indexOf("application/x-www-form-urlencoded") > -1) {
-        return toURLEncodedForm(data, this.formSerializer).toString();
-      }
-      if ((isFileList2 = utils$1.isFileList(data)) || contentType.indexOf("multipart/form-data") > -1) {
-        const _FormData = this.env && this.env.FormData;
-        return toFormData(
-          isFileList2 ? { "files[]": data } : data,
-          _FormData && new _FormData(),
-          this.formSerializer
-        );
-      }
-    }
-    if (isObjectPayload || hasJSONContentType) {
-      headers.setContentType("application/json", false);
-      return stringifySafely(data);
-    }
-    return data;
-  }],
-  transformResponse: [function transformResponse(data) {
-    const transitional2 = this.transitional || defaults.transitional;
-    const forcedJSONParsing = transitional2 && transitional2.forcedJSONParsing;
-    const JSONRequested = this.responseType === "json";
-    if (data && utils$1.isString(data) && (forcedJSONParsing && !this.responseType || JSONRequested)) {
-      const silentJSONParsing = transitional2 && transitional2.silentJSONParsing;
-      const strictJSONParsing = !silentJSONParsing && JSONRequested;
-      try {
-        return JSON.parse(data);
-      } catch (e) {
-        if (strictJSONParsing) {
-          if (e.name === "SyntaxError") {
-            throw AxiosError.from(e, AxiosError.ERR_BAD_RESPONSE, this, null, this.response);
-          }
-          throw e;
-        }
-      }
-    }
-    return data;
-  }],
-  /**
-   * A timeout in milliseconds to abort a request. If set to 0 (default) a
-   * timeout is not created.
-   */
-  timeout: 0,
-  xsrfCookieName: "XSRF-TOKEN",
-  xsrfHeaderName: "X-XSRF-TOKEN",
-  maxContentLength: -1,
-  maxBodyLength: -1,
-  env: {
-    FormData: platform.classes.FormData,
-    Blob: platform.classes.Blob
-  },
-  validateStatus: function validateStatus(status) {
-    return status >= 200 && status < 300;
-  },
-  headers: {
-    common: {
-      "Accept": "application/json, text/plain, */*",
-      "Content-Type": void 0
-    }
-  }
-};
-utils$1.forEach(["delete", "get", "head", "post", "put", "patch"], (method) => {
-  defaults.headers[method] = {};
-});
-const defaults$1 = defaults;
-const ignoreDuplicateOf = utils$1.toObjectSet([
-  "age",
-  "authorization",
-  "content-length",
-  "content-type",
-  "etag",
-  "expires",
-  "from",
-  "host",
-  "if-modified-since",
-  "if-unmodified-since",
-  "last-modified",
-  "location",
-  "max-forwards",
-  "proxy-authorization",
-  "referer",
-  "retry-after",
-  "user-agent"
-]);
-const parseHeaders = (rawHeaders) => {
-  const parsed = {};
-  let key;
-  let val;
-  let i;
-  rawHeaders && rawHeaders.split("\n").forEach(function parser(line) {
-    i = line.indexOf(":");
-    key = line.substring(0, i).trim().toLowerCase();
-    val = line.substring(i + 1).trim();
-    if (!key || parsed[key] && ignoreDuplicateOf[key]) {
-      return;
-    }
-    if (key === "set-cookie") {
-      if (parsed[key]) {
-        parsed[key].push(val);
-      } else {
-        parsed[key] = [val];
-      }
-    } else {
-      parsed[key] = parsed[key] ? parsed[key] + ", " + val : val;
-    }
-  });
-  return parsed;
-};
-const $internals = Symbol("internals");
-function normalizeHeader(header) {
-  return header && String(header).trim().toLowerCase();
-}
-function normalizeValue(value) {
-  if (value === false || value == null) {
-    return value;
-  }
-  return utils$1.isArray(value) ? value.map(normalizeValue) : String(value);
-}
-function parseTokens(str) {
-  const tokens = /* @__PURE__ */ Object.create(null);
-  const tokensRE = /([^\s,;=]+)\s*(?:=\s*([^,;]+))?/g;
-  let match;
-  while (match = tokensRE.exec(str)) {
-    tokens[match[1]] = match[2];
-  }
-  return tokens;
-}
-const isValidHeaderName = (str) => /^[-_a-zA-Z0-9^`|~,!#$%&'*+.]+$/.test(str.trim());
-function matchHeaderValue(context, value, header, filter2, isHeaderNameFilter) {
-  if (utils$1.isFunction(filter2)) {
-    return filter2.call(this, value, header);
-  }
-  if (isHeaderNameFilter) {
-    value = header;
-  }
-  if (!utils$1.isString(value))
-    return;
-  if (utils$1.isString(filter2)) {
-    return value.indexOf(filter2) !== -1;
-  }
-  if (utils$1.isRegExp(filter2)) {
-    return filter2.test(value);
-  }
-}
-function formatHeader(header) {
-  return header.trim().toLowerCase().replace(/([a-z\d])(\w*)/g, (w, char, str) => {
-    return char.toUpperCase() + str;
-  });
-}
-function buildAccessors(obj2, header) {
-  const accessorName = utils$1.toCamelCase(" " + header);
-  ["get", "set", "has"].forEach((methodName) => {
-    Object.defineProperty(obj2, methodName + accessorName, {
-      value: function(arg1, arg2, arg3) {
-        return this[methodName].call(this, header, arg1, arg2, arg3);
-      },
-      configurable: true
-    });
-  });
-}
-class AxiosHeaders {
-  constructor(headers) {
-    headers && this.set(headers);
-  }
-  set(header, valueOrRewrite, rewrite) {
-    const self2 = this;
-    function setHeader(_value, _header, _rewrite) {
-      const lHeader = normalizeHeader(_header);
-      if (!lHeader) {
-        throw new Error("header name must be a non-empty string");
-      }
-      const key = utils$1.findKey(self2, lHeader);
-      if (!key || self2[key] === void 0 || _rewrite === true || _rewrite === void 0 && self2[key] !== false) {
-        self2[key || _header] = normalizeValue(_value);
-      }
-    }
-    const setHeaders = (headers, _rewrite) => utils$1.forEach(headers, (_value, _header) => setHeader(_value, _header, _rewrite));
-    if (utils$1.isPlainObject(header) || header instanceof this.constructor) {
-      setHeaders(header, valueOrRewrite);
-    } else if (utils$1.isString(header) && (header = header.trim()) && !isValidHeaderName(header)) {
-      setHeaders(parseHeaders(header), valueOrRewrite);
-    } else {
-      header != null && setHeader(valueOrRewrite, header, rewrite);
-    }
-    return this;
-  }
-  get(header, parser) {
-    header = normalizeHeader(header);
-    if (header) {
-      const key = utils$1.findKey(this, header);
-      if (key) {
-        const value = this[key];
-        if (!parser) {
-          return value;
-        }
-        if (parser === true) {
-          return parseTokens(value);
-        }
-        if (utils$1.isFunction(parser)) {
-          return parser.call(this, value, key);
-        }
-        if (utils$1.isRegExp(parser)) {
-          return parser.exec(value);
-        }
-        throw new TypeError("parser must be boolean|regexp|function");
-      }
-    }
-  }
-  has(header, matcher) {
-    header = normalizeHeader(header);
-    if (header) {
-      const key = utils$1.findKey(this, header);
-      return !!(key && this[key] !== void 0 && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
-    }
-    return false;
-  }
-  delete(header, matcher) {
-    const self2 = this;
-    let deleted = false;
-    function deleteHeader(_header) {
-      _header = normalizeHeader(_header);
-      if (_header) {
-        const key = utils$1.findKey(self2, _header);
-        if (key && (!matcher || matchHeaderValue(self2, self2[key], key, matcher))) {
-          delete self2[key];
-          deleted = true;
-        }
-      }
-    }
-    if (utils$1.isArray(header)) {
-      header.forEach(deleteHeader);
-    } else {
-      deleteHeader(header);
-    }
-    return deleted;
-  }
-  clear(matcher) {
-    const keys = Object.keys(this);
-    let i = keys.length;
-    let deleted = false;
-    while (i--) {
-      const key = keys[i];
-      if (!matcher || matchHeaderValue(this, this[key], key, matcher, true)) {
-        delete this[key];
-        deleted = true;
-      }
-    }
-    return deleted;
-  }
-  normalize(format) {
-    const self2 = this;
-    const headers = {};
-    utils$1.forEach(this, (value, header) => {
-      const key = utils$1.findKey(headers, header);
-      if (key) {
-        self2[key] = normalizeValue(value);
-        delete self2[header];
-        return;
-      }
-      const normalized = format ? formatHeader(header) : String(header).trim();
-      if (normalized !== header) {
-        delete self2[header];
-      }
-      self2[normalized] = normalizeValue(value);
-      headers[normalized] = true;
-    });
-    return this;
-  }
-  concat(...targets) {
-    return this.constructor.concat(this, ...targets);
-  }
-  toJSON(asStrings) {
-    const obj2 = /* @__PURE__ */ Object.create(null);
-    utils$1.forEach(this, (value, header) => {
-      value != null && value !== false && (obj2[header] = asStrings && utils$1.isArray(value) ? value.join(", ") : value);
-    });
-    return obj2;
-  }
-  [Symbol.iterator]() {
-    return Object.entries(this.toJSON())[Symbol.iterator]();
-  }
-  toString() {
-    return Object.entries(this.toJSON()).map(([header, value]) => header + ": " + value).join("\n");
-  }
-  get [Symbol.toStringTag]() {
-    return "AxiosHeaders";
-  }
-  static from(thing) {
-    return thing instanceof this ? thing : new this(thing);
-  }
-  static concat(first, ...targets) {
-    const computed2 = new this(first);
-    targets.forEach((target) => computed2.set(target));
-    return computed2;
-  }
-  static accessor(header) {
-    const internals = this[$internals] = this[$internals] = {
-      accessors: {}
-    };
-    const accessors = internals.accessors;
-    const prototype2 = this.prototype;
-    function defineAccessor(_header) {
-      const lHeader = normalizeHeader(_header);
-      if (!accessors[lHeader]) {
-        buildAccessors(prototype2, _header);
-        accessors[lHeader] = true;
-      }
-    }
-    utils$1.isArray(header) ? header.forEach(defineAccessor) : defineAccessor(header);
-    return this;
-  }
-}
-AxiosHeaders.accessor(["Content-Type", "Content-Length", "Accept", "Accept-Encoding", "User-Agent", "Authorization"]);
-utils$1.reduceDescriptors(AxiosHeaders.prototype, ({ value }, key) => {
-  let mapped = key[0].toUpperCase() + key.slice(1);
-  return {
-    get: () => value,
-    set(headerValue) {
-      this[mapped] = headerValue;
-    }
-  };
-});
-utils$1.freezeMethods(AxiosHeaders);
-const AxiosHeaders$1 = AxiosHeaders;
-function transformData(fns, response) {
-  const config = this || defaults$1;
-  const context = response || config;
-  const headers = AxiosHeaders$1.from(context.headers);
-  let data = context.data;
-  utils$1.forEach(fns, function transform(fn) {
-    data = fn.call(config, data, headers.normalize(), response ? response.status : void 0);
-  });
-  headers.normalize();
-  return data;
-}
-function isCancel(value) {
-  return !!(value && value.__CANCEL__);
-}
-function CanceledError(message, config, request) {
-  AxiosError.call(this, message == null ? "canceled" : message, AxiosError.ERR_CANCELED, config, request);
-  this.name = "CanceledError";
-}
-utils$1.inherits(CanceledError, AxiosError, {
-  __CANCEL__: true
-});
-function settle(resolve, reject, response) {
-  const validateStatus2 = response.config.validateStatus;
-  if (!response.status || !validateStatus2 || validateStatus2(response.status)) {
-    resolve(response);
-  } else {
-    reject(new AxiosError(
-      "Request failed with status code " + response.status,
-      [AxiosError.ERR_BAD_REQUEST, AxiosError.ERR_BAD_RESPONSE][Math.floor(response.status / 100) - 4],
-      response.config,
-      response.request,
-      response
-    ));
-  }
-}
-const cookies = platform.hasStandardBrowserEnv ? (
-  // Standard browser envs support document.cookie
-  {
-    write(name, value, expires, path, domain, secure) {
-      const cookie = [name + "=" + encodeURIComponent(value)];
-      utils$1.isNumber(expires) && cookie.push("expires=" + new Date(expires).toGMTString());
-      utils$1.isString(path) && cookie.push("path=" + path);
-      utils$1.isString(domain) && cookie.push("domain=" + domain);
-      secure === true && cookie.push("secure");
-      document.cookie = cookie.join("; ");
-    },
-    read(name) {
-      const match = document.cookie.match(new RegExp("(^|;\\s*)(" + name + ")=([^;]*)"));
-      return match ? decodeURIComponent(match[3]) : null;
-    },
-    remove(name) {
-      this.write(name, "", Date.now() - 864e5);
-    }
-  }
-) : (
-  // Non-standard browser env (web workers, react-native) lack needed support.
-  {
-    write() {
-    },
-    read() {
-      return null;
-    },
-    remove() {
-    }
-  }
-);
-function isAbsoluteURL(url) {
-  return /^([a-z][a-z\d+\-.]*:)?\/\//i.test(url);
-}
-function combineURLs(baseURL, relativeURL) {
-  return relativeURL ? baseURL.replace(/\/?\/$/, "") + "/" + relativeURL.replace(/^\/+/, "") : baseURL;
-}
-function buildFullPath(baseURL, requestedURL) {
-  if (baseURL && !isAbsoluteURL(requestedURL)) {
-    return combineURLs(baseURL, requestedURL);
-  }
-  return requestedURL;
-}
-const isURLSameOrigin = platform.hasStandardBrowserEnv ? (
-  // Standard browser envs have full support of the APIs needed to test
-  // whether the request URL is of the same origin as current location.
-  function standardBrowserEnv() {
-    const msie = /(msie|trident)/i.test(navigator.userAgent);
-    const urlParsingNode = document.createElement("a");
-    let originURL;
-    function resolveURL(url) {
-      let href = url;
-      if (msie) {
-        urlParsingNode.setAttribute("href", href);
-        href = urlParsingNode.href;
-      }
-      urlParsingNode.setAttribute("href", href);
-      return {
-        href: urlParsingNode.href,
-        protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, "") : "",
-        host: urlParsingNode.host,
-        search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, "") : "",
-        hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, "") : "",
-        hostname: urlParsingNode.hostname,
-        port: urlParsingNode.port,
-        pathname: urlParsingNode.pathname.charAt(0) === "/" ? urlParsingNode.pathname : "/" + urlParsingNode.pathname
-      };
-    }
-    originURL = resolveURL(window.location.href);
-    return function isURLSameOrigin2(requestURL) {
-      const parsed = utils$1.isString(requestURL) ? resolveURL(requestURL) : requestURL;
-      return parsed.protocol === originURL.protocol && parsed.host === originURL.host;
-    };
-  }()
-) : (
-  // Non standard browser envs (web workers, react-native) lack needed support.
-  /* @__PURE__ */ function nonStandardBrowserEnv() {
-    return function isURLSameOrigin2() {
-      return true;
-    };
-  }()
-);
-function parseProtocol(url) {
-  const match = /^([-+\w]{1,25})(:?\/\/|:)/.exec(url);
-  return match && match[1] || "";
-}
-function speedometer(samplesCount, min) {
-  samplesCount = samplesCount || 10;
-  const bytes = new Array(samplesCount);
-  const timestamps = new Array(samplesCount);
-  let head = 0;
-  let tail = 0;
-  let firstSampleTS;
-  min = min !== void 0 ? min : 1e3;
-  return function push(chunkLength) {
-    const now = Date.now();
-    const startedAt = timestamps[tail];
-    if (!firstSampleTS) {
-      firstSampleTS = now;
-    }
-    bytes[head] = chunkLength;
-    timestamps[head] = now;
-    let i = tail;
-    let bytesCount = 0;
-    while (i !== head) {
-      bytesCount += bytes[i++];
-      i = i % samplesCount;
-    }
-    head = (head + 1) % samplesCount;
-    if (head === tail) {
-      tail = (tail + 1) % samplesCount;
-    }
-    if (now - firstSampleTS < min) {
-      return;
-    }
-    const passed = startedAt && now - startedAt;
-    return passed ? Math.round(bytesCount * 1e3 / passed) : void 0;
-  };
-}
-function progressEventReducer(listener, isDownloadStream) {
-  let bytesNotified = 0;
-  const _speedometer = speedometer(50, 250);
-  return (e) => {
-    const loaded = e.loaded;
-    const total = e.lengthComputable ? e.total : void 0;
-    const progressBytes = loaded - bytesNotified;
-    const rate = _speedometer(progressBytes);
-    const inRange = loaded <= total;
-    bytesNotified = loaded;
-    const data = {
-      loaded,
-      total,
-      progress: total ? loaded / total : void 0,
-      bytes: progressBytes,
-      rate: rate ? rate : void 0,
-      estimated: rate && total && inRange ? (total - loaded) / rate : void 0,
-      event: e
-    };
-    data[isDownloadStream ? "download" : "upload"] = true;
-    listener(data);
-  };
-}
-const isXHRAdapterSupported = typeof XMLHttpRequest !== "undefined";
-const xhrAdapter = isXHRAdapterSupported && function(config) {
-  return new Promise(function dispatchXhrRequest(resolve, reject) {
-    let requestData = config.data;
-    const requestHeaders = AxiosHeaders$1.from(config.headers).normalize();
-    let { responseType, withXSRFToken } = config;
-    let onCanceled;
-    function done() {
-      if (config.cancelToken) {
-        config.cancelToken.unsubscribe(onCanceled);
-      }
-      if (config.signal) {
-        config.signal.removeEventListener("abort", onCanceled);
-      }
-    }
-    let contentType;
-    if (utils$1.isFormData(requestData)) {
-      if (platform.hasStandardBrowserEnv || platform.hasStandardBrowserWebWorkerEnv) {
-        requestHeaders.setContentType(false);
-      } else if ((contentType = requestHeaders.getContentType()) !== false) {
-        const [type, ...tokens] = contentType ? contentType.split(";").map((token) => token.trim()).filter(Boolean) : [];
-        requestHeaders.setContentType([type || "multipart/form-data", ...tokens].join("; "));
-      }
-    }
-    let request = new XMLHttpRequest();
-    if (config.auth) {
-      const username = config.auth.username || "";
-      const password = config.auth.password ? unescape(encodeURIComponent(config.auth.password)) : "";
-      requestHeaders.set("Authorization", "Basic " + btoa(username + ":" + password));
-    }
-    const fullPath = buildFullPath(config.baseURL, config.url);
-    request.open(config.method.toUpperCase(), buildURL(fullPath, config.params, config.paramsSerializer), true);
-    request.timeout = config.timeout;
-    function onloadend() {
-      if (!request) {
-        return;
-      }
-      const responseHeaders = AxiosHeaders$1.from(
-        "getAllResponseHeaders" in request && request.getAllResponseHeaders()
-      );
-      const responseData = !responseType || responseType === "text" || responseType === "json" ? request.responseText : request.response;
-      const response = {
-        data: responseData,
-        status: request.status,
-        statusText: request.statusText,
-        headers: responseHeaders,
-        config,
-        request
-      };
-      settle(function _resolve(value) {
-        resolve(value);
-        done();
-      }, function _reject(err) {
-        reject(err);
-        done();
-      }, response);
-      request = null;
-    }
-    if ("onloadend" in request) {
-      request.onloadend = onloadend;
-    } else {
-      request.onreadystatechange = function handleLoad() {
-        if (!request || request.readyState !== 4) {
-          return;
-        }
-        if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf("file:") === 0)) {
-          return;
-        }
-        setTimeout(onloadend);
-      };
-    }
-    request.onabort = function handleAbort() {
-      if (!request) {
-        return;
-      }
-      reject(new AxiosError("Request aborted", AxiosError.ECONNABORTED, config, request));
-      request = null;
-    };
-    request.onerror = function handleError2() {
-      reject(new AxiosError("Network Error", AxiosError.ERR_NETWORK, config, request));
-      request = null;
-    };
-    request.ontimeout = function handleTimeout() {
-      let timeoutErrorMessage = config.timeout ? "timeout of " + config.timeout + "ms exceeded" : "timeout exceeded";
-      const transitional2 = config.transitional || transitionalDefaults;
-      if (config.timeoutErrorMessage) {
-        timeoutErrorMessage = config.timeoutErrorMessage;
-      }
-      reject(new AxiosError(
-        timeoutErrorMessage,
-        transitional2.clarifyTimeoutError ? AxiosError.ETIMEDOUT : AxiosError.ECONNABORTED,
-        config,
-        request
-      ));
-      request = null;
-    };
-    if (platform.hasStandardBrowserEnv) {
-      withXSRFToken && utils$1.isFunction(withXSRFToken) && (withXSRFToken = withXSRFToken(config));
-      if (withXSRFToken || withXSRFToken !== false && isURLSameOrigin(fullPath)) {
-        const xsrfValue = config.xsrfHeaderName && config.xsrfCookieName && cookies.read(config.xsrfCookieName);
-        if (xsrfValue) {
-          requestHeaders.set(config.xsrfHeaderName, xsrfValue);
-        }
-      }
-    }
-    requestData === void 0 && requestHeaders.setContentType(null);
-    if ("setRequestHeader" in request) {
-      utils$1.forEach(requestHeaders.toJSON(), function setRequestHeader(val, key) {
-        request.setRequestHeader(key, val);
-      });
-    }
-    if (!utils$1.isUndefined(config.withCredentials)) {
-      request.withCredentials = !!config.withCredentials;
-    }
-    if (responseType && responseType !== "json") {
-      request.responseType = config.responseType;
-    }
-    if (typeof config.onDownloadProgress === "function") {
-      request.addEventListener("progress", progressEventReducer(config.onDownloadProgress, true));
-    }
-    if (typeof config.onUploadProgress === "function" && request.upload) {
-      request.upload.addEventListener("progress", progressEventReducer(config.onUploadProgress));
-    }
-    if (config.cancelToken || config.signal) {
-      onCanceled = (cancel) => {
-        if (!request) {
-          return;
-        }
-        reject(!cancel || cancel.type ? new CanceledError(null, config, request) : cancel);
-        request.abort();
-        request = null;
-      };
-      config.cancelToken && config.cancelToken.subscribe(onCanceled);
-      if (config.signal) {
-        config.signal.aborted ? onCanceled() : config.signal.addEventListener("abort", onCanceled);
-      }
-    }
-    const protocol = parseProtocol(fullPath);
-    if (protocol && platform.protocols.indexOf(protocol) === -1) {
-      reject(new AxiosError("Unsupported protocol " + protocol + ":", AxiosError.ERR_BAD_REQUEST, config));
-      return;
-    }
-    request.send(requestData || null);
-  });
-};
-const knownAdapters = {
-  http: httpAdapter,
-  xhr: xhrAdapter
-};
-utils$1.forEach(knownAdapters, (fn, value) => {
-  if (fn) {
-    try {
-      Object.defineProperty(fn, "name", { value });
-    } catch (e) {
-    }
-    Object.defineProperty(fn, "adapterName", { value });
-  }
-});
-const renderReason = (reason) => `- ${reason}`;
-const isResolvedHandle = (adapter) => utils$1.isFunction(adapter) || adapter === null || adapter === false;
-const adapters = {
-  getAdapter: (adapters2) => {
-    adapters2 = utils$1.isArray(adapters2) ? adapters2 : [adapters2];
-    const { length } = adapters2;
-    let nameOrAdapter;
-    let adapter;
-    const rejectedReasons = {};
-    for (let i = 0; i < length; i++) {
-      nameOrAdapter = adapters2[i];
-      let id;
-      adapter = nameOrAdapter;
-      if (!isResolvedHandle(nameOrAdapter)) {
-        adapter = knownAdapters[(id = String(nameOrAdapter)).toLowerCase()];
-        if (adapter === void 0) {
-          throw new AxiosError(`Unknown adapter '${id}'`);
-        }
-      }
-      if (adapter) {
-        break;
-      }
-      rejectedReasons[id || "#" + i] = adapter;
-    }
-    if (!adapter) {
-      const reasons = Object.entries(rejectedReasons).map(
-        ([id, state]) => `adapter ${id} ` + (state === false ? "is not supported by the environment" : "is not available in the build")
-      );
-      let s = length ? reasons.length > 1 ? "since :\n" + reasons.map(renderReason).join("\n") : " " + renderReason(reasons[0]) : "as no adapter specified";
-      throw new AxiosError(
-        `There is no suitable adapter to dispatch the request ` + s,
-        "ERR_NOT_SUPPORT"
-      );
-    }
-    return adapter;
-  },
-  adapters: knownAdapters
-};
-function throwIfCancellationRequested(config) {
-  if (config.cancelToken) {
-    config.cancelToken.throwIfRequested();
-  }
-  if (config.signal && config.signal.aborted) {
-    throw new CanceledError(null, config);
-  }
-}
-function dispatchRequest(config) {
-  throwIfCancellationRequested(config);
-  config.headers = AxiosHeaders$1.from(config.headers);
-  config.data = transformData.call(
-    config,
-    config.transformRequest
-  );
-  if (["post", "put", "patch"].indexOf(config.method) !== -1) {
-    config.headers.setContentType("application/x-www-form-urlencoded", false);
-  }
-  const adapter = adapters.getAdapter(config.adapter || defaults$1.adapter);
-  return adapter(config).then(function onAdapterResolution(response) {
-    throwIfCancellationRequested(config);
-    response.data = transformData.call(
-      config,
-      config.transformResponse,
-      response
-    );
-    response.headers = AxiosHeaders$1.from(response.headers);
-    return response;
-  }, function onAdapterRejection(reason) {
-    if (!isCancel(reason)) {
-      throwIfCancellationRequested(config);
-      if (reason && reason.response) {
-        reason.response.data = transformData.call(
-          config,
-          config.transformResponse,
-          reason.response
-        );
-        reason.response.headers = AxiosHeaders$1.from(reason.response.headers);
-      }
-    }
-    return Promise.reject(reason);
-  });
-}
-const headersToObject = (thing) => thing instanceof AxiosHeaders$1 ? { ...thing } : thing;
-function mergeConfig(config1, config2) {
-  config2 = config2 || {};
-  const config = {};
-  function getMergedValue(target, source2, caseless) {
-    if (utils$1.isPlainObject(target) && utils$1.isPlainObject(source2)) {
-      return utils$1.merge.call({ caseless }, target, source2);
-    } else if (utils$1.isPlainObject(source2)) {
-      return utils$1.merge({}, source2);
-    } else if (utils$1.isArray(source2)) {
-      return source2.slice();
-    }
-    return source2;
-  }
-  function mergeDeepProperties(a, b, caseless) {
-    if (!utils$1.isUndefined(b)) {
-      return getMergedValue(a, b, caseless);
-    } else if (!utils$1.isUndefined(a)) {
-      return getMergedValue(void 0, a, caseless);
-    }
-  }
-  function valueFromConfig2(a, b) {
-    if (!utils$1.isUndefined(b)) {
-      return getMergedValue(void 0, b);
-    }
-  }
-  function defaultToConfig2(a, b) {
-    if (!utils$1.isUndefined(b)) {
-      return getMergedValue(void 0, b);
-    } else if (!utils$1.isUndefined(a)) {
-      return getMergedValue(void 0, a);
-    }
-  }
-  function mergeDirectKeys(a, b, prop) {
-    if (prop in config2) {
-      return getMergedValue(a, b);
-    } else if (prop in config1) {
-      return getMergedValue(void 0, a);
-    }
-  }
-  const mergeMap = {
-    url: valueFromConfig2,
-    method: valueFromConfig2,
-    data: valueFromConfig2,
-    baseURL: defaultToConfig2,
-    transformRequest: defaultToConfig2,
-    transformResponse: defaultToConfig2,
-    paramsSerializer: defaultToConfig2,
-    timeout: defaultToConfig2,
-    timeoutMessage: defaultToConfig2,
-    withCredentials: defaultToConfig2,
-    withXSRFToken: defaultToConfig2,
-    adapter: defaultToConfig2,
-    responseType: defaultToConfig2,
-    xsrfCookieName: defaultToConfig2,
-    xsrfHeaderName: defaultToConfig2,
-    onUploadProgress: defaultToConfig2,
-    onDownloadProgress: defaultToConfig2,
-    decompress: defaultToConfig2,
-    maxContentLength: defaultToConfig2,
-    maxBodyLength: defaultToConfig2,
-    beforeRedirect: defaultToConfig2,
-    transport: defaultToConfig2,
-    httpAgent: defaultToConfig2,
-    httpsAgent: defaultToConfig2,
-    cancelToken: defaultToConfig2,
-    socketPath: defaultToConfig2,
-    responseEncoding: defaultToConfig2,
-    validateStatus: mergeDirectKeys,
-    headers: (a, b) => mergeDeepProperties(headersToObject(a), headersToObject(b), true)
-  };
-  utils$1.forEach(Object.keys(Object.assign({}, config1, config2)), function computeConfigValue(prop) {
-    const merge2 = mergeMap[prop] || mergeDeepProperties;
-    const configValue = merge2(config1[prop], config2[prop], prop);
-    utils$1.isUndefined(configValue) && merge2 !== mergeDirectKeys || (config[prop] = configValue);
-  });
-  return config;
-}
-const VERSION = "1.6.8";
-const validators$1 = {};
-["object", "boolean", "number", "function", "string", "symbol"].forEach((type, i) => {
-  validators$1[type] = function validator2(thing) {
-    return typeof thing === type || "a" + (i < 1 ? "n " : " ") + type;
-  };
-});
-const deprecatedWarnings = {};
-validators$1.transitional = function transitional(validator2, version2, message) {
-  function formatMessage(opt, desc) {
-    return "[Axios v" + VERSION + "] Transitional option '" + opt + "'" + desc + (message ? ". " + message : "");
-  }
-  return (value, opt, opts) => {
-    if (validator2 === false) {
-      throw new AxiosError(
-        formatMessage(opt, " has been removed" + (version2 ? " in " + version2 : "")),
-        AxiosError.ERR_DEPRECATED
-      );
-    }
-    if (version2 && !deprecatedWarnings[opt]) {
-      deprecatedWarnings[opt] = true;
-      console.warn(
-        formatMessage(
-          opt,
-          " has been deprecated since v" + version2 + " and will be removed in the near future"
-        )
-      );
-    }
-    return validator2 ? validator2(value, opt, opts) : true;
-  };
-};
-function assertOptions(options, schema, allowUnknown) {
-  if (typeof options !== "object") {
-    throw new AxiosError("options must be an object", AxiosError.ERR_BAD_OPTION_VALUE);
-  }
-  const keys = Object.keys(options);
-  let i = keys.length;
-  while (i-- > 0) {
-    const opt = keys[i];
-    const validator2 = schema[opt];
-    if (validator2) {
-      const value = options[opt];
-      const result = value === void 0 || validator2(value, opt, options);
-      if (result !== true) {
-        throw new AxiosError("option " + opt + " must be " + result, AxiosError.ERR_BAD_OPTION_VALUE);
-      }
-      continue;
-    }
-    if (allowUnknown !== true) {
-      throw new AxiosError("Unknown option " + opt, AxiosError.ERR_BAD_OPTION);
-    }
-  }
-}
-const validator = {
-  assertOptions,
-  validators: validators$1
-};
-const validators = validator.validators;
-class Axios {
-  constructor(instanceConfig) {
-    this.defaults = instanceConfig;
-    this.interceptors = {
-      request: new InterceptorManager(),
-      response: new InterceptorManager()
-    };
-  }
-  /**
-   * Dispatch a request
-   *
-   * @param {String|Object} configOrUrl The config specific for this request (merged with this.defaults)
-   * @param {?Object} config
-   *
-   * @returns {Promise} The Promise to be fulfilled
-   */
-  async request(configOrUrl, config) {
-    try {
-      return await this._request(configOrUrl, config);
-    } catch (err) {
-      if (err instanceof Error) {
-        let dummy;
-        Error.captureStackTrace ? Error.captureStackTrace(dummy = {}) : dummy = new Error();
-        const stack2 = dummy.stack ? dummy.stack.replace(/^.+\n/, "") : "";
-        if (!err.stack) {
-          err.stack = stack2;
-        } else if (stack2 && !String(err.stack).endsWith(stack2.replace(/^.+\n.+\n/, ""))) {
-          err.stack += "\n" + stack2;
-        }
-      }
-      throw err;
-    }
-  }
-  _request(configOrUrl, config) {
-    if (typeof configOrUrl === "string") {
-      config = config || {};
-      config.url = configOrUrl;
-    } else {
-      config = configOrUrl || {};
-    }
-    config = mergeConfig(this.defaults, config);
-    const { transitional: transitional2, paramsSerializer, headers } = config;
-    if (transitional2 !== void 0) {
-      validator.assertOptions(transitional2, {
-        silentJSONParsing: validators.transitional(validators.boolean),
-        forcedJSONParsing: validators.transitional(validators.boolean),
-        clarifyTimeoutError: validators.transitional(validators.boolean)
-      }, false);
-    }
-    if (paramsSerializer != null) {
-      if (utils$1.isFunction(paramsSerializer)) {
-        config.paramsSerializer = {
-          serialize: paramsSerializer
-        };
-      } else {
-        validator.assertOptions(paramsSerializer, {
-          encode: validators.function,
-          serialize: validators.function
-        }, true);
-      }
-    }
-    config.method = (config.method || this.defaults.method || "get").toLowerCase();
-    let contextHeaders = headers && utils$1.merge(
-      headers.common,
-      headers[config.method]
-    );
-    headers && utils$1.forEach(
-      ["delete", "get", "head", "post", "put", "patch", "common"],
-      (method) => {
-        delete headers[method];
-      }
-    );
-    config.headers = AxiosHeaders$1.concat(contextHeaders, headers);
-    const requestInterceptorChain = [];
-    let synchronousRequestInterceptors = true;
-    this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
-      if (typeof interceptor.runWhen === "function" && interceptor.runWhen(config) === false) {
-        return;
-      }
-      synchronousRequestInterceptors = synchronousRequestInterceptors && interceptor.synchronous;
-      requestInterceptorChain.unshift(interceptor.fulfilled, interceptor.rejected);
-    });
-    const responseInterceptorChain = [];
-    this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
-      responseInterceptorChain.push(interceptor.fulfilled, interceptor.rejected);
-    });
-    let promise;
-    let i = 0;
-    let len;
-    if (!synchronousRequestInterceptors) {
-      const chain = [dispatchRequest.bind(this), void 0];
-      chain.unshift.apply(chain, requestInterceptorChain);
-      chain.push.apply(chain, responseInterceptorChain);
-      len = chain.length;
-      promise = Promise.resolve(config);
-      while (i < len) {
-        promise = promise.then(chain[i++], chain[i++]);
-      }
-      return promise;
-    }
-    len = requestInterceptorChain.length;
-    let newConfig = config;
-    i = 0;
-    while (i < len) {
-      const onFulfilled = requestInterceptorChain[i++];
-      const onRejected = requestInterceptorChain[i++];
-      try {
-        newConfig = onFulfilled(newConfig);
-      } catch (error2) {
-        onRejected.call(this, error2);
-        break;
-      }
-    }
-    try {
-      promise = dispatchRequest.call(this, newConfig);
-    } catch (error2) {
-      return Promise.reject(error2);
-    }
-    i = 0;
-    len = responseInterceptorChain.length;
-    while (i < len) {
-      promise = promise.then(responseInterceptorChain[i++], responseInterceptorChain[i++]);
-    }
-    return promise;
-  }
-  getUri(config) {
-    config = mergeConfig(this.defaults, config);
-    const fullPath = buildFullPath(config.baseURL, config.url);
-    return buildURL(fullPath, config.params, config.paramsSerializer);
-  }
-}
-utils$1.forEach(["delete", "get", "head", "options"], function forEachMethodNoData(method) {
-  Axios.prototype[method] = function(url, config) {
-    return this.request(mergeConfig(config || {}, {
-      method,
-      url,
-      data: (config || {}).data
-    }));
-  };
-});
-utils$1.forEach(["post", "put", "patch"], function forEachMethodWithData(method) {
-  function generateHTTPMethod(isForm) {
-    return function httpMethod(url, data, config) {
-      return this.request(mergeConfig(config || {}, {
-        method,
-        headers: isForm ? {
-          "Content-Type": "multipart/form-data"
-        } : {},
-        url,
-        data
-      }));
-    };
-  }
-  Axios.prototype[method] = generateHTTPMethod();
-  Axios.prototype[method + "Form"] = generateHTTPMethod(true);
-});
-const Axios$1 = Axios;
-class CancelToken {
-  constructor(executor) {
-    if (typeof executor !== "function") {
-      throw new TypeError("executor must be a function.");
-    }
-    let resolvePromise;
-    this.promise = new Promise(function promiseExecutor(resolve) {
-      resolvePromise = resolve;
-    });
-    const token = this;
-    this.promise.then((cancel) => {
-      if (!token._listeners)
-        return;
-      let i = token._listeners.length;
-      while (i-- > 0) {
-        token._listeners[i](cancel);
-      }
-      token._listeners = null;
-    });
-    this.promise.then = (onfulfilled) => {
-      let _resolve;
-      const promise = new Promise((resolve) => {
-        token.subscribe(resolve);
-        _resolve = resolve;
-      }).then(onfulfilled);
-      promise.cancel = function reject() {
-        token.unsubscribe(_resolve);
-      };
-      return promise;
-    };
-    executor(function cancel(message, config, request) {
-      if (token.reason) {
-        return;
-      }
-      token.reason = new CanceledError(message, config, request);
-      resolvePromise(token.reason);
-    });
-  }
-  /**
-   * Throws a `CanceledError` if cancellation has been requested.
-   */
-  throwIfRequested() {
-    if (this.reason) {
-      throw this.reason;
-    }
-  }
-  /**
-   * Subscribe to the cancel signal
-   */
-  subscribe(listener) {
-    if (this.reason) {
-      listener(this.reason);
-      return;
-    }
-    if (this._listeners) {
-      this._listeners.push(listener);
-    } else {
-      this._listeners = [listener];
-    }
-  }
-  /**
-   * Unsubscribe from the cancel signal
-   */
-  unsubscribe(listener) {
-    if (!this._listeners) {
-      return;
-    }
-    const index = this._listeners.indexOf(listener);
-    if (index !== -1) {
-      this._listeners.splice(index, 1);
-    }
-  }
-  /**
-   * Returns an object that contains a new `CancelToken` and a function that, when called,
-   * cancels the `CancelToken`.
-   */
-  static source() {
-    let cancel;
-    const token = new CancelToken(function executor(c) {
-      cancel = c;
-    });
-    return {
-      token,
-      cancel
-    };
-  }
-}
-const CancelToken$1 = CancelToken;
-function spread(callback) {
-  return function wrap(arr) {
-    return callback.apply(null, arr);
-  };
-}
-function isAxiosError(payload) {
-  return utils$1.isObject(payload) && payload.isAxiosError === true;
-}
-const HttpStatusCode = {
-  Continue: 100,
-  SwitchingProtocols: 101,
-  Processing: 102,
-  EarlyHints: 103,
-  Ok: 200,
-  Created: 201,
-  Accepted: 202,
-  NonAuthoritativeInformation: 203,
-  NoContent: 204,
-  ResetContent: 205,
-  PartialContent: 206,
-  MultiStatus: 207,
-  AlreadyReported: 208,
-  ImUsed: 226,
-  MultipleChoices: 300,
-  MovedPermanently: 301,
-  Found: 302,
-  SeeOther: 303,
-  NotModified: 304,
-  UseProxy: 305,
-  Unused: 306,
-  TemporaryRedirect: 307,
-  PermanentRedirect: 308,
-  BadRequest: 400,
-  Unauthorized: 401,
-  PaymentRequired: 402,
-  Forbidden: 403,
-  NotFound: 404,
-  MethodNotAllowed: 405,
-  NotAcceptable: 406,
-  ProxyAuthenticationRequired: 407,
-  RequestTimeout: 408,
-  Conflict: 409,
-  Gone: 410,
-  LengthRequired: 411,
-  PreconditionFailed: 412,
-  PayloadTooLarge: 413,
-  UriTooLong: 414,
-  UnsupportedMediaType: 415,
-  RangeNotSatisfiable: 416,
-  ExpectationFailed: 417,
-  ImATeapot: 418,
-  MisdirectedRequest: 421,
-  UnprocessableEntity: 422,
-  Locked: 423,
-  FailedDependency: 424,
-  TooEarly: 425,
-  UpgradeRequired: 426,
-  PreconditionRequired: 428,
-  TooManyRequests: 429,
-  RequestHeaderFieldsTooLarge: 431,
-  UnavailableForLegalReasons: 451,
-  InternalServerError: 500,
-  NotImplemented: 501,
-  BadGateway: 502,
-  ServiceUnavailable: 503,
-  GatewayTimeout: 504,
-  HttpVersionNotSupported: 505,
-  VariantAlsoNegotiates: 506,
-  InsufficientStorage: 507,
-  LoopDetected: 508,
-  NotExtended: 510,
-  NetworkAuthenticationRequired: 511
-};
-Object.entries(HttpStatusCode).forEach(([key, value]) => {
-  HttpStatusCode[value] = key;
-});
-const HttpStatusCode$1 = HttpStatusCode;
-function createInstance(defaultConfig) {
-  const context = new Axios$1(defaultConfig);
-  const instance = bind(Axios$1.prototype.request, context);
-  utils$1.extend(instance, Axios$1.prototype, context, { allOwnKeys: true });
-  utils$1.extend(instance, context, null, { allOwnKeys: true });
-  instance.create = function create(instanceConfig) {
-    return createInstance(mergeConfig(defaultConfig, instanceConfig));
-  };
-  return instance;
-}
-const axios = createInstance(defaults$1);
-axios.Axios = Axios$1;
-axios.CanceledError = CanceledError;
-axios.CancelToken = CancelToken$1;
-axios.isCancel = isCancel;
-axios.VERSION = VERSION;
-axios.toFormData = toFormData;
-axios.AxiosError = AxiosError;
-axios.Cancel = axios.CanceledError;
-axios.all = function all(promises) {
-  return Promise.all(promises);
-};
-axios.spread = spread;
-axios.isAxiosError = isAxiosError;
-axios.mergeConfig = mergeConfig;
-axios.AxiosHeaders = AxiosHeaders$1;
-axios.formToJSON = (thing) => formDataToJSON(utils$1.isHTMLForm(thing) ? new FormData(thing) : thing);
-axios.getAdapter = adapters.getAdapter;
-axios.HttpStatusCode = HttpStatusCode$1;
-axios.default = axios;
-async function getBytes(response, onChunk) {
-  var _a7;
-  const reader = (_a7 = response.body) == null ? void 0 : _a7.getReader();
-  if (reader) {
-    let result = await reader.read();
-    while (!result.done) {
-      onChunk(result.value);
-      result = await reader.read();
-    }
-  } else {
-    onChunk(new Uint8Array(await response.arrayBuffer()));
-  }
-}
-function getLines(onLine) {
-  let buffer;
-  let position;
-  let fieldLength;
-  let discardTrailingNewline = false;
-  return function onChunk(arr) {
-    if (buffer === void 0) {
-      buffer = arr;
-      position = 0;
-      fieldLength = -1;
-    } else {
-      buffer = concat(buffer, arr);
-    }
-    const bufLength = buffer.length;
-    let lineStart = 0;
-    while (position < bufLength) {
-      if (discardTrailingNewline) {
-        if (buffer[position] === 10) {
-          lineStart = ++position;
-        }
-        discardTrailingNewline = false;
-      }
-      let lineEnd = -1;
-      for (; position < bufLength && lineEnd === -1; ++position) {
-        switch (buffer[position]) {
-          case 58:
-            if (fieldLength === -1) {
-              fieldLength = position - lineStart;
-            }
-            break;
-          case 13:
-            discardTrailingNewline = true;
-          case 10:
-            lineEnd = position;
-            break;
-        }
-      }
-      if (lineEnd === -1) {
-        break;
-      }
-      onLine(buffer.subarray(lineStart, lineEnd), fieldLength);
-      lineStart = position;
-      fieldLength = -1;
-    }
-    if (lineStart === bufLength) {
-      buffer = void 0;
-    } else if (lineStart !== 0) {
-      buffer = buffer.subarray(lineStart);
-      position -= lineStart;
-    }
-  };
-}
-function getMessages(onId, onRetry, onMessage) {
-  let message = newMessage();
-  const decoder = new TextDecoder();
-  return function onLine(line, fieldLength) {
-    if (line.length === 0) {
-      onMessage == null ? void 0 : onMessage(message);
-      message = newMessage();
-    } else if (fieldLength > 0) {
-      const field = decoder.decode(line.subarray(0, fieldLength));
-      const valueOffset = fieldLength + (line[fieldLength + 1] === 32 ? 2 : 1);
-      const value = decoder.decode(line.subarray(valueOffset));
-      switch (field) {
-        case "data":
-          message.data = message.data ? message.data + "\n" + value : value;
-          break;
-        case "event":
-          message.event = value;
-          break;
-        case "id":
-          onId(message.id = value);
-          break;
-        case "retry":
-          const retry = parseInt(value, 10);
-          if (!isNaN(retry)) {
-            onRetry(message.retry = retry);
-          }
-          break;
-      }
-    }
-  };
-}
-function concat(a, b) {
-  const res = new Uint8Array(a.length + b.length);
-  res.set(a);
-  res.set(b, a.length);
-  return res;
-}
-function newMessage() {
-  return {
-    data: "",
-    event: "",
-    id: "",
-    retry: void 0
-  };
-}
-const EventStreamContentType = "text/event-stream";
-const DefaultRetryInterval = 1e3;
-const LastEventId = "last-event-id";
-function fetchEventSource(input, {
-  signal: inputSignal,
-  headers: inputHeaders,
-  onopen: inputOnOpen,
-  onmessage,
-  onclose,
-  onerror,
-  openWhenHidden,
-  fetch: inputFetch,
-  ...rest
-}) {
-  return new Promise((resolve, reject) => {
-    const headers = { ...inputHeaders };
-    if (!headers.accept) {
-      headers.accept = EventStreamContentType;
-    }
-    let curRequestController;
-    function onVisibilityChange() {
-      curRequestController == null ? void 0 : curRequestController.abort();
-      if (!document.hidden) {
-        create();
-      }
-    }
-    if (!openWhenHidden) {
-      document.addEventListener("visibilitychange", onVisibilityChange);
-    }
-    let retryInterval = DefaultRetryInterval;
-    let retryTimer = 0;
-    function dispose() {
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-      window.clearTimeout(retryTimer);
-      curRequestController == null ? void 0 : curRequestController.abort();
-      curRequestController = null;
-    }
-    inputSignal == null ? void 0 : inputSignal.addEventListener("abort", () => {
-      dispose();
-      resolve();
-    });
-    const fetch2 = inputFetch ?? window.fetch;
-    const onopen = inputOnOpen ?? defaultOnOpen;
-    async function create() {
-      curRequestController = new AbortController();
-      try {
-        const response = await fetch2(input, {
-          ...rest,
-          headers,
-          signal: curRequestController.signal
-        });
-        await onopen(response);
-        await getBytes(response, getLines(getMessages((id) => {
-          if (id) {
-            headers[LastEventId] = id;
-          } else {
-            delete headers[LastEventId];
-          }
-        }, (retry) => {
-          retryInterval = retry;
-        }, onmessage)));
-        onclose == null ? void 0 : onclose();
-        dispose();
-        resolve();
-      } catch (err) {
-        dispose();
-        reject(err);
-        console.error(err);
-      }
-    }
-    create();
-  });
-}
-function defaultOnOpen(response) {
-  const contentType = response.headers.get("content-type");
-  if (!(contentType == null ? void 0 : contentType.startsWith(EventStreamContentType))) {
-    throw new Error(`Expected content-type to be ${EventStreamContentType}, Actual: ${contentType}`);
-  }
-}
-class FatalError extends Error {
-}
-class ChatApi {
-  constructor(opt) {
-  }
-  async sendMessage(text, opts) {
-    const {
-      stream,
-      onProgress,
-      onDone,
-      timeoutMs = 60 * 1e3,
-      chatType = "chat"
-    } = opts;
-    let { abortSignal } = opts;
-    let abortController = null;
-    if (timeoutMs && !abortSignal) {
-      abortController = new AbortController();
-      abortSignal = abortController.signal;
-    }
-    const result = {
-      role: "assistant",
-      id: v4(),
-      text: "",
-      error: ""
-    };
-    let url = "/chat";
-    if (chatType === "code") {
-      url = "/code_generate";
-    }
-    let config = {
-      method: "post",
-      url,
-      timeout: timeoutMs,
-      signal: abortSignal
-    };
-    if (stream) {
-      config.responseType = "stream";
-      const requestMsg = await this.buildMessages(text, opts);
-      requestMsg.requestId = result.id;
-      config.data = requestMsg;
-      let url2 = "http://codeserver.t.vtoone.com/v1" + config.url;
-      await this.postByFetch(url2, config, requestMsg, onProgress, onDone, result);
-    } else {
-      const response = await this.doRequestPost(config, {});
-      result.text = response.data;
-      onDone == null ? void 0 : onDone(result);
-    }
-    return result;
-  }
-  async postByFetchEventSource(url, config, requestMsg, onProgress, onDone, result) {
-    await fetchEventSource(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestMsg),
-      signal: config.signal,
-      openWhenHidden: true,
-      async onopen(response) {
-        if (response.ok) {
-          return;
-        } else if (response.status >= 400 && response.status < 500 && response.status !== 429) {
-          throw new FatalError();
-        } else {
-        }
-      },
-      onmessage(msg) {
-        if (msg.event === "error") {
-          throw new FatalError(msg.data);
-        } else if (msg.event === "data") {
-          result.text = msg.data;
-          onProgress(result);
-        } else if (msg.event === "done") {
-          onDone == null ? void 0 : onDone(result);
-        }
-      },
-      onclose() {
-      },
-      onerror(err) {
-        if (err instanceof FatalError) {
-          throw err;
-        } else {
-        }
-      }
-    });
-  }
-  async postByFetch(url, config, requestMsg, onProgress, onDone, result) {
-    try {
-      let response = await fetch(
-        url,
-        {
-          method: "post",
-          body: JSON.stringify(requestMsg),
-          headers: {
-            "Content-Type": "application/json"
-          },
-          signal: config.signal
-        }
-      );
-      if (!response.ok) {
-        throw new FatalError("无法连接到服务器");
-      }
-      const parser = createParser((event) => {
-        if (event.type === "event") {
-          if (event.event === "data") {
-            result.text = event.data;
-            onProgress(result);
-          }
-        }
-      });
-      const textDecoder = response.body.pipeThrough(new TextDecoderStream()).getReader();
-      while (true) {
-        const { done, value } = await textDecoder.read();
-        if (done) {
-          onDone == null ? void 0 : onDone(result);
-          break;
-        }
-        parser.feed(value);
-      }
-    } catch (error2) {
-      result.error = "服务异常: " + error2;
-      console.log(error2);
-      onDone == null ? void 0 : onDone(result);
-    }
-  }
-  async buildMessages(text, opts) {
-    const { chatType = "chat", lang } = opts;
-    return { lang, chatType, "prompt": text, stream: true, history: opts.history || [] };
-  }
-  doRequestPost(config, data) {
-    return axios.post(config.url || "", data, config);
-  }
-}
-const historyCount = 3;
 const chatUtil = {
   async sendApiRequest(prompt, options, onProgress, onDone, onError) {
     var _a7;
@@ -74359,33 +73075,28 @@ const chatUtil = {
       responseInMarkdown: true
     };
     try {
+      const callBackHandler = (callback, message2, done) => {
+        try {
+          responseResult.serverMessage = message2;
+          responseResult.value = message2.text;
+          responseResult.done = done;
+          responseResult.error = message2.error;
+          callback == null ? void 0 : callback(responseResult);
+        } catch (error2) {
+          console.error(error2);
+          console.log(message2.text);
+        }
+      };
       await chatUtil.sendMessage(question, {
         messageId: qaId,
         serverConversationId,
-        abortSignal: abortController.signal,
+        abortController,
+        abortSignal: abortController == null ? void 0 : abortController.signal,
         stream: true,
         chatType: "chat",
         history: history2,
-        onProgress: (message) => {
-          try {
-            responseResult.serverMessage = message;
-            responseResult.value = message.text;
-            onProgress == null ? void 0 : onProgress(responseResult);
-          } catch (error2) {
-            console.error(error2);
-            console.log(message.text);
-          }
-        },
-        onDone: (message) => {
-          try {
-            responseResult.serverMessage = message;
-            responseResult.value = message.text;
-            responseResult.done = true;
-            onDone == null ? void 0 : onDone(responseResult);
-          } catch (error2) {
-            console.error(error2);
-          }
-        }
+        onProgress: (message2) => callBackHandler(onProgress, message2, false),
+        onDone: (message2) => callBackHandler(onProgress, message2, true)
       });
       return;
     } catch (error2) {
@@ -74395,6 +73106,7 @@ const chatUtil = {
     this.abortController = null;
     onError == null ? void 0 : onError(err ?? "没有api");
     responseResult.done = true;
+    responseResult.error = err;
     onDone == null ? void 0 : onDone(responseResult);
   },
   async sendMessage(text, opts) {
@@ -74424,6 +73136,7 @@ const chatUtil = {
     if (!viewHistories || viewHistories.length === 0)
       return histories;
     let tempHistories = [];
+    const historyCount = 3;
     if (viewHistories.length > historyCount) {
       for (let i = viewHistories.length - historyCount; i < viewHistories.length; i++) {
         tempHistories.push(viewHistories[i]);
@@ -74449,61 +73162,6 @@ const chatUtil = {
     return question + "\r\n";
   },
   async sendApiRequestLocal(prompt, options, onProgress, onDone, onError) {
-    if (this.inProgress) {
-      return;
-    }
-    let { conversationId, abortController, history: history2 } = options || {};
-    let question = chatUtil.processQuestion(prompt);
-    this.inProgress = true;
-    if (!abortController)
-      abortController = new AbortController();
-    this.currentMessageId = v4();
-    let err;
-    let responseResult = {
-      type: "addResponse",
-      value: "",
-      conversationId,
-      done: false,
-      currentMessageId: this.currentMessageId,
-      autoScroll: true,
-      responseInMarkdown: true,
-      history: []
-    };
-    try {
-      const chatApi = new ChatApi({});
-      await chatApi.sendMessage(question, {
-        messageId: conversationId,
-        abortSignal: abortController.signal,
-        stream: true,
-        chatType: "chat",
-        history: history2,
-        onProgress: (message) => {
-          try {
-            let str = message.text;
-            if (!str)
-              return;
-            responseResult.value = str;
-            onProgress == null ? void 0 : onProgress(responseResult);
-          } catch (error2) {
-            console.error(error2);
-            console.log(message.text);
-          }
-        },
-        onDone: (message) => {
-          this.inProgress = false;
-          responseResult.done = true;
-          onDone == null ? void 0 : onDone(responseResult);
-          this.inProgress = false;
-        }
-      });
-      return;
-    } catch (error2) {
-      err = error2;
-    }
-    this.inProgress = false;
-    onError == null ? void 0 : onError(err ?? "没有api");
-    responseResult.done = true;
-    onDone == null ? void 0 : onDone(responseResult);
   },
   stopConversation(options) {
     const { taskId } = options || {};
@@ -74511,32 +73169,13 @@ const chatUtil = {
       return;
     const stop = new StopChatApi(options);
     return stop.stop();
+  },
+  uploadFile(filePath2) {
+    return new FileHandlerCore().uploadFile("", filePath2);
   }
 };
-const _sfc_main$3 = {};
-const _hoisted_1$2 = {
-  xmlns: "http://www.w3.org/2000/svg",
-  fill: "none",
-  viewBox: "0 0 24 24",
-  "data-license": "isc-gnc",
-  "stroke-width": "1.5",
-  stroke: "currentColor",
-  class: "w-5 mr-2"
-};
-const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("path", {
-  "stroke-linecap": "round",
-  "stroke-linejoin": "round",
-  d: "M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"
-}, null, -1);
-const _hoisted_3$2 = [
-  _hoisted_2$2
-];
-function _sfc_render$2(_ctx, _cache) {
-  return openBlock(), createElementBlock("svg", _hoisted_1$2, _hoisted_3$2);
-}
-const IconUserSvg = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["render", _sfc_render$2]]);
-const _sfc_main$2 = {};
-const _hoisted_1$1 = {
+const _sfc_main$7 = {};
+const _hoisted_1$5 = {
   xmlns: "http://www.w3.org/2000/svg",
   fill: "none",
   viewBox: "0 0 24 24",
@@ -74545,22 +73184,22 @@ const _hoisted_1$1 = {
   stroke: "currentColor",
   class: "w-3 h-3"
 };
-const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode("path", {
+const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode("path", {
   "stroke-linecap": "round",
   "stroke-linejoin": "round",
   d: "M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
 }, null, -1);
-const _hoisted_3$1 = [
-  _hoisted_2$1
+const _hoisted_3$4 = [
+  _hoisted_2$4
 ];
-function _sfc_render$1(_ctx, _cache) {
-  return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_3$1);
+function _sfc_render$3(_ctx, _cache) {
+  return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_3$4);
 }
-const IconPencilSvg = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render$1]]);
-const getLanguageExtByFilePath = (filePath) => {
-  if (!filePath)
+const IconPencilSvg = /* @__PURE__ */ _export_sfc(_sfc_main$7, [["render", _sfc_render$3]]);
+const getLanguageExtByFilePath = (filePath2) => {
+  if (!filePath2)
     return "";
-  const fileExt = filePath.split(".").pop().toLowerCase();
+  const fileExt = filePath2.split(".").pop().toLowerCase();
   return EXT2LANG["." + fileExt] || "";
 };
 const EXT2LANG = {
@@ -75435,15 +74074,104 @@ const EXT2LANG = {
   ".prg": "xbase",
   ".prw": "xbase"
 };
+const _hoisted_1$4 = ["innerHTML"];
+const _sfc_main$6 = {
+  __name: "IconClipboardSvg",
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("div", { innerHTML: unref(clipboardSvg) }, null, 8, _hoisted_1$4);
+    };
+  }
+};
+const _sfc_main$5 = {};
+const _hoisted_1$3 = {
+  xmlns: "http://www.w3.org/2000/svg",
+  fill: "none",
+  viewBox: "0 0 24 24",
+  "data-license": "isc-gnc",
+  "stroke-width": "1.5",
+  stroke: "currentColor",
+  class: "w-4 h-4"
+};
+const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode("path", {
+  "stroke-linecap": "round",
+  "stroke-linejoin": "round",
+  d: "M11.25 4.5l7.5 7.5-7.5 7.5m-6-15l7.5 7.5-7.5 7.5"
+}, null, -1);
+const _hoisted_3$3 = [
+  _hoisted_2$3
+];
+function _sfc_render$2(_ctx, _cache) {
+  return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_3$3);
+}
+const IconInsertSvg = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["render", _sfc_render$2]]);
+const _sfc_main$4 = {};
+const _hoisted_1$2 = {
+  xmlns: "http://www.w3.org/2000/svg",
+  fill: "none",
+  viewBox: "0 0 24 24",
+  "data-license": "isc-gnc",
+  "stroke-width": "1.5",
+  stroke: "currentColor",
+  class: "w-4 h-4"
+};
+const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("path", {
+  "stroke-linecap": "round",
+  "stroke-linejoin": "round",
+  d: "M12 4.5v15m7.5-7.5h-15"
+}, null, -1);
+const _hoisted_3$2 = [
+  _hoisted_2$2
+];
+function _sfc_render$1(_ctx, _cache) {
+  return openBlock(), createElementBlock("svg", _hoisted_1$2, _hoisted_3$2);
+}
+const IconPlusSvg = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$1]]);
+function renderCodeAndToolBar(pre_el, code_el, isInCodeIDE, props) {
+  isInCodeIDE = true;
+  code_el.classList.add(
+    "input-background",
+    "p-4",
+    "pb-2",
+    "block",
+    /*"whitespace-pre",*/
+    "overflow-x-scroll"
+  );
+  code_el.parentElement.classList.add("pre-code-element", "relative");
+  let click = (target) => {
+    var _a7;
+    return (_a7 = props == null ? void 0 : props.onclick) == null ? void 0 : _a7.call(props, target.currentTarget, code_el);
+  };
+  let inserCode = createVNode("button", {
+    "id": "insert-code",
+    "title": "将以上内容插入到当前文件",
+    "class": "edit-element-ext p-1 pr-2 flex items-center rounded-lg",
+    "onClick": click
+  }, [createVNode(IconInsertSvg, null, null), createTextVNode("插入")]);
+  let newFile = createVNode("button", {
+    "id": "new-file",
+    "title": "新建文件并将以上代码置入",
+    "class": "new-code-element-ext p-1 pr-2 flex items-center rounded-lg",
+    "onClick": click
+  }, [createVNode(IconPlusSvg, null, null), createTextVNode(" 新建")]);
+  let wapper = createVNode("div", {
+    "class": "code-actions-wrapper flex  pr-2 pt-1 pb-1 flex-wrap items-center justify-end input-background"
+  }, [createVNode("button", {
+    "id": "copy-code",
+    "title": "复制到剪切板",
+    "class": "code-element-ext p-1 pr-2 flex items-center rounded-lg",
+    "onClick": click
+  }, [createVNode(_sfc_main$6, null, null), createTextVNode(" 复制")])]);
+  if (isInCodeIDE) {
+    wapper.children.push(inserCode);
+    wapper.children.push(newFile);
+  }
+  render(wapper, pre_el);
+}
 const viewType = { introduction: "introduction", qa: "qa" };
-const _sfc_main$1 = {
+const ChatView$1 = /* @__PURE__ */ defineComponent({
   name: "ChatView",
-  components: {
-    IconUserSvg,
-    IconPencilSvg,
-    IconAiSvg: __unplugin_components_1
-    /*IconSendSvg, IconCancelSvg*/
-  },
+  components: { IconUserSvg: __unplugin_components_0, IconPencilSvg, IconAiSvg: __unplugin_components_1 },
   data() {
     return {
       currentViewType: viewType.introduction,
@@ -75456,6 +74184,11 @@ const _sfc_main$1 = {
       questionInputButtonsMoreVisible: false
       //serverConversationId: "" //和服务器通讯的对话结果id，又服务器返回，用于定位这次对话的标识，可以不用传历史。新聊天的时候记得清空它
     };
+  },
+  watch: {
+    isInProgress(n, o) {
+      useStore().setChatInProgress(n);
+    }
   },
   computed: {
     ...mapState(useStore, [
@@ -75477,10 +74210,17 @@ const _sfc_main$1 = {
     return { qaElementList, questionInputRef, questionInputButtonsMore };
   },
   methods: {
+    // ...mapActions(useStore, [setChatInProgress]),
+    onLikeClick(messageData) {
+    },
+    onDislikeClick(messageData) {
+    },
     onClearClick() {
+      var _a7;
       this.qaData.list = [];
       this.serverConversationId = "";
       this.currentViewType = viewType.introduction;
+      (_a7 = this.questionInputRef) == null ? void 0 : _a7.focus();
     },
     async onStopClick(e) {
       var _a7, _b2;
@@ -75510,10 +74250,10 @@ const _sfc_main$1 = {
         });
       }
     },
-    onResendClick(message) {
+    onResendClick(message2) {
       var _a7;
       this.resenEditdVisible = true;
-      this.questionInput = message.originQuestion;
+      this.questionInput = message2.originQuestion;
       (_a7 = this.questionInputRef) == null ? void 0 : _a7.focus();
     },
     onQuestionKeyEnter(e) {
@@ -75545,14 +74285,14 @@ const _sfc_main$1 = {
       }
     },
     //本地模式
-    async addFreeTextQuestion4Local(message, withHistory = true) {
+    async addFreeTextQuestion4Local(message2, withHistory = true) {
       var _a7, _b2;
       await this.showInProgress({ showStopButton: true, inProgress: true });
-      this.addQuestion(message);
+      this.addQuestion(message2);
       (_a7 = this.abortController) == null ? void 0 : _a7.abort();
       this.abortController = new AbortController();
       let history2 = withHistory && chatUtil.buildHistories(this.qaData.list);
-      await chatUtil.sendApiRequest(message.value, {
+      await chatUtil.sendApiRequest(message2.value, {
         qaId: this.qaId,
         serverConversationId: (_b2 = this.lastServerMessage) == null ? void 0 : _b2.serverConversationId,
         abortController: this.abortController,
@@ -75564,31 +74304,31 @@ const _sfc_main$1 = {
         this.isInProgress = false;
       });
     },
-    async showInProgress(message) {
+    async showInProgress(message2) {
       try {
-        this.showStopButton = message.showStopButton ? true : false;
-        this.isInProgress = message.inProgress;
-        this.questionInputDisabled = message.inProgress;
-        this.questionInputButtonsVisible = !message.inProgress;
-        if (!message.inProgress) {
+        this.showStopButton = message2.showStopButton ? true : false;
+        this.isInProgress = message2.inProgress;
+        this.questionInputDisabled = message2.inProgress;
+        this.questionInputButtonsVisible = !message2.inProgress;
+        if (!message2.inProgress) {
           this.qaId = "";
         }
-        console.log("showInProgress:" + message.inProgress);
+        console.log("showInProgress:" + message2.inProgress);
       } catch (error2) {
         console.log(error2);
       }
     },
-    addQuestion(message) {
+    addQuestion(message2) {
       this.currentViewType = viewType.qa;
-      this.qaId = message.qaId ?? v4();
-      let { prompt, language, filePath, value, isMarked } = message;
+      this.qaId = message2.qaId ?? v4();
+      let { prompt, language, filePath: filePath2, value, isMarked } = message2;
       let question = value;
       let marked2 = false;
       if (!isMarked && prompt && value) {
-        language = language || getLanguageExtByFilePath(filePath);
+        language = language || getLanguageExtByFilePath(filePath2);
         value = "```" + language + "\r\n" + value + "\n\n```\n\n" + prompt;
         marked2 = true;
-        message.value = value + "\n" + prompt + "\n";
+        message2.value = value + "\n" + prompt + "\n";
       }
       question = util.escapeHtml(value);
       if (isMarked || marked2) {
@@ -75608,183 +74348,116 @@ const _sfc_main$1 = {
         util.autoScrollToBottom(this.qaElementList);
       }, 100);
     },
-    addResponse(message) {
-      this.addResponseCore(message);
+    addResponse(message2) {
+      this.addResponseCore(message2);
     },
-    addResponseCore(message) {
-      const qaId = message.qaId ?? this.qaId;
+    addResponseCore(message2) {
+      const qaId = message2.qaId ?? this.qaId;
       const list2 = this.qaElementList;
-      this.lastServerMessage = message.serverMessage;
-      let existQA = this.qaData.list.find((f) => f.qaId === qaId);
-      if (!existQA) {
-        return;
-      }
-      existQA.originAnswer += message.value;
-      let updatedValue = "";
-      if (!message.responseInMarkdown) {
-        updatedValue = "```\r\n" + util.unEscapeHtml(existQA.originAnswer) + " \r\n ```";
+      if (message2.error) {
+        this.addError(message2);
       } else {
-        updatedValue = existQA.originAnswer.split("```").length % 2 === 1 ? existQA.originAnswer : existQA.originAnswer + "\n\n```\n\n";
+        this.lastServerMessage = message2.serverMessage;
+        let existQA = this.qaData.list.find((f) => f.qaId === qaId);
+        if (!existQA) {
+          return;
+        }
+        existQA.originAnswer += message2.value;
+        let updatedValue = "";
+        if (!message2.responseInMarkdown) {
+          updatedValue = "```\r\n" + util.unEscapeHtml(existQA.originAnswer) + " \r\n ```";
+        } else {
+          updatedValue = existQA.originAnswer.split("```").length % 2 === 1 ? existQA.originAnswer : existQA.originAnswer + "\n\n```\n\n";
+        }
+        const markedResponse = util.markedParser(updatedValue);
+        existQA.answer = markedResponse;
+        existQA.done = message2.done === true;
       }
-      const markedResponse = util.markedParser(updatedValue);
-      existQA.answer = markedResponse;
-      if (message.done) {
-        existQA.done = true;
+      if (message2.done) {
         this.qaId = "";
         this.message = null;
+        this.lastServerMessage = null;
         const buildCodeButton = () => {
           var _a7;
           const preCodeList = list2.children[list2.children.length - 1].querySelectorAll("pre > code");
           preCodeList.forEach((preCode) => {
-            preCode.classList.add("input-background", "p-4", "pb-2", "block", "whitespace-pre", "overflow-x-scroll");
-            preCode.parentElement.classList.add("pre-code-element", "relative");
-            const buttonWrapper = document.createElement("div");
-            buttonWrapper.classList.add(
-              "code-actions-wrapper",
-              "flex",
-              /*"gap-3",*/
-              "pr-2",
-              "pt-1",
-              "pb-1",
-              "flex-wrap",
-              "items-center",
-              "justify-end",
-              /*"rounded-t-lg",*/
-              "input-background"
-            );
-            const copyButton = document.createElement("button");
-            copyButton.title = "复制到剪切板";
-            copyButton.innerHTML = `${clipboardSvg} 复制`;
-            copyButton.classList.add("code-element-ext", "p-1", "pr-2", "flex", "items-center", "rounded-lg");
-            buttonWrapper.append(copyButton);
-            if (this.isInCodeIDE) {
-              const insert = document.createElement("button");
-              insert.title = "将以上内容插入到当前文件";
-              insert.innerHTML = `${insertSvg} 插入`;
-              insert.classList.add("edit-element-ext", "p-1", "pr-2", "ml-1", "flex", "items-center", "rounded-lg");
-              const newTab = document.createElement("button");
-              newTab.title = "新建文件并将以上代码置入";
-              newTab.innerHTML = `${plusSvg} 新建`;
-              newTab.classList.add("new-code-element-ext", "p-1", "pr-2", "ml-1", "flex", "items-center", "rounded-lg");
-              buttonWrapper.append(insert, newTab);
-            }
-            preCode.parentNode.append(buttonWrapper);
+            renderCodeAndToolBar(preCode.parentNode, preCode, this.isInCodeIDE, { onclick: this.codeToolbarClick });
           });
           util.autoScrollToBottom(list2);
           (_a7 = this.questionInputRef) == null ? void 0 : _a7.focus();
         };
-        if (!message.isStop) {
+        if (!message2.isStop) {
           buildCodeButton();
           this.showInProgress({ inProgress: false });
         } else {
           setTimeout(buildCodeButton, 100);
         }
       }
-      if (message.autoScroll && (message.done || markedResponse.endsWith("\n"))) {
+      if (message2.autoScroll) {
         util.autoScrollToBottom(list2);
       }
     },
-    addError(message) {
-      const qaId = message.qaId ?? this.qaId;
+    addError(message2) {
+      const qaId = message2.qaId ?? this.qaId;
       let exist = this.qaData.list.find((f) => f.qaId === qaId);
       if (!exist) {
         return;
       }
-      const messageValue = message.value || "An error occurred. If this issue persists please clear your session token with `ChatGPT: Reset session` command and/or restart your Visual Studio Code. If you still experience issues, it may be due to outage on https://openai.com services.";
-      exist.answer = "";
-      exist.error = util.markedParser(messageValue);
-      if (message.autoScroll) {
+      const messageValue = "服务异常";
+      exist.answer = messageValue;
+      if (message2.autoScroll) {
         util.autoScrollToBottom(this.qaElementList);
       }
     },
-    documnetClickHandler(e) {
-      var _a7, _b2, _c2, _d, _e, _f, _g, _h, _i;
-      const targetButton = e.target.closest("button");
-      if ((_a7 = targetButton == null ? void 0 : targetButton.classList) == null ? void 0 : _a7.contains("resend-element-ext")) {
-        targetButton.classList.add("hidden");
-        return;
-      }
-      if ((_b2 = targetButton == null ? void 0 : targetButton.classList) == null ? void 0 : _b2.contains("code-element-ext")) {
-        e.preventDefault();
-        writeText((_d = (_c2 = targetButton.parentElement.parentElement) == null ? void 0 : _c2.firstElementChild) == null ? void 0 : _d.textContent).then(() => {
-          targetButton.innerHTML = `${checkSvg} 已复制`;
-          setTimeout(() => {
-            targetButton.innerHTML = `${clipboardSvg} 复制`;
-          }, 1500);
-        });
-        return;
-      }
-      if ((_e = targetButton == null ? void 0 : targetButton.classList) == null ? void 0 : _e.contains("edit-element-ext")) {
-        e.preventDefault();
-        const data = {
-          type: "editCode",
-          value: (_g = (_f = targetButton.parentElement.parentElement) == null ? void 0 : _f.firstElementChild) == null ? void 0 : _g.textContent
-        };
-        if (this.isIdeaMode)
-          util.postMessageToIdeaEditor(data);
-        else
-          util.postMessageToCodeEditor(data);
-        return;
-      }
-      if ((_h = targetButton == null ? void 0 : targetButton.classList) == null ? void 0 : _h.contains("new-code-element-ext")) {
-        e.preventDefault();
-        let first = (_i = targetButton.parentElement.parentElement) == null ? void 0 : _i.firstElementChild;
-        let value = first == null ? void 0 : first.textContent;
-        let language;
-        if (first) {
-          for (let i = 0; i < first.classList.length; i++) {
-            const c = first.classList[i];
-            if (c.startsWith("language-")) {
-              language = c.substring(c.indexOf("-") + 1);
-              break;
+    codeToolbarClick(target, codeEl) {
+      switch (target.id) {
+        case "copy-code":
+          writeText(codeEl.textContent).then(() => {
+            target.innerHTML = `${checkSvg} 已复制`;
+            setTimeout(() => {
+              target.innerHTML = `${clipboardSvg} 复制`;
+            }, 1500);
+          });
+          break;
+        case "insert-code":
+          const data1 = {
+            type: "editCode",
+            value: codeEl.textContent
+          };
+          if (this.isIdeaMode)
+            util.postMessageToIdeaEditor(data1);
+          else
+            util.postMessageToCodeEditor(data1);
+          break;
+        case "new-file":
+          let first = codeEl;
+          let value = codeEl == null ? void 0 : codeEl.textContent;
+          let language;
+          if (first) {
+            for (let i = 0; i < first.classList.length; i++) {
+              const c = first.classList[i];
+              if (c.startsWith("language-")) {
+                language = c.substring(c.indexOf("-") + 1);
+                break;
+              }
             }
           }
-        }
-        let data = {
-          type: "openNew",
-          value,
-          language
-        };
-        if (this.isIdeaMode)
-          util.postMessageToIdeaEditor(data);
-        else
-          util.postMessageToCodeEditor(data);
-        return;
+          let data2 = {
+            type: "openNew",
+            value,
+            language
+          };
+          if (this.isIdeaMode)
+            util.postMessageToIdeaEditor(data2);
+          else
+            util.postMessageToCodeEditor(data2);
+          break;
       }
+    },
+    documnetClickHandler(e) {
+      const targetButton = e.target.closest("button");
       if (targetButton !== this.questionInputButtonsMore)
         this.questionInputButtonsMoreVisible = false;
-    },
-    messageHandler(event) {
-      const message = event.data;
-      switch (message.type) {
-        case "showInProgress":
-          this.showInProgress(message);
-          break;
-        case "addResponse":
-          this.addResponse(message);
-          break;
-        case "addQuestion":
-          this.addQuestion(message);
-          break;
-        case "loginSuccessful":
-          break;
-        case "addError":
-          this.addError(message);
-          break;
-        case "clearConversation":
-          this.onClearClick();
-          break;
-        case "exportConversation":
-          this.onExportConversation();
-          break;
-        case "textSelectionChanged":
-          break;
-        case "chat_code":
-        case "ask":
-          message.cmd = message.type;
-          this.busEventHandler(message);
-          break;
-      }
     },
     async busEventHandler(data) {
       var _a7;
@@ -75821,6 +74494,9 @@ const _sfc_main$1 = {
         case "colorChanged":
           this.colorChangedHandler(value);
           break;
+        case "newChat":
+          this.onClearClick();
+          break;
       }
     },
     colorChangedHandler(colorValue) {
@@ -75837,93 +74513,100 @@ const _sfc_main$1 = {
     }
   },
   mounted() {
-    if (this.isVsCodeMode)
-      window.addEventListener("message", this.messageHandler);
     document.removeEventListener("click", this.documnetClickHandler);
     document.addEventListener("click", this.documnetClickHandler);
     this.$bus.off("executeCmd", this.busEventHandler);
     this.$bus.on("executeCmd", this.busEventHandler);
   }
-};
-const _hoisted_1 = {
+});
+const _sfc_main$3 = ChatView$1;
+const _hoisted_1$1 = {
   key: 0,
   id: "introduction",
   class: "flex flex-col justify-between h-full justify-center px-6 w-full relative login-screen overflow-auto"
 };
-const _hoisted_2 = /* @__PURE__ */ createStaticVNode('<div data-license="isc-gnc-hi-there" class="flex items-start text-center features-block my-5"><div class="flex flex-col gap-3.5 flex-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" class="w-6 h-6 m-auto"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"></path></svg><h2>特性</h2><ul class="flex flex-col gap-3.5 text-xs"><li class="features-li w-full border border-zinc-700 p-3 rounded-md">改进你的代码，生成测试</li><li class="features-li w-full border border-zinc-700 p-3 rounded-md">解析和注释代码</li><li class="features-li w-full border border-zinc-700 p-3 rounded-md">自动复制或创建新文件</li></ul></div></div>', 1);
-const _hoisted_3 = { class: "flex flex-col gap-4 h-full items-center justify-end text-center" };
-const _hoisted_4 = {
-  id: "login-button",
-  class: "mb-4 btn btn-primary flex gap-2 justify-center p-3 rounded-md"
-};
-const _hoisted_5 = /* @__PURE__ */ createBaseVNode("button", {
-  id: "list-conversations-link",
-  class: "hidden mb-4 btn btn-primary flex gap-2 justify-center p-3 rounded-md",
-  title: "You can access this feature via the kebab menu below. NOTE: Only available with Browser Auto-login method"
-}, [
-  /* @__PURE__ */ createBaseVNode("svg", {
-    xmlns: "http://www.w3.org/2000/svg",
-    fill: "none",
-    viewBox: "0 0 24 24",
-    "stroke-width": "1.5",
-    stroke: "currentColor",
-    class: "w-6 h-6"
-  }, [
-    /* @__PURE__ */ createBaseVNode("path", {
-      "stroke-linecap": "round",
-      "stroke-linejoin": "round",
-      d: "M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"
-    })
-  ]),
-  /* @__PURE__ */ createTextVNode(" Show conversations ")
-], -1);
-const _hoisted_6 = { class: "max-w-sm text-center text-xs text-slate-500" };
-const _hoisted_7 = /* @__PURE__ */ createBaseVNode("a", {
-  title: "",
-  id: "settings-button",
-  href: "#"
-}, "修改设置", -1);
-const _hoisted_8 = /* @__PURE__ */ createBaseVNode("a", {
-  title: "",
-  id: "settings-prompt-button",
-  href: "#"
-}, "更新提示词", -1);
-const _hoisted_9 = {
+const _hoisted_2$1 = /* @__PURE__ */ createStaticVNode('<div data-license="isc-gnc-hi-there" class="flex items-start text-center features-block my-5"><div class="flex flex-col gap-3.5 flex-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" class="w-6 h-6 m-auto"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"></path></svg><h2>特性</h2><ul class="flex flex-col gap-3.5 text-xs"><li class="features-li w-full border border-zinc-700 p-3 rounded-md">改进你的代码，生成测试</li><li class="features-li w-full border border-zinc-700 p-3 rounded-md">解析和注释代码</li><li class="features-li w-full border border-zinc-700 p-3 rounded-md">自动复制或创建新文件</li></ul></div></div>', 1);
+const _hoisted_3$1 = [
+  _hoisted_2$1
+];
+const _hoisted_4$1 = {
   class: "flex-1 overflow-y-auto",
   ref: "qaElementList",
   id: "qa-list",
   "data-license": "isc-gnc"
 };
-const _hoisted_10 = { class: "chat-card-bg" };
-const _hoisted_11 = { class: "p-2 self-end question-element-ext relative chat-card-content-bg" };
-const _hoisted_12 = {
+const _hoisted_5$1 = { class: "chat-card-bg" };
+const _hoisted_6$1 = { class: "p-2 self-end question-element-ext relative chat-card-content-bg" };
+const _hoisted_7$1 = {
   class: "mb-5 flex",
   "data-license": "isc-gnc"
 };
-const _hoisted_13 = ["innerHTML"];
-const _hoisted_14 = { class: "chat-card-bg" };
-const _hoisted_15 = {
+const _hoisted_8$1 = ["innerHTML"];
+const _hoisted_9$1 = { class: "chat-card-bg" };
+const _hoisted_10$1 = {
   key: 0,
   "data-license": "isc-gnc",
   class: "p-2 self-end answer-element-ext chat-card-content-bg"
 };
-const _hoisted_16 = { class: "mb-5 flex" };
-const _hoisted_17 = ["onId", "innerHTML"];
-const _hoisted_18 = /* @__PURE__ */ createBaseVNode("div", null, null, -1);
-const _hoisted_19 = {
-  key: 1,
-  class: "p-4 self-end mt-4 pb-8 error-element-ext",
-  "data-license": "isc-gnc"
+const _hoisted_11$1 = { class: "mb-5 flex" };
+const _hoisted_12$1 = ["id", "innerHTML"];
+const _hoisted_13 = {
+  key: 0,
+  class: "code-chat-box-like-wrapper"
 };
-const _hoisted_20 = { class: "mb-5 flex" };
-const _hoisted_21 = { class: "text-red-400" };
-const _hoisted_22 = {
+const _hoisted_14 = { class: "rating-panel" };
+const _hoisted_15 = ["onClick"];
+const _hoisted_16 = /* @__PURE__ */ createBaseVNode("span", {
+  role: "img",
+  "aria-label": "like",
+  size: "12",
+  class: "anticon"
+}, [
+  /* @__PURE__ */ createBaseVNode("svg", {
+    viewBox: "64 64 896 896",
+    focusable: "false",
+    "data-icon": "like",
+    width: "1em",
+    height: "1em",
+    fill: "currentColor",
+    "aria-hidden": "true"
+  }, [
+    /* @__PURE__ */ createBaseVNode("path", { d: "M885.9 533.7c16.8-22.2 26.1-49.4 26.1-77.7 0-44.9-25.1-87.4-65.5-111.1a67.67 67.67 0 00-34.3-9.3H572.4l6-122.9c1.4-29.7-9.1-57.9-29.5-79.4A106.62 106.62 0 00471 99.9c-52 0-98 35-111.8 85.1l-85.9 311H144c-17.7 0-32 14.3-32 32v364c0 17.7 14.3 32 32 32h601.3c9.2 0 18.2-1.8 26.5-5.4 47.6-20.3 78.3-66.8 78.3-118.4 0-12.6-1.8-25-5.4-37 16.8-22.2 26.1-49.4 26.1-77.7 0-12.6-1.8-25-5.4-37 16.8-22.2 26.1-49.4 26.1-77.7-.2-12.6-2-25.1-5.6-37.1zM184 852V568h81v284h-81zm636.4-353l-21.9 19 13.9 25.4a56.2 56.2 0 016.9 27.3c0 16.5-7.2 32.2-19.6 43l-21.9 19 13.9 25.4a56.2 56.2 0 016.9 27.3c0 16.5-7.2 32.2-19.6 43l-21.9 19 13.9 25.4a56.2 56.2 0 016.9 27.3c0 22.4-13.2 42.6-33.6 51.8H329V564.8l99.5-360.5a44.1 44.1 0 0142.2-32.3c7.6 0 15.1 2.2 21.1 6.7 9.9 7.4 15.2 18.6 14.6 30.5l-9.6 198.4h314.4C829 418.5 840 436.9 840 456c0 16.5-7.2 32.1-19.6 43z" })
+  ])
+], -1);
+const _hoisted_17 = [
+  _hoisted_16
+];
+const _hoisted_18 = ["onClick"];
+const _hoisted_19 = /* @__PURE__ */ createBaseVNode("span", {
+  role: "img",
+  "aria-label": "dislike",
+  size: "12",
+  class: "anticon"
+}, [
+  /* @__PURE__ */ createBaseVNode("svg", {
+    viewBox: "64 64 896 896",
+    focusable: "false",
+    "data-icon": "dislike",
+    width: "1em",
+    height: "1em",
+    fill: "currentColor",
+    "aria-hidden": "true"
+  }, [
+    /* @__PURE__ */ createBaseVNode("path", { d: "M885.9 490.3c3.6-12 5.4-24.4 5.4-37 0-28.3-9.3-55.5-26.1-77.7 3.6-12 5.4-24.4 5.4-37 0-28.3-9.3-55.5-26.1-77.7 3.6-12 5.4-24.4 5.4-37 0-51.6-30.7-98.1-78.3-118.4a66.1 66.1 0 00-26.5-5.4H144c-17.7 0-32 14.3-32 32v364c0 17.7 14.3 32 32 32h129.3l85.8 310.8C372.9 889 418.9 924 470.9 924c29.7 0 57.4-11.8 77.9-33.4 20.5-21.5 31-49.7 29.5-79.4l-6-122.9h239.9c12.1 0 23.9-3.2 34.3-9.3 40.4-23.5 65.5-66.1 65.5-111 0-28.3-9.3-55.5-26.1-77.7zM184 456V172h81v284h-81zm627.2 160.4H496.8l9.6 198.4c.6 11.9-4.7 23.1-14.6 30.5-6.1 4.5-13.6 6.8-21.1 6.7a44.28 44.28 0 01-42.2-32.3L329 459.2V172h415.4a56.85 56.85 0 0133.6 51.8c0 9.7-2.3 18.9-6.9 27.3l-13.9 25.4 21.9 19a56.76 56.76 0 0119.6 43c0 9.7-2.3 18.9-6.9 27.3l-13.9 25.4 21.9 19a56.76 56.76 0 0119.6 43c0 9.7-2.3 18.9-6.9 27.3l-14 25.5 21.9 19a56.76 56.76 0 0119.6 43c0 19.1-11 37.5-28.8 48.4z" })
+  ])
+], -1);
+const _hoisted_20 = [
+  _hoisted_19
+];
+const _hoisted_21 = {
+  key: 1,
   id: "in-progress",
   class: "pl-4 pt-2 flex items-center",
   "data-license": "isc-gnc"
 };
-const _hoisted_23 = /* @__PURE__ */ createStaticVNode('<div class="typing">正在思考</div><div class="spinner"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>', 2);
-const _hoisted_25 = /* @__PURE__ */ createBaseVNode("svg", {
+const _hoisted_22 = /* @__PURE__ */ createStaticVNode('<div class="typing">正在思考</div><div class="spinner"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>', 2);
+const _hoisted_24 = /* @__PURE__ */ createBaseVNode("svg", {
   xmlns: "http://www.w3.org/2000/svg",
   fill: "none",
   viewBox: "0 0 24 24",
@@ -75937,13 +74620,13 @@ const _hoisted_25 = /* @__PURE__ */ createBaseVNode("svg", {
     d: "M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
   })
 ], -1);
-const _hoisted_26 = {
-  class: "p-4 flex items-center pt-2",
+const _hoisted_25 = {
+  class: "p-3 flex items-center pt-2",
   "data-license": "isc-gnc"
 };
-const _hoisted_27 = { class: "flex-1 textarea-wrapper" };
-const _hoisted_28 = ["disabled"];
-const _hoisted_29 = /* @__PURE__ */ createBaseVNode("svg", {
+const _hoisted_26 = { class: "flex-1 textarea-wrapper" };
+const _hoisted_27 = ["disabled"];
+const _hoisted_28 = /* @__PURE__ */ createBaseVNode("svg", {
   xmlns: "http://www.w3.org/2000/svg",
   fill: "none",
   viewBox: "0 0 24 24",
@@ -75957,7 +74640,7 @@ const _hoisted_29 = /* @__PURE__ */ createBaseVNode("svg", {
     d: "M12 4.5v15m7.5-7.5h-15"
   })
 ], -1);
-const _hoisted_30 = /* @__PURE__ */ createBaseVNode("svg", {
+const _hoisted_29 = /* @__PURE__ */ createBaseVNode("svg", {
   xmlns: "http://www.w3.org/2000/svg",
   fill: "none",
   viewBox: "0 0 24 24",
@@ -75971,11 +74654,11 @@ const _hoisted_30 = /* @__PURE__ */ createBaseVNode("svg", {
     d: "M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
   })
 ], -1);
-const _hoisted_31 = {
+const _hoisted_30 = {
   id: "question-input-buttons",
   class: "p-0.5 flex gap-2 send-erea-items-center"
 };
-const _hoisted_32 = /* @__PURE__ */ createBaseVNode("svg", {
+const _hoisted_31 = /* @__PURE__ */ createBaseVNode("svg", {
   xmlns: "http://www.w3.org/2000/svg",
   fill: "none",
   viewBox: "0 0 24 24",
@@ -75989,11 +74672,11 @@ const _hoisted_32 = /* @__PURE__ */ createBaseVNode("svg", {
     d: "M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
   })
 ], -1);
-const _hoisted_33 = [
-  _hoisted_32
+const _hoisted_32 = [
+  _hoisted_31
 ];
-const _hoisted_34 = ["disabled"];
-const _hoisted_35 = /* @__PURE__ */ createBaseVNode("svg", {
+const _hoisted_33 = ["disabled"];
+const _hoisted_34 = /* @__PURE__ */ createBaseVNode("svg", {
   xmlns: "http://www.w3.org/2000/svg",
   fill: "none",
   viewBox: "0 0 24 24",
@@ -76007,89 +74690,82 @@ const _hoisted_35 = /* @__PURE__ */ createBaseVNode("svg", {
     d: "M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
   })
 ], -1);
-const _hoisted_36 = [
-  _hoisted_35
+const _hoisted_35 = [
+  _hoisted_34
 ];
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_IconUserSvg = __unplugin_components_0;
   const _component_IconAiSvg = __unplugin_components_1;
   return openBlock(), createElementBlock("div", {
-    class: normalizeClass(["flex flex-col h-screen", { "chat-box-600": !_ctx.isIdeaMode && !_ctx.isVsCodeMode }])
+    class: normalizeClass(["flex flex-col", { "chat-box-600": !_ctx.isIdeaMode && !_ctx.isVsCodeMode }]),
+    style: { "flex-grow": "1" }
   }, [
-    $options.isIntroduction ? (openBlock(), createElementBlock("div", _hoisted_1, [
-      _hoisted_2,
-      createBaseVNode("div", _hoisted_3, [
-        withDirectives(createBaseVNode("button", _hoisted_4, "登录", 512), [
-          [vShow, false]
-        ]),
-        _hoisted_5,
-        withDirectives(createBaseVNode("p", _hoisted_6, [
-          _hoisted_7,
-          createTextVNode("  |  "),
-          _hoisted_8
-        ], 512), [
-          [vShow, false]
-        ])
-      ])
-    ])) : createCommentVNode("", true),
-    withDirectives(createBaseVNode("div", _hoisted_9, [
-      (openBlock(true), createElementBlock(Fragment, null, renderList($data.qaData.list, (message, index) => {
+    _ctx.isIntroduction ? (openBlock(), createElementBlock("div", _hoisted_1$1, _hoisted_3$1)) : createCommentVNode("", true),
+    withDirectives(createBaseVNode("div", _hoisted_4$1, [
+      (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.qaData.list, (message2, index) => {
         return openBlock(), createElementBlock(Fragment, { key: index }, [
-          createBaseVNode("div", _hoisted_10, [
-            createBaseVNode("div", _hoisted_11, [
-              createBaseVNode("h2", _hoisted_12, [
+          createBaseVNode("div", _hoisted_5$1, [
+            createBaseVNode("div", _hoisted_6$1, [
+              createBaseVNode("h2", _hoisted_7$1, [
                 createVNode(_component_IconUserSvg),
                 createTextVNode("你 ")
               ]),
               createBaseVNode("div", {
                 class: "overflow-y-auto",
-                innerHTML: message.question
-              }, null, 8, _hoisted_13)
+                innerHTML: message2.question
+              }, null, 8, _hoisted_8$1)
             ])
           ]),
-          createBaseVNode("div", _hoisted_14, [
-            message.answer ? (openBlock(), createElementBlock("div", _hoisted_15, [
-              createBaseVNode("h2", _hoisted_16, [
+          createBaseVNode("div", _hoisted_9$1, [
+            message2.answer ? (openBlock(), createElementBlock("div", _hoisted_10$1, [
+              createBaseVNode("h2", _hoisted_11$1, [
                 createVNode(_component_IconAiSvg, { style: { "margin-right": "0.5rem" } }),
                 createTextVNode("TooneCode ")
               ]),
               createBaseVNode("div", {
-                class: normalizeClass({ "result-streaming": message.done !== true }),
-                onId: message.qaId,
-                innerHTML: message.answer
-              }, null, 42, _hoisted_17),
-              _hoisted_18
-            ])) : createCommentVNode("", true),
-            message.error ? (openBlock(), createElementBlock("div", _hoisted_19, [
-              createBaseVNode("h2", _hoisted_20, [
-                createVNode(_component_IconAiSvg),
-                createTextVNode("AI ")
-              ]),
-              createBaseVNode("div", _hoisted_21, toDisplayString(message.error), 1)
+                class: normalizeClass({ "result-streaming": message2.done !== true }),
+                id: message2.qaId,
+                innerHTML: message2.answer
+              }, null, 10, _hoisted_12$1),
+              message2.done && false ? (openBlock(), createElementBlock("div", _hoisted_13, [
+                createBaseVNode("div", _hoisted_14, [
+                  createBaseVNode("button", {
+                    type: "button",
+                    class: "btn-like",
+                    title: "赞",
+                    onClick: ($event) => _ctx.onLikeClick(message2)
+                  }, _hoisted_17, 8, _hoisted_15),
+                  createBaseVNode("button", {
+                    type: "button",
+                    class: "btn-dislike",
+                    title: "踩",
+                    onClick: ($event) => _ctx.onDislikeClick(message2)
+                  }, _hoisted_20, 8, _hoisted_18)
+                ])
+              ])) : createCommentVNode("", true)
             ])) : createCommentVNode("", true)
           ])
         ], 64);
       }), 128))
     ], 512), [
-      [vShow, $options.isQAMode]
+      [vShow, _ctx.isQAMode]
     ]),
-    withDirectives(createBaseVNode("div", _hoisted_22, [
-      _hoisted_23,
+    _ctx.isInProgress ? (openBlock(), createElementBlock("div", _hoisted_21, [
+      _hoisted_22,
       withDirectives(createBaseVNode("button", {
         id: "stop-button",
+        type: "button",
         class: "btn btn-primary flex items-end p-1 pr-2 rounded-md ml-5",
-        onClick: _cache[0] || (_cache[0] = (...args) => $options.onStopClick && $options.onStopClick(...args))
+        onClick: _cache[0] || (_cache[0] = (...args) => _ctx.onStopClick && _ctx.onStopClick(...args))
       }, [
-        _hoisted_25,
+        _hoisted_24,
         createTextVNode("停止")
       ], 512), [
-        [vShow, $data.showStopButton]
+        [vShow, _ctx.showStopButton]
       ])
-    ], 512), [
-      [vShow, $data.isInProgress]
-    ]),
-    createBaseVNode("div", _hoisted_26, [
-      createBaseVNode("div", _hoisted_27, [
+    ])) : createCommentVNode("", true),
+    createBaseVNode("div", _hoisted_25, [
+      createBaseVNode("div", _hoisted_26, [
         withDirectives(createBaseVNode("textarea", {
           ref: "questionInputRef",
           type: "text",
@@ -76097,67 +74773,175 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
           "data-license": "isc-gnc",
           id: "question-input",
           placeholder: "输入一个问题...",
-          onKeydown: _cache[1] || (_cache[1] = withKeys(withModifiers((...args) => $options.onQuestionKeyEnter && $options.onQuestionKeyEnter(...args), ["prevent"]), ["enter"])),
-          "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => $data.questionInput = $event),
-          disabled: $data.questionInputDisabled
-        }, null, 40, _hoisted_28), [
-          [vModelText, $data.questionInput]
+          onKeydown: _cache[1] || (_cache[1] = withKeys(withModifiers((...args) => _ctx.onQuestionKeyEnter && _ctx.onQuestionKeyEnter(...args), ["prevent"]), ["enter"])),
+          "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => _ctx.questionInput = $event),
+          disabled: _ctx.questionInputDisabled
+        }, null, 40, _hoisted_27), [
+          [vModelText, _ctx.questionInput]
         ])
       ]),
       withDirectives(createBaseVNode("div", {
         id: "chat-button-wrapper",
         class: "absolute bottom-14 items-center more-menu right-8 border border-gray-200 shadow-xl text-xs",
         "data-license": "isc-gnc",
-        onClick: _cache[5] || (_cache[5] = ($event) => $data.questionInputButtonsMoreVisible = false)
+        onClick: _cache[5] || (_cache[5] = ($event) => _ctx.questionInputButtonsMoreVisible = false)
       }, [
         createBaseVNode("button", {
+          type: "button",
           class: "flex gap-2 items-center justify-start p-2 w-full",
           id: "clear-button",
-          onClick: _cache[3] || (_cache[3] = (...args) => $options.onClearClick && $options.onClearClick(...args))
+          onClick: _cache[3] || (_cache[3] = (...args) => _ctx.onClearClick && _ctx.onClearClick(...args))
         }, [
-          _hoisted_29,
+          _hoisted_28,
           createTextVNode(" 新的聊天")
         ]),
         _ctx.isVsCodeMode ? (openBlock(), createElementBlock("button", {
           key: 0,
+          type: "button",
           class: "flex gap-2 items-center justify-start p-2 w-full",
           id: "export-button",
-          onClick: _cache[4] || (_cache[4] = (...args) => $options.onExportConversation && $options.onExportConversation(...args))
+          onClick: _cache[4] || (_cache[4] = (...args) => _ctx.onExportConversation && _ctx.onExportConversation(...args))
         }, [
-          _hoisted_30,
+          _hoisted_29,
           createTextVNode(" 导出markdown")
         ])) : createCommentVNode("", true)
       ], 512), [
-        [vShow, $data.questionInputButtonsMoreVisible]
+        [vShow, _ctx.questionInputButtonsMoreVisible]
       ]),
-      withDirectives(createBaseVNode("div", _hoisted_31, [
+      withDirectives(createBaseVNode("div", _hoisted_30, [
         createBaseVNode("button", {
+          type: "button",
           id: "more-button",
           title: "More actions",
           class: "rounded-lg p-0.5",
           "data-license": "isc-gnc",
-          onClick: _cache[6] || (_cache[6] = ($event) => $data.questionInputButtonsMoreVisible = true),
+          onClick: _cache[6] || (_cache[6] = ($event) => _ctx.questionInputButtonsMoreVisible = true),
           ref: "questionInputButtonsMore"
-        }, _hoisted_33, 512),
+        }, _hoisted_32, 512),
         createBaseVNode("button", {
+          type: "button",
           id: "ask-button",
           title: "提交提示",
           class: "ask-button rounded-lg p-0.5",
-          onClick: _cache[7] || (_cache[7] = (...args) => $options.onAskButtonClick && $options.onAskButtonClick(...args)),
-          disabled: !$data.questionInput || $data.questionInput.length === 0
-        }, _hoisted_36, 8, _hoisted_34)
+          onClick: _cache[7] || (_cache[7] = (...args) => _ctx.onAskButtonClick && _ctx.onAskButtonClick(...args)),
+          disabled: !_ctx.questionInput || _ctx.questionInput.length === 0
+        }, _hoisted_35, 8, _hoisted_33)
       ], 512), [
-        [vShow, $data.questionInputButtonsVisible]
+        [vShow, _ctx.questionInputButtonsVisible]
       ])
     ])
   ], 2);
 }
-const ChatView = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render]]);
-const _sfc_main = {
-  __name: "HomeView",
+const ChatView = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["render", _sfc_render]]);
+const _sfc_main$2 = {
+  extends: ChatView,
+  setup(props, ctx) {
+    return {
+      ...ChatView.setup(props, ctx)
+    };
+  },
+  methods: {
+    messageHandler(event) {
+      const message2 = event.data;
+      switch (message2.type) {
+        case "showInProgress":
+          this.showInProgress(message2);
+          break;
+        case "addResponse":
+          this.addResponse(message2);
+          break;
+        case "addQuestion":
+          this.addQuestion(message2);
+          break;
+        case "loginSuccessful":
+          break;
+        case "addError":
+          this.addError(message2);
+          break;
+        case "clearConversation":
+          this.onClearClick();
+          break;
+        case "exportConversation":
+          this.onExportConversation();
+          break;
+        case "textSelectionChanged":
+          break;
+        case "chat_code":
+        case "ask":
+          message2.cmd = message2.type;
+          this.busEventHandler(message2);
+          break;
+      }
+    }
+  },
+  mounted() {
+    console.log("vscode view mounted");
+    try {
+      if (!window.vscodeInstance) {
+        const vscode = window.acquireVsCodeApi();
+        window.vscodeInstance = vscode;
+        useStore().setVsCodeMode(vscode ? true : false);
+      }
+    } catch (error2) {
+      console.log("不在vscode内:" + error2);
+    }
+    window.removeEventListener("message", this.messageHandler);
+    window.addEventListener("message", this.messageHandler);
+  }
+};
+const _sfc_main$1 = {
+  __name: "ChatAllInOne",
   setup(__props) {
+    const $bus2 = inject("$bus");
+    const ideType = ref("chatOnly");
+    const store = useStore();
+    onMounted(() => {
+      getIDEType();
+    });
+    function getIDEType() {
+      const ide = useRoute().query.ide;
+      switch (ide) {
+        case "chatOnly":
+          ideType.value = ide;
+          break;
+        case "idea":
+          ideType.value = ide;
+          useStore().setIdeaMode(true);
+          break;
+        default:
+          try {
+            const vscode = window.acquireVsCodeApi();
+            window.vscodeInstance = vscode;
+            useStore().setVsCodeMode(vscode ? true : false);
+            ideType.value = "vscode";
+          } catch (error2) {
+            console.log("不在vscode内:" + error2);
+          }
+          break;
+      }
+      console.log(ideType.value);
+    }
+    function newChatClick() {
+      $bus2.emit("executeCmd", { cmd: "newChat" });
+    }
     return (_ctx, _cache) => {
-      return openBlock(), createBlock(ChatView);
+      return openBlock(), createBlock(_sfc_main$a, null, {
+        ai: withCtx(() => [
+          ideType.value === "chatOnly" || ideType.value === "idea" ? (openBlock(), createBlock(ChatView, { key: 0 })) : ideType.value === "vscode" ? (openBlock(), createBlock(_sfc_main$2, { key: 1 })) : createCommentVNode("", true)
+        ]),
+        aiExt: withCtx(() => [
+          withDirectives(createBaseVNode("span", {
+            class: "tab-extends-item",
+            title: "新的聊天",
+            onClick: newChatClick
+          }, [
+            createVNode(IconPlusSvg)
+          ], 512), [
+            [vShow, !unref(store).chatInProgress]
+          ])
+        ]),
+        _: 1
+      });
     };
   }
 };
@@ -76166,9 +74950,29 @@ const router = createRouter({
   routes: [
     {
       path: "/",
-      name: "home",
-      component: _sfc_main
+      name: "chat",
+      component: _sfc_main$1
     }
+    // {
+    //   path: '/chat',
+    //   name: 'chat only view',
+    //   component: ChatOnlyView
+    // },
+    // {
+    //   path: '/vscode',
+    //   name: 'vscode view',
+    //   component: ChatVsCodeView
+    // },
+    // {
+    //   path: '/chatAllInOne',
+    //   name: 'chatAllInOne',
+    //   component: ChatAllInOne
+    // },
+    // {
+    //   path: '/idea',
+    //   name: 'idea view',
+    //   component: ChatIdeaView
+    // }
   ]
 });
 function mitt(n) {
@@ -76187,11 +74991,2277 @@ function mitt(n) {
     });
   } };
 }
+function bind(fn, thisArg) {
+  return function wrap() {
+    return fn.apply(thisArg, arguments);
+  };
+}
+const { toString } = Object.prototype;
+const { getPrototypeOf } = Object;
+const kindOf = /* @__PURE__ */ ((cache) => (thing) => {
+  const str = toString.call(thing);
+  return cache[str] || (cache[str] = str.slice(8, -1).toLowerCase());
+})(/* @__PURE__ */ Object.create(null));
+const kindOfTest = (type) => {
+  type = type.toLowerCase();
+  return (thing) => kindOf(thing) === type;
+};
+const typeOfTest = (type) => (thing) => typeof thing === type;
+const { isArray } = Array;
+const isUndefined = typeOfTest("undefined");
+function isBuffer(val) {
+  return val !== null && !isUndefined(val) && val.constructor !== null && !isUndefined(val.constructor) && isFunction(val.constructor.isBuffer) && val.constructor.isBuffer(val);
+}
+const isArrayBuffer = kindOfTest("ArrayBuffer");
+function isArrayBufferView(val) {
+  let result;
+  if (typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView) {
+    result = ArrayBuffer.isView(val);
+  } else {
+    result = val && val.buffer && isArrayBuffer(val.buffer);
+  }
+  return result;
+}
+const isString = typeOfTest("string");
+const isFunction = typeOfTest("function");
+const isNumber = typeOfTest("number");
+const isObject = (thing) => thing !== null && typeof thing === "object";
+const isBoolean = (thing) => thing === true || thing === false;
+const isPlainObject = (val) => {
+  if (kindOf(val) !== "object") {
+    return false;
+  }
+  const prototype2 = getPrototypeOf(val);
+  return (prototype2 === null || prototype2 === Object.prototype || Object.getPrototypeOf(prototype2) === null) && !(Symbol.toStringTag in val) && !(Symbol.iterator in val);
+};
+const isDate = kindOfTest("Date");
+const isFile = kindOfTest("File");
+const isBlob = kindOfTest("Blob");
+const isFileList = kindOfTest("FileList");
+const isStream = (val) => isObject(val) && isFunction(val.pipe);
+const isFormData = (thing) => {
+  let kind;
+  return thing && (typeof FormData === "function" && thing instanceof FormData || isFunction(thing.append) && ((kind = kindOf(thing)) === "formdata" || // detect form-data instance
+  kind === "object" && isFunction(thing.toString) && thing.toString() === "[object FormData]"));
+};
+const isURLSearchParams = kindOfTest("URLSearchParams");
+const trim = (str) => str.trim ? str.trim() : str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
+function forEach(obj2, fn, { allOwnKeys = false } = {}) {
+  if (obj2 === null || typeof obj2 === "undefined") {
+    return;
+  }
+  let i;
+  let l;
+  if (typeof obj2 !== "object") {
+    obj2 = [obj2];
+  }
+  if (isArray(obj2)) {
+    for (i = 0, l = obj2.length; i < l; i++) {
+      fn.call(null, obj2[i], i, obj2);
+    }
+  } else {
+    const keys = allOwnKeys ? Object.getOwnPropertyNames(obj2) : Object.keys(obj2);
+    const len = keys.length;
+    let key;
+    for (i = 0; i < len; i++) {
+      key = keys[i];
+      fn.call(null, obj2[key], key, obj2);
+    }
+  }
+}
+function findKey(obj2, key) {
+  key = key.toLowerCase();
+  const keys = Object.keys(obj2);
+  let i = keys.length;
+  let _key;
+  while (i-- > 0) {
+    _key = keys[i];
+    if (key === _key.toLowerCase()) {
+      return _key;
+    }
+  }
+  return null;
+}
+const _global = (() => {
+  if (typeof globalThis !== "undefined")
+    return globalThis;
+  return typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : global;
+})();
+const isContextDefined = (context) => !isUndefined(context) && context !== _global;
+function merge() {
+  const { caseless } = isContextDefined(this) && this || {};
+  const result = {};
+  const assignValue = (val, key) => {
+    const targetKey = caseless && findKey(result, key) || key;
+    if (isPlainObject(result[targetKey]) && isPlainObject(val)) {
+      result[targetKey] = merge(result[targetKey], val);
+    } else if (isPlainObject(val)) {
+      result[targetKey] = merge({}, val);
+    } else if (isArray(val)) {
+      result[targetKey] = val.slice();
+    } else {
+      result[targetKey] = val;
+    }
+  };
+  for (let i = 0, l = arguments.length; i < l; i++) {
+    arguments[i] && forEach(arguments[i], assignValue);
+  }
+  return result;
+}
+const extend = (a, b, thisArg, { allOwnKeys } = {}) => {
+  forEach(b, (val, key) => {
+    if (thisArg && isFunction(val)) {
+      a[key] = bind(val, thisArg);
+    } else {
+      a[key] = val;
+    }
+  }, { allOwnKeys });
+  return a;
+};
+const stripBOM = (content) => {
+  if (content.charCodeAt(0) === 65279) {
+    content = content.slice(1);
+  }
+  return content;
+};
+const inherits = (constructor, superConstructor, props, descriptors2) => {
+  constructor.prototype = Object.create(superConstructor.prototype, descriptors2);
+  constructor.prototype.constructor = constructor;
+  Object.defineProperty(constructor, "super", {
+    value: superConstructor.prototype
+  });
+  props && Object.assign(constructor.prototype, props);
+};
+const toFlatObject = (sourceObj, destObj, filter2, propFilter) => {
+  let props;
+  let i;
+  let prop;
+  const merged = {};
+  destObj = destObj || {};
+  if (sourceObj == null)
+    return destObj;
+  do {
+    props = Object.getOwnPropertyNames(sourceObj);
+    i = props.length;
+    while (i-- > 0) {
+      prop = props[i];
+      if ((!propFilter || propFilter(prop, sourceObj, destObj)) && !merged[prop]) {
+        destObj[prop] = sourceObj[prop];
+        merged[prop] = true;
+      }
+    }
+    sourceObj = filter2 !== false && getPrototypeOf(sourceObj);
+  } while (sourceObj && (!filter2 || filter2(sourceObj, destObj)) && sourceObj !== Object.prototype);
+  return destObj;
+};
+const endsWith = (str, searchString, position) => {
+  str = String(str);
+  if (position === void 0 || position > str.length) {
+    position = str.length;
+  }
+  position -= searchString.length;
+  const lastIndex = str.indexOf(searchString, position);
+  return lastIndex !== -1 && lastIndex === position;
+};
+const toArray = (thing) => {
+  if (!thing)
+    return null;
+  if (isArray(thing))
+    return thing;
+  let i = thing.length;
+  if (!isNumber(i))
+    return null;
+  const arr = new Array(i);
+  while (i-- > 0) {
+    arr[i] = thing[i];
+  }
+  return arr;
+};
+const isTypedArray = /* @__PURE__ */ ((TypedArray) => {
+  return (thing) => {
+    return TypedArray && thing instanceof TypedArray;
+  };
+})(typeof Uint8Array !== "undefined" && getPrototypeOf(Uint8Array));
+const forEachEntry = (obj2, fn) => {
+  const generator = obj2 && obj2[Symbol.iterator];
+  const iterator = generator.call(obj2);
+  let result;
+  while ((result = iterator.next()) && !result.done) {
+    const pair = result.value;
+    fn.call(obj2, pair[0], pair[1]);
+  }
+};
+const matchAll = (regExp, str) => {
+  let matches;
+  const arr = [];
+  while ((matches = regExp.exec(str)) !== null) {
+    arr.push(matches);
+  }
+  return arr;
+};
+const isHTMLForm = kindOfTest("HTMLFormElement");
+const toCamelCase = (str) => {
+  return str.toLowerCase().replace(
+    /[-_\s]([a-z\d])(\w*)/g,
+    function replacer2(m, p1, p2) {
+      return p1.toUpperCase() + p2;
+    }
+  );
+};
+const hasOwnProperty = (({ hasOwnProperty: hasOwnProperty2 }) => (obj2, prop) => hasOwnProperty2.call(obj2, prop))(Object.prototype);
+const isRegExp = kindOfTest("RegExp");
+const reduceDescriptors = (obj2, reducer) => {
+  const descriptors2 = Object.getOwnPropertyDescriptors(obj2);
+  const reducedDescriptors = {};
+  forEach(descriptors2, (descriptor, name) => {
+    let ret;
+    if ((ret = reducer(descriptor, name, obj2)) !== false) {
+      reducedDescriptors[name] = ret || descriptor;
+    }
+  });
+  Object.defineProperties(obj2, reducedDescriptors);
+};
+const freezeMethods = (obj2) => {
+  reduceDescriptors(obj2, (descriptor, name) => {
+    if (isFunction(obj2) && ["arguments", "caller", "callee"].indexOf(name) !== -1) {
+      return false;
+    }
+    const value = obj2[name];
+    if (!isFunction(value))
+      return;
+    descriptor.enumerable = false;
+    if ("writable" in descriptor) {
+      descriptor.writable = false;
+      return;
+    }
+    if (!descriptor.set) {
+      descriptor.set = () => {
+        throw Error("Can not rewrite read-only method '" + name + "'");
+      };
+    }
+  });
+};
+const toObjectSet = (arrayOrString, delimiter) => {
+  const obj2 = {};
+  const define = (arr) => {
+    arr.forEach((value) => {
+      obj2[value] = true;
+    });
+  };
+  isArray(arrayOrString) ? define(arrayOrString) : define(String(arrayOrString).split(delimiter));
+  return obj2;
+};
+const noop = () => {
+};
+const toFiniteNumber = (value, defaultValue) => {
+  value = +value;
+  return Number.isFinite(value) ? value : defaultValue;
+};
+const ALPHA = "abcdefghijklmnopqrstuvwxyz";
+const DIGIT = "0123456789";
+const ALPHABET = {
+  DIGIT,
+  ALPHA,
+  ALPHA_DIGIT: ALPHA + ALPHA.toUpperCase() + DIGIT
+};
+const generateString = (size2 = 16, alphabet = ALPHABET.ALPHA_DIGIT) => {
+  let str = "";
+  const { length } = alphabet;
+  while (size2--) {
+    str += alphabet[Math.random() * length | 0];
+  }
+  return str;
+};
+function isSpecCompliantForm(thing) {
+  return !!(thing && isFunction(thing.append) && thing[Symbol.toStringTag] === "FormData" && thing[Symbol.iterator]);
+}
+const toJSONObject = (obj2) => {
+  const stack2 = new Array(10);
+  const visit = (source2, i) => {
+    if (isObject(source2)) {
+      if (stack2.indexOf(source2) >= 0) {
+        return;
+      }
+      if (!("toJSON" in source2)) {
+        stack2[i] = source2;
+        const target = isArray(source2) ? [] : {};
+        forEach(source2, (value, key) => {
+          const reducedValue = visit(value, i + 1);
+          !isUndefined(reducedValue) && (target[key] = reducedValue);
+        });
+        stack2[i] = void 0;
+        return target;
+      }
+    }
+    return source2;
+  };
+  return visit(obj2, 0);
+};
+const isAsyncFn = kindOfTest("AsyncFunction");
+const isThenable = (thing) => thing && (isObject(thing) || isFunction(thing)) && isFunction(thing.then) && isFunction(thing.catch);
+const utils$1 = {
+  isArray,
+  isArrayBuffer,
+  isBuffer,
+  isFormData,
+  isArrayBufferView,
+  isString,
+  isNumber,
+  isBoolean,
+  isObject,
+  isPlainObject,
+  isUndefined,
+  isDate,
+  isFile,
+  isBlob,
+  isRegExp,
+  isFunction,
+  isStream,
+  isURLSearchParams,
+  isTypedArray,
+  isFileList,
+  forEach,
+  merge,
+  extend,
+  trim,
+  stripBOM,
+  inherits,
+  toFlatObject,
+  kindOf,
+  kindOfTest,
+  endsWith,
+  toArray,
+  forEachEntry,
+  matchAll,
+  isHTMLForm,
+  hasOwnProperty,
+  hasOwnProp: hasOwnProperty,
+  // an alias to avoid ESLint no-prototype-builtins detection
+  reduceDescriptors,
+  freezeMethods,
+  toObjectSet,
+  toCamelCase,
+  noop,
+  toFiniteNumber,
+  findKey,
+  global: _global,
+  isContextDefined,
+  ALPHABET,
+  generateString,
+  isSpecCompliantForm,
+  toJSONObject,
+  isAsyncFn,
+  isThenable
+};
+function AxiosError(message2, code, config, request, response) {
+  Error.call(this);
+  if (Error.captureStackTrace) {
+    Error.captureStackTrace(this, this.constructor);
+  } else {
+    this.stack = new Error().stack;
+  }
+  this.message = message2;
+  this.name = "AxiosError";
+  code && (this.code = code);
+  config && (this.config = config);
+  request && (this.request = request);
+  response && (this.response = response);
+}
+utils$1.inherits(AxiosError, Error, {
+  toJSON: function toJSON() {
+    return {
+      // Standard
+      message: this.message,
+      name: this.name,
+      // Microsoft
+      description: this.description,
+      number: this.number,
+      // Mozilla
+      fileName: this.fileName,
+      lineNumber: this.lineNumber,
+      columnNumber: this.columnNumber,
+      stack: this.stack,
+      // Axios
+      config: utils$1.toJSONObject(this.config),
+      code: this.code,
+      status: this.response && this.response.status ? this.response.status : null
+    };
+  }
+});
+const prototype$1 = AxiosError.prototype;
+const descriptors = {};
+[
+  "ERR_BAD_OPTION_VALUE",
+  "ERR_BAD_OPTION",
+  "ECONNABORTED",
+  "ETIMEDOUT",
+  "ERR_NETWORK",
+  "ERR_FR_TOO_MANY_REDIRECTS",
+  "ERR_DEPRECATED",
+  "ERR_BAD_RESPONSE",
+  "ERR_BAD_REQUEST",
+  "ERR_CANCELED",
+  "ERR_NOT_SUPPORT",
+  "ERR_INVALID_URL"
+  // eslint-disable-next-line func-names
+].forEach((code) => {
+  descriptors[code] = { value: code };
+});
+Object.defineProperties(AxiosError, descriptors);
+Object.defineProperty(prototype$1, "isAxiosError", { value: true });
+AxiosError.from = (error2, code, config, request, response, customProps) => {
+  const axiosError = Object.create(prototype$1);
+  utils$1.toFlatObject(error2, axiosError, function filter2(obj2) {
+    return obj2 !== Error.prototype;
+  }, (prop) => {
+    return prop !== "isAxiosError";
+  });
+  AxiosError.call(axiosError, error2.message, code, config, request, response);
+  axiosError.cause = error2;
+  axiosError.name = error2.name;
+  customProps && Object.assign(axiosError, customProps);
+  return axiosError;
+};
+const httpAdapter = null;
+function isVisitable(thing) {
+  return utils$1.isPlainObject(thing) || utils$1.isArray(thing);
+}
+function removeBrackets(key) {
+  return utils$1.endsWith(key, "[]") ? key.slice(0, -2) : key;
+}
+function renderKey(path, key, dots) {
+  if (!path)
+    return key;
+  return path.concat(key).map(function each(token, i) {
+    token = removeBrackets(token);
+    return !dots && i ? "[" + token + "]" : token;
+  }).join(dots ? "." : "");
+}
+function isFlatArray(arr) {
+  return utils$1.isArray(arr) && !arr.some(isVisitable);
+}
+const predicates = utils$1.toFlatObject(utils$1, {}, null, function filter(prop) {
+  return /^is[A-Z]/.test(prop);
+});
+function toFormData(obj2, formData, options) {
+  if (!utils$1.isObject(obj2)) {
+    throw new TypeError("target must be an object");
+  }
+  formData = formData || new FormData();
+  options = utils$1.toFlatObject(options, {
+    metaTokens: true,
+    dots: false,
+    indexes: false
+  }, false, function defined(option, source2) {
+    return !utils$1.isUndefined(source2[option]);
+  });
+  const metaTokens = options.metaTokens;
+  const visitor = options.visitor || defaultVisitor;
+  const dots = options.dots;
+  const indexes = options.indexes;
+  const _Blob = options.Blob || typeof Blob !== "undefined" && Blob;
+  const useBlob = _Blob && utils$1.isSpecCompliantForm(formData);
+  if (!utils$1.isFunction(visitor)) {
+    throw new TypeError("visitor must be a function");
+  }
+  function convertValue(value) {
+    if (value === null)
+      return "";
+    if (utils$1.isDate(value)) {
+      return value.toISOString();
+    }
+    if (!useBlob && utils$1.isBlob(value)) {
+      throw new AxiosError("Blob is not supported. Use a Buffer instead.");
+    }
+    if (utils$1.isArrayBuffer(value) || utils$1.isTypedArray(value)) {
+      return useBlob && typeof Blob === "function" ? new Blob([value]) : Buffer.from(value);
+    }
+    return value;
+  }
+  function defaultVisitor(value, key, path) {
+    let arr = value;
+    if (value && !path && typeof value === "object") {
+      if (utils$1.endsWith(key, "{}")) {
+        key = metaTokens ? key : key.slice(0, -2);
+        value = JSON.stringify(value);
+      } else if (utils$1.isArray(value) && isFlatArray(value) || (utils$1.isFileList(value) || utils$1.endsWith(key, "[]")) && (arr = utils$1.toArray(value))) {
+        key = removeBrackets(key);
+        arr.forEach(function each(el, index) {
+          !(utils$1.isUndefined(el) || el === null) && formData.append(
+            // eslint-disable-next-line no-nested-ternary
+            indexes === true ? renderKey([key], index, dots) : indexes === null ? key : key + "[]",
+            convertValue(el)
+          );
+        });
+        return false;
+      }
+    }
+    if (isVisitable(value)) {
+      return true;
+    }
+    formData.append(renderKey(path, key, dots), convertValue(value));
+    return false;
+  }
+  const stack2 = [];
+  const exposedHelpers = Object.assign(predicates, {
+    defaultVisitor,
+    convertValue,
+    isVisitable
+  });
+  function build(value, path) {
+    if (utils$1.isUndefined(value))
+      return;
+    if (stack2.indexOf(value) !== -1) {
+      throw Error("Circular reference detected in " + path.join("."));
+    }
+    stack2.push(value);
+    utils$1.forEach(value, function each(el, key) {
+      const result = !(utils$1.isUndefined(el) || el === null) && visitor.call(
+        formData,
+        el,
+        utils$1.isString(key) ? key.trim() : key,
+        path,
+        exposedHelpers
+      );
+      if (result === true) {
+        build(el, path ? path.concat(key) : [key]);
+      }
+    });
+    stack2.pop();
+  }
+  if (!utils$1.isObject(obj2)) {
+    throw new TypeError("data must be an object");
+  }
+  build(obj2);
+  return formData;
+}
+function encode$1(str) {
+  const charMap = {
+    "!": "%21",
+    "'": "%27",
+    "(": "%28",
+    ")": "%29",
+    "~": "%7E",
+    "%20": "+",
+    "%00": "\0"
+  };
+  return encodeURIComponent(str).replace(/[!'()~]|%20|%00/g, function replacer2(match) {
+    return charMap[match];
+  });
+}
+function AxiosURLSearchParams(params, options) {
+  this._pairs = [];
+  params && toFormData(params, this, options);
+}
+const prototype = AxiosURLSearchParams.prototype;
+prototype.append = function append(name, value) {
+  this._pairs.push([name, value]);
+};
+prototype.toString = function toString2(encoder) {
+  const _encode = encoder ? function(value) {
+    return encoder.call(this, value, encode$1);
+  } : encode$1;
+  return this._pairs.map(function each(pair) {
+    return _encode(pair[0]) + "=" + _encode(pair[1]);
+  }, "").join("&");
+};
+function encode(val) {
+  return encodeURIComponent(val).replace(/%3A/gi, ":").replace(/%24/g, "$").replace(/%2C/gi, ",").replace(/%20/g, "+").replace(/%5B/gi, "[").replace(/%5D/gi, "]");
+}
+function buildURL(url2, params, options) {
+  if (!params) {
+    return url2;
+  }
+  const _encode = options && options.encode || encode;
+  const serializeFn = options && options.serialize;
+  let serializedParams;
+  if (serializeFn) {
+    serializedParams = serializeFn(params, options);
+  } else {
+    serializedParams = utils$1.isURLSearchParams(params) ? params.toString() : new AxiosURLSearchParams(params, options).toString(_encode);
+  }
+  if (serializedParams) {
+    const hashmarkIndex = url2.indexOf("#");
+    if (hashmarkIndex !== -1) {
+      url2 = url2.slice(0, hashmarkIndex);
+    }
+    url2 += (url2.indexOf("?") === -1 ? "?" : "&") + serializedParams;
+  }
+  return url2;
+}
+class InterceptorManager {
+  constructor() {
+    this.handlers = [];
+  }
+  /**
+   * Add a new interceptor to the stack
+   *
+   * @param {Function} fulfilled The function to handle `then` for a `Promise`
+   * @param {Function} rejected The function to handle `reject` for a `Promise`
+   *
+   * @return {Number} An ID used to remove interceptor later
+   */
+  use(fulfilled, rejected, options) {
+    this.handlers.push({
+      fulfilled,
+      rejected,
+      synchronous: options ? options.synchronous : false,
+      runWhen: options ? options.runWhen : null
+    });
+    return this.handlers.length - 1;
+  }
+  /**
+   * Remove an interceptor from the stack
+   *
+   * @param {Number} id The ID that was returned by `use`
+   *
+   * @returns {Boolean} `true` if the interceptor was removed, `false` otherwise
+   */
+  eject(id) {
+    if (this.handlers[id]) {
+      this.handlers[id] = null;
+    }
+  }
+  /**
+   * Clear all interceptors from the stack
+   *
+   * @returns {void}
+   */
+  clear() {
+    if (this.handlers) {
+      this.handlers = [];
+    }
+  }
+  /**
+   * Iterate over all the registered interceptors
+   *
+   * This method is particularly useful for skipping over any
+   * interceptors that may have become `null` calling `eject`.
+   *
+   * @param {Function} fn The function to call for each interceptor
+   *
+   * @returns {void}
+   */
+  forEach(fn) {
+    utils$1.forEach(this.handlers, function forEachHandler(h2) {
+      if (h2 !== null) {
+        fn(h2);
+      }
+    });
+  }
+}
+const transitionalDefaults = {
+  silentJSONParsing: true,
+  forcedJSONParsing: true,
+  clarifyTimeoutError: false
+};
+const URLSearchParams$1 = typeof URLSearchParams !== "undefined" ? URLSearchParams : AxiosURLSearchParams;
+const FormData$1 = typeof FormData !== "undefined" ? FormData : null;
+const Blob$1 = typeof Blob !== "undefined" ? Blob : null;
+const platform$1 = {
+  isBrowser: true,
+  classes: {
+    URLSearchParams: URLSearchParams$1,
+    FormData: FormData$1,
+    Blob: Blob$1
+  },
+  protocols: ["http", "https", "file", "blob", "url", "data"]
+};
+const hasBrowserEnv = typeof window !== "undefined" && typeof document !== "undefined";
+const hasStandardBrowserEnv = ((product) => {
+  return hasBrowserEnv && ["ReactNative", "NativeScript", "NS"].indexOf(product) < 0;
+})(typeof navigator !== "undefined" && navigator.product);
+const hasStandardBrowserWebWorkerEnv = (() => {
+  return typeof WorkerGlobalScope !== "undefined" && // eslint-disable-next-line no-undef
+  self instanceof WorkerGlobalScope && typeof self.importScripts === "function";
+})();
+const utils = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  hasBrowserEnv,
+  hasStandardBrowserEnv,
+  hasStandardBrowserWebWorkerEnv
+}, Symbol.toStringTag, { value: "Module" }));
+const platform = {
+  ...utils,
+  ...platform$1
+};
+function toURLEncodedForm(data, options) {
+  return toFormData(data, new platform.classes.URLSearchParams(), Object.assign({
+    visitor: function(value, key, path, helpers) {
+      if (platform.isNode && utils$1.isBuffer(value)) {
+        this.append(key, value.toString("base64"));
+        return false;
+      }
+      return helpers.defaultVisitor.apply(this, arguments);
+    }
+  }, options));
+}
+function parsePropPath(name) {
+  return utils$1.matchAll(/\w+|\[(\w*)]/g, name).map((match) => {
+    return match[0] === "[]" ? "" : match[1] || match[0];
+  });
+}
+function arrayToObject(arr) {
+  const obj2 = {};
+  const keys = Object.keys(arr);
+  let i;
+  const len = keys.length;
+  let key;
+  for (i = 0; i < len; i++) {
+    key = keys[i];
+    obj2[key] = arr[key];
+  }
+  return obj2;
+}
+function formDataToJSON(formData) {
+  function buildPath(path, value, target, index) {
+    let name = path[index++];
+    if (name === "__proto__")
+      return true;
+    const isNumericKey = Number.isFinite(+name);
+    const isLast = index >= path.length;
+    name = !name && utils$1.isArray(target) ? target.length : name;
+    if (isLast) {
+      if (utils$1.hasOwnProp(target, name)) {
+        target[name] = [target[name], value];
+      } else {
+        target[name] = value;
+      }
+      return !isNumericKey;
+    }
+    if (!target[name] || !utils$1.isObject(target[name])) {
+      target[name] = [];
+    }
+    const result = buildPath(path, value, target[name], index);
+    if (result && utils$1.isArray(target[name])) {
+      target[name] = arrayToObject(target[name]);
+    }
+    return !isNumericKey;
+  }
+  if (utils$1.isFormData(formData) && utils$1.isFunction(formData.entries)) {
+    const obj2 = {};
+    utils$1.forEachEntry(formData, (name, value) => {
+      buildPath(parsePropPath(name), value, obj2, 0);
+    });
+    return obj2;
+  }
+  return null;
+}
+function stringifySafely(rawValue, parser, encoder) {
+  if (utils$1.isString(rawValue)) {
+    try {
+      (parser || JSON.parse)(rawValue);
+      return utils$1.trim(rawValue);
+    } catch (e) {
+      if (e.name !== "SyntaxError") {
+        throw e;
+      }
+    }
+  }
+  return (encoder || JSON.stringify)(rawValue);
+}
+const defaults = {
+  transitional: transitionalDefaults,
+  adapter: ["xhr", "http"],
+  transformRequest: [function transformRequest(data, headers) {
+    const contentType = headers.getContentType() || "";
+    const hasJSONContentType = contentType.indexOf("application/json") > -1;
+    const isObjectPayload = utils$1.isObject(data);
+    if (isObjectPayload && utils$1.isHTMLForm(data)) {
+      data = new FormData(data);
+    }
+    const isFormData2 = utils$1.isFormData(data);
+    if (isFormData2) {
+      return hasJSONContentType ? JSON.stringify(formDataToJSON(data)) : data;
+    }
+    if (utils$1.isArrayBuffer(data) || utils$1.isBuffer(data) || utils$1.isStream(data) || utils$1.isFile(data) || utils$1.isBlob(data)) {
+      return data;
+    }
+    if (utils$1.isArrayBufferView(data)) {
+      return data.buffer;
+    }
+    if (utils$1.isURLSearchParams(data)) {
+      headers.setContentType("application/x-www-form-urlencoded;charset=utf-8", false);
+      return data.toString();
+    }
+    let isFileList2;
+    if (isObjectPayload) {
+      if (contentType.indexOf("application/x-www-form-urlencoded") > -1) {
+        return toURLEncodedForm(data, this.formSerializer).toString();
+      }
+      if ((isFileList2 = utils$1.isFileList(data)) || contentType.indexOf("multipart/form-data") > -1) {
+        const _FormData = this.env && this.env.FormData;
+        return toFormData(
+          isFileList2 ? { "files[]": data } : data,
+          _FormData && new _FormData(),
+          this.formSerializer
+        );
+      }
+    }
+    if (isObjectPayload || hasJSONContentType) {
+      headers.setContentType("application/json", false);
+      return stringifySafely(data);
+    }
+    return data;
+  }],
+  transformResponse: [function transformResponse(data) {
+    const transitional2 = this.transitional || defaults.transitional;
+    const forcedJSONParsing = transitional2 && transitional2.forcedJSONParsing;
+    const JSONRequested = this.responseType === "json";
+    if (data && utils$1.isString(data) && (forcedJSONParsing && !this.responseType || JSONRequested)) {
+      const silentJSONParsing = transitional2 && transitional2.silentJSONParsing;
+      const strictJSONParsing = !silentJSONParsing && JSONRequested;
+      try {
+        return JSON.parse(data);
+      } catch (e) {
+        if (strictJSONParsing) {
+          if (e.name === "SyntaxError") {
+            throw AxiosError.from(e, AxiosError.ERR_BAD_RESPONSE, this, null, this.response);
+          }
+          throw e;
+        }
+      }
+    }
+    return data;
+  }],
+  /**
+   * A timeout in milliseconds to abort a request. If set to 0 (default) a
+   * timeout is not created.
+   */
+  timeout: 0,
+  xsrfCookieName: "XSRF-TOKEN",
+  xsrfHeaderName: "X-XSRF-TOKEN",
+  maxContentLength: -1,
+  maxBodyLength: -1,
+  env: {
+    FormData: platform.classes.FormData,
+    Blob: platform.classes.Blob
+  },
+  validateStatus: function validateStatus(status) {
+    return status >= 200 && status < 300;
+  },
+  headers: {
+    common: {
+      "Accept": "application/json, text/plain, */*",
+      "Content-Type": void 0
+    }
+  }
+};
+utils$1.forEach(["delete", "get", "head", "post", "put", "patch"], (method) => {
+  defaults.headers[method] = {};
+});
+const defaults$1 = defaults;
+const ignoreDuplicateOf = utils$1.toObjectSet([
+  "age",
+  "authorization",
+  "content-length",
+  "content-type",
+  "etag",
+  "expires",
+  "from",
+  "host",
+  "if-modified-since",
+  "if-unmodified-since",
+  "last-modified",
+  "location",
+  "max-forwards",
+  "proxy-authorization",
+  "referer",
+  "retry-after",
+  "user-agent"
+]);
+const parseHeaders = (rawHeaders) => {
+  const parsed = {};
+  let key;
+  let val;
+  let i;
+  rawHeaders && rawHeaders.split("\n").forEach(function parser(line) {
+    i = line.indexOf(":");
+    key = line.substring(0, i).trim().toLowerCase();
+    val = line.substring(i + 1).trim();
+    if (!key || parsed[key] && ignoreDuplicateOf[key]) {
+      return;
+    }
+    if (key === "set-cookie") {
+      if (parsed[key]) {
+        parsed[key].push(val);
+      } else {
+        parsed[key] = [val];
+      }
+    } else {
+      parsed[key] = parsed[key] ? parsed[key] + ", " + val : val;
+    }
+  });
+  return parsed;
+};
+const $internals = Symbol("internals");
+function normalizeHeader(header) {
+  return header && String(header).trim().toLowerCase();
+}
+function normalizeValue(value) {
+  if (value === false || value == null) {
+    return value;
+  }
+  return utils$1.isArray(value) ? value.map(normalizeValue) : String(value);
+}
+function parseTokens(str) {
+  const tokens = /* @__PURE__ */ Object.create(null);
+  const tokensRE = /([^\s,;=]+)\s*(?:=\s*([^,;]+))?/g;
+  let match;
+  while (match = tokensRE.exec(str)) {
+    tokens[match[1]] = match[2];
+  }
+  return tokens;
+}
+const isValidHeaderName = (str) => /^[-_a-zA-Z0-9^`|~,!#$%&'*+.]+$/.test(str.trim());
+function matchHeaderValue(context, value, header, filter2, isHeaderNameFilter) {
+  if (utils$1.isFunction(filter2)) {
+    return filter2.call(this, value, header);
+  }
+  if (isHeaderNameFilter) {
+    value = header;
+  }
+  if (!utils$1.isString(value))
+    return;
+  if (utils$1.isString(filter2)) {
+    return value.indexOf(filter2) !== -1;
+  }
+  if (utils$1.isRegExp(filter2)) {
+    return filter2.test(value);
+  }
+}
+function formatHeader(header) {
+  return header.trim().toLowerCase().replace(/([a-z\d])(\w*)/g, (w, char, str) => {
+    return char.toUpperCase() + str;
+  });
+}
+function buildAccessors(obj2, header) {
+  const accessorName = utils$1.toCamelCase(" " + header);
+  ["get", "set", "has"].forEach((methodName) => {
+    Object.defineProperty(obj2, methodName + accessorName, {
+      value: function(arg1, arg2, arg3) {
+        return this[methodName].call(this, header, arg1, arg2, arg3);
+      },
+      configurable: true
+    });
+  });
+}
+class AxiosHeaders {
+  constructor(headers) {
+    headers && this.set(headers);
+  }
+  set(header, valueOrRewrite, rewrite) {
+    const self2 = this;
+    function setHeader(_value, _header, _rewrite) {
+      const lHeader = normalizeHeader(_header);
+      if (!lHeader) {
+        throw new Error("header name must be a non-empty string");
+      }
+      const key = utils$1.findKey(self2, lHeader);
+      if (!key || self2[key] === void 0 || _rewrite === true || _rewrite === void 0 && self2[key] !== false) {
+        self2[key || _header] = normalizeValue(_value);
+      }
+    }
+    const setHeaders = (headers, _rewrite) => utils$1.forEach(headers, (_value, _header) => setHeader(_value, _header, _rewrite));
+    if (utils$1.isPlainObject(header) || header instanceof this.constructor) {
+      setHeaders(header, valueOrRewrite);
+    } else if (utils$1.isString(header) && (header = header.trim()) && !isValidHeaderName(header)) {
+      setHeaders(parseHeaders(header), valueOrRewrite);
+    } else {
+      header != null && setHeader(valueOrRewrite, header, rewrite);
+    }
+    return this;
+  }
+  get(header, parser) {
+    header = normalizeHeader(header);
+    if (header) {
+      const key = utils$1.findKey(this, header);
+      if (key) {
+        const value = this[key];
+        if (!parser) {
+          return value;
+        }
+        if (parser === true) {
+          return parseTokens(value);
+        }
+        if (utils$1.isFunction(parser)) {
+          return parser.call(this, value, key);
+        }
+        if (utils$1.isRegExp(parser)) {
+          return parser.exec(value);
+        }
+        throw new TypeError("parser must be boolean|regexp|function");
+      }
+    }
+  }
+  has(header, matcher) {
+    header = normalizeHeader(header);
+    if (header) {
+      const key = utils$1.findKey(this, header);
+      return !!(key && this[key] !== void 0 && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
+    }
+    return false;
+  }
+  delete(header, matcher) {
+    const self2 = this;
+    let deleted = false;
+    function deleteHeader(_header) {
+      _header = normalizeHeader(_header);
+      if (_header) {
+        const key = utils$1.findKey(self2, _header);
+        if (key && (!matcher || matchHeaderValue(self2, self2[key], key, matcher))) {
+          delete self2[key];
+          deleted = true;
+        }
+      }
+    }
+    if (utils$1.isArray(header)) {
+      header.forEach(deleteHeader);
+    } else {
+      deleteHeader(header);
+    }
+    return deleted;
+  }
+  clear(matcher) {
+    const keys = Object.keys(this);
+    let i = keys.length;
+    let deleted = false;
+    while (i--) {
+      const key = keys[i];
+      if (!matcher || matchHeaderValue(this, this[key], key, matcher, true)) {
+        delete this[key];
+        deleted = true;
+      }
+    }
+    return deleted;
+  }
+  normalize(format) {
+    const self2 = this;
+    const headers = {};
+    utils$1.forEach(this, (value, header) => {
+      const key = utils$1.findKey(headers, header);
+      if (key) {
+        self2[key] = normalizeValue(value);
+        delete self2[header];
+        return;
+      }
+      const normalized = format ? formatHeader(header) : String(header).trim();
+      if (normalized !== header) {
+        delete self2[header];
+      }
+      self2[normalized] = normalizeValue(value);
+      headers[normalized] = true;
+    });
+    return this;
+  }
+  concat(...targets) {
+    return this.constructor.concat(this, ...targets);
+  }
+  toJSON(asStrings) {
+    const obj2 = /* @__PURE__ */ Object.create(null);
+    utils$1.forEach(this, (value, header) => {
+      value != null && value !== false && (obj2[header] = asStrings && utils$1.isArray(value) ? value.join(", ") : value);
+    });
+    return obj2;
+  }
+  [Symbol.iterator]() {
+    return Object.entries(this.toJSON())[Symbol.iterator]();
+  }
+  toString() {
+    return Object.entries(this.toJSON()).map(([header, value]) => header + ": " + value).join("\n");
+  }
+  get [Symbol.toStringTag]() {
+    return "AxiosHeaders";
+  }
+  static from(thing) {
+    return thing instanceof this ? thing : new this(thing);
+  }
+  static concat(first, ...targets) {
+    const computed2 = new this(first);
+    targets.forEach((target) => computed2.set(target));
+    return computed2;
+  }
+  static accessor(header) {
+    const internals = this[$internals] = this[$internals] = {
+      accessors: {}
+    };
+    const accessors = internals.accessors;
+    const prototype2 = this.prototype;
+    function defineAccessor(_header) {
+      const lHeader = normalizeHeader(_header);
+      if (!accessors[lHeader]) {
+        buildAccessors(prototype2, _header);
+        accessors[lHeader] = true;
+      }
+    }
+    utils$1.isArray(header) ? header.forEach(defineAccessor) : defineAccessor(header);
+    return this;
+  }
+}
+AxiosHeaders.accessor(["Content-Type", "Content-Length", "Accept", "Accept-Encoding", "User-Agent", "Authorization"]);
+utils$1.reduceDescriptors(AxiosHeaders.prototype, ({ value }, key) => {
+  let mapped = key[0].toUpperCase() + key.slice(1);
+  return {
+    get: () => value,
+    set(headerValue) {
+      this[mapped] = headerValue;
+    }
+  };
+});
+utils$1.freezeMethods(AxiosHeaders);
+const AxiosHeaders$1 = AxiosHeaders;
+function transformData(fns, response) {
+  const config = this || defaults$1;
+  const context = response || config;
+  const headers = AxiosHeaders$1.from(context.headers);
+  let data = context.data;
+  utils$1.forEach(fns, function transform(fn) {
+    data = fn.call(config, data, headers.normalize(), response ? response.status : void 0);
+  });
+  headers.normalize();
+  return data;
+}
+function isCancel(value) {
+  return !!(value && value.__CANCEL__);
+}
+function CanceledError(message2, config, request) {
+  AxiosError.call(this, message2 == null ? "canceled" : message2, AxiosError.ERR_CANCELED, config, request);
+  this.name = "CanceledError";
+}
+utils$1.inherits(CanceledError, AxiosError, {
+  __CANCEL__: true
+});
+function settle(resolve, reject, response) {
+  const validateStatus2 = response.config.validateStatus;
+  if (!response.status || !validateStatus2 || validateStatus2(response.status)) {
+    resolve(response);
+  } else {
+    reject(new AxiosError(
+      "Request failed with status code " + response.status,
+      [AxiosError.ERR_BAD_REQUEST, AxiosError.ERR_BAD_RESPONSE][Math.floor(response.status / 100) - 4],
+      response.config,
+      response.request,
+      response
+    ));
+  }
+}
+const cookies = platform.hasStandardBrowserEnv ? (
+  // Standard browser envs support document.cookie
+  {
+    write(name, value, expires, path, domain, secure) {
+      const cookie = [name + "=" + encodeURIComponent(value)];
+      utils$1.isNumber(expires) && cookie.push("expires=" + new Date(expires).toGMTString());
+      utils$1.isString(path) && cookie.push("path=" + path);
+      utils$1.isString(domain) && cookie.push("domain=" + domain);
+      secure === true && cookie.push("secure");
+      document.cookie = cookie.join("; ");
+    },
+    read(name) {
+      const match = document.cookie.match(new RegExp("(^|;\\s*)(" + name + ")=([^;]*)"));
+      return match ? decodeURIComponent(match[3]) : null;
+    },
+    remove(name) {
+      this.write(name, "", Date.now() - 864e5);
+    }
+  }
+) : (
+  // Non-standard browser env (web workers, react-native) lack needed support.
+  {
+    write() {
+    },
+    read() {
+      return null;
+    },
+    remove() {
+    }
+  }
+);
+function isAbsoluteURL(url2) {
+  return /^([a-z][a-z\d+\-.]*:)?\/\//i.test(url2);
+}
+function combineURLs(baseURL, relativeURL) {
+  return relativeURL ? baseURL.replace(/\/?\/$/, "") + "/" + relativeURL.replace(/^\/+/, "") : baseURL;
+}
+function buildFullPath(baseURL, requestedURL) {
+  if (baseURL && !isAbsoluteURL(requestedURL)) {
+    return combineURLs(baseURL, requestedURL);
+  }
+  return requestedURL;
+}
+const isURLSameOrigin = platform.hasStandardBrowserEnv ? (
+  // Standard browser envs have full support of the APIs needed to test
+  // whether the request URL is of the same origin as current location.
+  function standardBrowserEnv() {
+    const msie = /(msie|trident)/i.test(navigator.userAgent);
+    const urlParsingNode = document.createElement("a");
+    let originURL;
+    function resolveURL(url2) {
+      let href = url2;
+      if (msie) {
+        urlParsingNode.setAttribute("href", href);
+        href = urlParsingNode.href;
+      }
+      urlParsingNode.setAttribute("href", href);
+      return {
+        href: urlParsingNode.href,
+        protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, "") : "",
+        host: urlParsingNode.host,
+        search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, "") : "",
+        hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, "") : "",
+        hostname: urlParsingNode.hostname,
+        port: urlParsingNode.port,
+        pathname: urlParsingNode.pathname.charAt(0) === "/" ? urlParsingNode.pathname : "/" + urlParsingNode.pathname
+      };
+    }
+    originURL = resolveURL(window.location.href);
+    return function isURLSameOrigin2(requestURL) {
+      const parsed = utils$1.isString(requestURL) ? resolveURL(requestURL) : requestURL;
+      return parsed.protocol === originURL.protocol && parsed.host === originURL.host;
+    };
+  }()
+) : (
+  // Non standard browser envs (web workers, react-native) lack needed support.
+  /* @__PURE__ */ function nonStandardBrowserEnv() {
+    return function isURLSameOrigin2() {
+      return true;
+    };
+  }()
+);
+function parseProtocol(url2) {
+  const match = /^([-+\w]{1,25})(:?\/\/|:)/.exec(url2);
+  return match && match[1] || "";
+}
+function speedometer(samplesCount, min) {
+  samplesCount = samplesCount || 10;
+  const bytes = new Array(samplesCount);
+  const timestamps = new Array(samplesCount);
+  let head = 0;
+  let tail = 0;
+  let firstSampleTS;
+  min = min !== void 0 ? min : 1e3;
+  return function push(chunkLength) {
+    const now = Date.now();
+    const startedAt = timestamps[tail];
+    if (!firstSampleTS) {
+      firstSampleTS = now;
+    }
+    bytes[head] = chunkLength;
+    timestamps[head] = now;
+    let i = tail;
+    let bytesCount = 0;
+    while (i !== head) {
+      bytesCount += bytes[i++];
+      i = i % samplesCount;
+    }
+    head = (head + 1) % samplesCount;
+    if (head === tail) {
+      tail = (tail + 1) % samplesCount;
+    }
+    if (now - firstSampleTS < min) {
+      return;
+    }
+    const passed = startedAt && now - startedAt;
+    return passed ? Math.round(bytesCount * 1e3 / passed) : void 0;
+  };
+}
+function progressEventReducer(listener, isDownloadStream) {
+  let bytesNotified = 0;
+  const _speedometer = speedometer(50, 250);
+  return (e) => {
+    const loaded = e.loaded;
+    const total = e.lengthComputable ? e.total : void 0;
+    const progressBytes = loaded - bytesNotified;
+    const rate = _speedometer(progressBytes);
+    const inRange = loaded <= total;
+    bytesNotified = loaded;
+    const data = {
+      loaded,
+      total,
+      progress: total ? loaded / total : void 0,
+      bytes: progressBytes,
+      rate: rate ? rate : void 0,
+      estimated: rate && total && inRange ? (total - loaded) / rate : void 0,
+      event: e
+    };
+    data[isDownloadStream ? "download" : "upload"] = true;
+    listener(data);
+  };
+}
+const isXHRAdapterSupported = typeof XMLHttpRequest !== "undefined";
+const xhrAdapter = isXHRAdapterSupported && function(config) {
+  return new Promise(function dispatchXhrRequest(resolve, reject) {
+    let requestData = config.data;
+    const requestHeaders = AxiosHeaders$1.from(config.headers).normalize();
+    let { responseType, withXSRFToken } = config;
+    let onCanceled;
+    function done() {
+      if (config.cancelToken) {
+        config.cancelToken.unsubscribe(onCanceled);
+      }
+      if (config.signal) {
+        config.signal.removeEventListener("abort", onCanceled);
+      }
+    }
+    let contentType;
+    if (utils$1.isFormData(requestData)) {
+      if (platform.hasStandardBrowserEnv || platform.hasStandardBrowserWebWorkerEnv) {
+        requestHeaders.setContentType(false);
+      } else if ((contentType = requestHeaders.getContentType()) !== false) {
+        const [type, ...tokens] = contentType ? contentType.split(";").map((token) => token.trim()).filter(Boolean) : [];
+        requestHeaders.setContentType([type || "multipart/form-data", ...tokens].join("; "));
+      }
+    }
+    let request = new XMLHttpRequest();
+    if (config.auth) {
+      const username = config.auth.username || "";
+      const password = config.auth.password ? unescape(encodeURIComponent(config.auth.password)) : "";
+      requestHeaders.set("Authorization", "Basic " + btoa(username + ":" + password));
+    }
+    const fullPath = buildFullPath(config.baseURL, config.url);
+    request.open(config.method.toUpperCase(), buildURL(fullPath, config.params, config.paramsSerializer), true);
+    request.timeout = config.timeout;
+    function onloadend() {
+      if (!request) {
+        return;
+      }
+      const responseHeaders = AxiosHeaders$1.from(
+        "getAllResponseHeaders" in request && request.getAllResponseHeaders()
+      );
+      const responseData = !responseType || responseType === "text" || responseType === "json" ? request.responseText : request.response;
+      const response = {
+        data: responseData,
+        status: request.status,
+        statusText: request.statusText,
+        headers: responseHeaders,
+        config,
+        request
+      };
+      settle(function _resolve(value) {
+        resolve(value);
+        done();
+      }, function _reject(err) {
+        reject(err);
+        done();
+      }, response);
+      request = null;
+    }
+    if ("onloadend" in request) {
+      request.onloadend = onloadend;
+    } else {
+      request.onreadystatechange = function handleLoad() {
+        if (!request || request.readyState !== 4) {
+          return;
+        }
+        if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf("file:") === 0)) {
+          return;
+        }
+        setTimeout(onloadend);
+      };
+    }
+    request.onabort = function handleAbort() {
+      if (!request) {
+        return;
+      }
+      reject(new AxiosError("Request aborted", AxiosError.ECONNABORTED, config, request));
+      request = null;
+    };
+    request.onerror = function handleError2() {
+      reject(new AxiosError("Network Error", AxiosError.ERR_NETWORK, config, request));
+      request = null;
+    };
+    request.ontimeout = function handleTimeout() {
+      let timeoutErrorMessage = config.timeout ? "timeout of " + config.timeout + "ms exceeded" : "timeout exceeded";
+      const transitional2 = config.transitional || transitionalDefaults;
+      if (config.timeoutErrorMessage) {
+        timeoutErrorMessage = config.timeoutErrorMessage;
+      }
+      reject(new AxiosError(
+        timeoutErrorMessage,
+        transitional2.clarifyTimeoutError ? AxiosError.ETIMEDOUT : AxiosError.ECONNABORTED,
+        config,
+        request
+      ));
+      request = null;
+    };
+    if (platform.hasStandardBrowserEnv) {
+      withXSRFToken && utils$1.isFunction(withXSRFToken) && (withXSRFToken = withXSRFToken(config));
+      if (withXSRFToken || withXSRFToken !== false && isURLSameOrigin(fullPath)) {
+        const xsrfValue = config.xsrfHeaderName && config.xsrfCookieName && cookies.read(config.xsrfCookieName);
+        if (xsrfValue) {
+          requestHeaders.set(config.xsrfHeaderName, xsrfValue);
+        }
+      }
+    }
+    requestData === void 0 && requestHeaders.setContentType(null);
+    if ("setRequestHeader" in request) {
+      utils$1.forEach(requestHeaders.toJSON(), function setRequestHeader(val, key) {
+        request.setRequestHeader(key, val);
+      });
+    }
+    if (!utils$1.isUndefined(config.withCredentials)) {
+      request.withCredentials = !!config.withCredentials;
+    }
+    if (responseType && responseType !== "json") {
+      request.responseType = config.responseType;
+    }
+    if (typeof config.onDownloadProgress === "function") {
+      request.addEventListener("progress", progressEventReducer(config.onDownloadProgress, true));
+    }
+    if (typeof config.onUploadProgress === "function" && request.upload) {
+      request.upload.addEventListener("progress", progressEventReducer(config.onUploadProgress));
+    }
+    if (config.cancelToken || config.signal) {
+      onCanceled = (cancel) => {
+        if (!request) {
+          return;
+        }
+        reject(!cancel || cancel.type ? new CanceledError(null, config, request) : cancel);
+        request.abort();
+        request = null;
+      };
+      config.cancelToken && config.cancelToken.subscribe(onCanceled);
+      if (config.signal) {
+        config.signal.aborted ? onCanceled() : config.signal.addEventListener("abort", onCanceled);
+      }
+    }
+    const protocol = parseProtocol(fullPath);
+    if (protocol && platform.protocols.indexOf(protocol) === -1) {
+      reject(new AxiosError("Unsupported protocol " + protocol + ":", AxiosError.ERR_BAD_REQUEST, config));
+      return;
+    }
+    request.send(requestData || null);
+  });
+};
+const knownAdapters = {
+  http: httpAdapter,
+  xhr: xhrAdapter
+};
+utils$1.forEach(knownAdapters, (fn, value) => {
+  if (fn) {
+    try {
+      Object.defineProperty(fn, "name", { value });
+    } catch (e) {
+    }
+    Object.defineProperty(fn, "adapterName", { value });
+  }
+});
+const renderReason = (reason) => `- ${reason}`;
+const isResolvedHandle = (adapter) => utils$1.isFunction(adapter) || adapter === null || adapter === false;
+const adapters = {
+  getAdapter: (adapters2) => {
+    adapters2 = utils$1.isArray(adapters2) ? adapters2 : [adapters2];
+    const { length } = adapters2;
+    let nameOrAdapter;
+    let adapter;
+    const rejectedReasons = {};
+    for (let i = 0; i < length; i++) {
+      nameOrAdapter = adapters2[i];
+      let id;
+      adapter = nameOrAdapter;
+      if (!isResolvedHandle(nameOrAdapter)) {
+        adapter = knownAdapters[(id = String(nameOrAdapter)).toLowerCase()];
+        if (adapter === void 0) {
+          throw new AxiosError(`Unknown adapter '${id}'`);
+        }
+      }
+      if (adapter) {
+        break;
+      }
+      rejectedReasons[id || "#" + i] = adapter;
+    }
+    if (!adapter) {
+      const reasons = Object.entries(rejectedReasons).map(
+        ([id, state]) => `adapter ${id} ` + (state === false ? "is not supported by the environment" : "is not available in the build")
+      );
+      let s = length ? reasons.length > 1 ? "since :\n" + reasons.map(renderReason).join("\n") : " " + renderReason(reasons[0]) : "as no adapter specified";
+      throw new AxiosError(
+        `There is no suitable adapter to dispatch the request ` + s,
+        "ERR_NOT_SUPPORT"
+      );
+    }
+    return adapter;
+  },
+  adapters: knownAdapters
+};
+function throwIfCancellationRequested(config) {
+  if (config.cancelToken) {
+    config.cancelToken.throwIfRequested();
+  }
+  if (config.signal && config.signal.aborted) {
+    throw new CanceledError(null, config);
+  }
+}
+function dispatchRequest(config) {
+  throwIfCancellationRequested(config);
+  config.headers = AxiosHeaders$1.from(config.headers);
+  config.data = transformData.call(
+    config,
+    config.transformRequest
+  );
+  if (["post", "put", "patch"].indexOf(config.method) !== -1) {
+    config.headers.setContentType("application/x-www-form-urlencoded", false);
+  }
+  const adapter = adapters.getAdapter(config.adapter || defaults$1.adapter);
+  return adapter(config).then(function onAdapterResolution(response) {
+    throwIfCancellationRequested(config);
+    response.data = transformData.call(
+      config,
+      config.transformResponse,
+      response
+    );
+    response.headers = AxiosHeaders$1.from(response.headers);
+    return response;
+  }, function onAdapterRejection(reason) {
+    if (!isCancel(reason)) {
+      throwIfCancellationRequested(config);
+      if (reason && reason.response) {
+        reason.response.data = transformData.call(
+          config,
+          config.transformResponse,
+          reason.response
+        );
+        reason.response.headers = AxiosHeaders$1.from(reason.response.headers);
+      }
+    }
+    return Promise.reject(reason);
+  });
+}
+const headersToObject = (thing) => thing instanceof AxiosHeaders$1 ? { ...thing } : thing;
+function mergeConfig(config1, config2) {
+  config2 = config2 || {};
+  const config = {};
+  function getMergedValue(target, source2, caseless) {
+    if (utils$1.isPlainObject(target) && utils$1.isPlainObject(source2)) {
+      return utils$1.merge.call({ caseless }, target, source2);
+    } else if (utils$1.isPlainObject(source2)) {
+      return utils$1.merge({}, source2);
+    } else if (utils$1.isArray(source2)) {
+      return source2.slice();
+    }
+    return source2;
+  }
+  function mergeDeepProperties(a, b, caseless) {
+    if (!utils$1.isUndefined(b)) {
+      return getMergedValue(a, b, caseless);
+    } else if (!utils$1.isUndefined(a)) {
+      return getMergedValue(void 0, a, caseless);
+    }
+  }
+  function valueFromConfig2(a, b) {
+    if (!utils$1.isUndefined(b)) {
+      return getMergedValue(void 0, b);
+    }
+  }
+  function defaultToConfig2(a, b) {
+    if (!utils$1.isUndefined(b)) {
+      return getMergedValue(void 0, b);
+    } else if (!utils$1.isUndefined(a)) {
+      return getMergedValue(void 0, a);
+    }
+  }
+  function mergeDirectKeys(a, b, prop) {
+    if (prop in config2) {
+      return getMergedValue(a, b);
+    } else if (prop in config1) {
+      return getMergedValue(void 0, a);
+    }
+  }
+  const mergeMap = {
+    url: valueFromConfig2,
+    method: valueFromConfig2,
+    data: valueFromConfig2,
+    baseURL: defaultToConfig2,
+    transformRequest: defaultToConfig2,
+    transformResponse: defaultToConfig2,
+    paramsSerializer: defaultToConfig2,
+    timeout: defaultToConfig2,
+    timeoutMessage: defaultToConfig2,
+    withCredentials: defaultToConfig2,
+    withXSRFToken: defaultToConfig2,
+    adapter: defaultToConfig2,
+    responseType: defaultToConfig2,
+    xsrfCookieName: defaultToConfig2,
+    xsrfHeaderName: defaultToConfig2,
+    onUploadProgress: defaultToConfig2,
+    onDownloadProgress: defaultToConfig2,
+    decompress: defaultToConfig2,
+    maxContentLength: defaultToConfig2,
+    maxBodyLength: defaultToConfig2,
+    beforeRedirect: defaultToConfig2,
+    transport: defaultToConfig2,
+    httpAgent: defaultToConfig2,
+    httpsAgent: defaultToConfig2,
+    cancelToken: defaultToConfig2,
+    socketPath: defaultToConfig2,
+    responseEncoding: defaultToConfig2,
+    validateStatus: mergeDirectKeys,
+    headers: (a, b) => mergeDeepProperties(headersToObject(a), headersToObject(b), true)
+  };
+  utils$1.forEach(Object.keys(Object.assign({}, config1, config2)), function computeConfigValue(prop) {
+    const merge2 = mergeMap[prop] || mergeDeepProperties;
+    const configValue = merge2(config1[prop], config2[prop], prop);
+    utils$1.isUndefined(configValue) && merge2 !== mergeDirectKeys || (config[prop] = configValue);
+  });
+  return config;
+}
+const VERSION = "1.6.8";
+const validators$1 = {};
+["object", "boolean", "number", "function", "string", "symbol"].forEach((type, i) => {
+  validators$1[type] = function validator2(thing) {
+    return typeof thing === type || "a" + (i < 1 ? "n " : " ") + type;
+  };
+});
+const deprecatedWarnings = {};
+validators$1.transitional = function transitional(validator2, version2, message2) {
+  function formatMessage(opt, desc) {
+    return "[Axios v" + VERSION + "] Transitional option '" + opt + "'" + desc + (message2 ? ". " + message2 : "");
+  }
+  return (value, opt, opts) => {
+    if (validator2 === false) {
+      throw new AxiosError(
+        formatMessage(opt, " has been removed" + (version2 ? " in " + version2 : "")),
+        AxiosError.ERR_DEPRECATED
+      );
+    }
+    if (version2 && !deprecatedWarnings[opt]) {
+      deprecatedWarnings[opt] = true;
+      console.warn(
+        formatMessage(
+          opt,
+          " has been deprecated since v" + version2 + " and will be removed in the near future"
+        )
+      );
+    }
+    return validator2 ? validator2(value, opt, opts) : true;
+  };
+};
+function assertOptions(options, schema, allowUnknown) {
+  if (typeof options !== "object") {
+    throw new AxiosError("options must be an object", AxiosError.ERR_BAD_OPTION_VALUE);
+  }
+  const keys = Object.keys(options);
+  let i = keys.length;
+  while (i-- > 0) {
+    const opt = keys[i];
+    const validator2 = schema[opt];
+    if (validator2) {
+      const value = options[opt];
+      const result = value === void 0 || validator2(value, opt, options);
+      if (result !== true) {
+        throw new AxiosError("option " + opt + " must be " + result, AxiosError.ERR_BAD_OPTION_VALUE);
+      }
+      continue;
+    }
+    if (allowUnknown !== true) {
+      throw new AxiosError("Unknown option " + opt, AxiosError.ERR_BAD_OPTION);
+    }
+  }
+}
+const validator = {
+  assertOptions,
+  validators: validators$1
+};
+const validators = validator.validators;
+class Axios {
+  constructor(instanceConfig) {
+    this.defaults = instanceConfig;
+    this.interceptors = {
+      request: new InterceptorManager(),
+      response: new InterceptorManager()
+    };
+  }
+  /**
+   * Dispatch a request
+   *
+   * @param {String|Object} configOrUrl The config specific for this request (merged with this.defaults)
+   * @param {?Object} config
+   *
+   * @returns {Promise} The Promise to be fulfilled
+   */
+  async request(configOrUrl, config) {
+    try {
+      return await this._request(configOrUrl, config);
+    } catch (err) {
+      if (err instanceof Error) {
+        let dummy;
+        Error.captureStackTrace ? Error.captureStackTrace(dummy = {}) : dummy = new Error();
+        const stack2 = dummy.stack ? dummy.stack.replace(/^.+\n/, "") : "";
+        if (!err.stack) {
+          err.stack = stack2;
+        } else if (stack2 && !String(err.stack).endsWith(stack2.replace(/^.+\n.+\n/, ""))) {
+          err.stack += "\n" + stack2;
+        }
+      }
+      throw err;
+    }
+  }
+  _request(configOrUrl, config) {
+    if (typeof configOrUrl === "string") {
+      config = config || {};
+      config.url = configOrUrl;
+    } else {
+      config = configOrUrl || {};
+    }
+    config = mergeConfig(this.defaults, config);
+    const { transitional: transitional2, paramsSerializer, headers } = config;
+    if (transitional2 !== void 0) {
+      validator.assertOptions(transitional2, {
+        silentJSONParsing: validators.transitional(validators.boolean),
+        forcedJSONParsing: validators.transitional(validators.boolean),
+        clarifyTimeoutError: validators.transitional(validators.boolean)
+      }, false);
+    }
+    if (paramsSerializer != null) {
+      if (utils$1.isFunction(paramsSerializer)) {
+        config.paramsSerializer = {
+          serialize: paramsSerializer
+        };
+      } else {
+        validator.assertOptions(paramsSerializer, {
+          encode: validators.function,
+          serialize: validators.function
+        }, true);
+      }
+    }
+    config.method = (config.method || this.defaults.method || "get").toLowerCase();
+    let contextHeaders = headers && utils$1.merge(
+      headers.common,
+      headers[config.method]
+    );
+    headers && utils$1.forEach(
+      ["delete", "get", "head", "post", "put", "patch", "common"],
+      (method) => {
+        delete headers[method];
+      }
+    );
+    config.headers = AxiosHeaders$1.concat(contextHeaders, headers);
+    const requestInterceptorChain = [];
+    let synchronousRequestInterceptors = true;
+    this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
+      if (typeof interceptor.runWhen === "function" && interceptor.runWhen(config) === false) {
+        return;
+      }
+      synchronousRequestInterceptors = synchronousRequestInterceptors && interceptor.synchronous;
+      requestInterceptorChain.unshift(interceptor.fulfilled, interceptor.rejected);
+    });
+    const responseInterceptorChain = [];
+    this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
+      responseInterceptorChain.push(interceptor.fulfilled, interceptor.rejected);
+    });
+    let promise;
+    let i = 0;
+    let len;
+    if (!synchronousRequestInterceptors) {
+      const chain = [dispatchRequest.bind(this), void 0];
+      chain.unshift.apply(chain, requestInterceptorChain);
+      chain.push.apply(chain, responseInterceptorChain);
+      len = chain.length;
+      promise = Promise.resolve(config);
+      while (i < len) {
+        promise = promise.then(chain[i++], chain[i++]);
+      }
+      return promise;
+    }
+    len = requestInterceptorChain.length;
+    let newConfig = config;
+    i = 0;
+    while (i < len) {
+      const onFulfilled = requestInterceptorChain[i++];
+      const onRejected = requestInterceptorChain[i++];
+      try {
+        newConfig = onFulfilled(newConfig);
+      } catch (error2) {
+        onRejected.call(this, error2);
+        break;
+      }
+    }
+    try {
+      promise = dispatchRequest.call(this, newConfig);
+    } catch (error2) {
+      return Promise.reject(error2);
+    }
+    i = 0;
+    len = responseInterceptorChain.length;
+    while (i < len) {
+      promise = promise.then(responseInterceptorChain[i++], responseInterceptorChain[i++]);
+    }
+    return promise;
+  }
+  getUri(config) {
+    config = mergeConfig(this.defaults, config);
+    const fullPath = buildFullPath(config.baseURL, config.url);
+    return buildURL(fullPath, config.params, config.paramsSerializer);
+  }
+}
+utils$1.forEach(["delete", "get", "head", "options"], function forEachMethodNoData(method) {
+  Axios.prototype[method] = function(url2, config) {
+    return this.request(mergeConfig(config || {}, {
+      method,
+      url: url2,
+      data: (config || {}).data
+    }));
+  };
+});
+utils$1.forEach(["post", "put", "patch"], function forEachMethodWithData(method) {
+  function generateHTTPMethod(isForm) {
+    return function httpMethod(url2, data, config) {
+      return this.request(mergeConfig(config || {}, {
+        method,
+        headers: isForm ? {
+          "Content-Type": "multipart/form-data"
+        } : {},
+        url: url2,
+        data
+      }));
+    };
+  }
+  Axios.prototype[method] = generateHTTPMethod();
+  Axios.prototype[method + "Form"] = generateHTTPMethod(true);
+});
+const Axios$1 = Axios;
+class CancelToken {
+  constructor(executor) {
+    if (typeof executor !== "function") {
+      throw new TypeError("executor must be a function.");
+    }
+    let resolvePromise;
+    this.promise = new Promise(function promiseExecutor(resolve) {
+      resolvePromise = resolve;
+    });
+    const token = this;
+    this.promise.then((cancel) => {
+      if (!token._listeners)
+        return;
+      let i = token._listeners.length;
+      while (i-- > 0) {
+        token._listeners[i](cancel);
+      }
+      token._listeners = null;
+    });
+    this.promise.then = (onfulfilled) => {
+      let _resolve;
+      const promise = new Promise((resolve) => {
+        token.subscribe(resolve);
+        _resolve = resolve;
+      }).then(onfulfilled);
+      promise.cancel = function reject() {
+        token.unsubscribe(_resolve);
+      };
+      return promise;
+    };
+    executor(function cancel(message2, config, request) {
+      if (token.reason) {
+        return;
+      }
+      token.reason = new CanceledError(message2, config, request);
+      resolvePromise(token.reason);
+    });
+  }
+  /**
+   * Throws a `CanceledError` if cancellation has been requested.
+   */
+  throwIfRequested() {
+    if (this.reason) {
+      throw this.reason;
+    }
+  }
+  /**
+   * Subscribe to the cancel signal
+   */
+  subscribe(listener) {
+    if (this.reason) {
+      listener(this.reason);
+      return;
+    }
+    if (this._listeners) {
+      this._listeners.push(listener);
+    } else {
+      this._listeners = [listener];
+    }
+  }
+  /**
+   * Unsubscribe from the cancel signal
+   */
+  unsubscribe(listener) {
+    if (!this._listeners) {
+      return;
+    }
+    const index = this._listeners.indexOf(listener);
+    if (index !== -1) {
+      this._listeners.splice(index, 1);
+    }
+  }
+  /**
+   * Returns an object that contains a new `CancelToken` and a function that, when called,
+   * cancels the `CancelToken`.
+   */
+  static source() {
+    let cancel;
+    const token = new CancelToken(function executor(c) {
+      cancel = c;
+    });
+    return {
+      token,
+      cancel
+    };
+  }
+}
+const CancelToken$1 = CancelToken;
+function spread(callback) {
+  return function wrap(arr) {
+    return callback.apply(null, arr);
+  };
+}
+function isAxiosError(payload) {
+  return utils$1.isObject(payload) && payload.isAxiosError === true;
+}
+const HttpStatusCode = {
+  Continue: 100,
+  SwitchingProtocols: 101,
+  Processing: 102,
+  EarlyHints: 103,
+  Ok: 200,
+  Created: 201,
+  Accepted: 202,
+  NonAuthoritativeInformation: 203,
+  NoContent: 204,
+  ResetContent: 205,
+  PartialContent: 206,
+  MultiStatus: 207,
+  AlreadyReported: 208,
+  ImUsed: 226,
+  MultipleChoices: 300,
+  MovedPermanently: 301,
+  Found: 302,
+  SeeOther: 303,
+  NotModified: 304,
+  UseProxy: 305,
+  Unused: 306,
+  TemporaryRedirect: 307,
+  PermanentRedirect: 308,
+  BadRequest: 400,
+  Unauthorized: 401,
+  PaymentRequired: 402,
+  Forbidden: 403,
+  NotFound: 404,
+  MethodNotAllowed: 405,
+  NotAcceptable: 406,
+  ProxyAuthenticationRequired: 407,
+  RequestTimeout: 408,
+  Conflict: 409,
+  Gone: 410,
+  LengthRequired: 411,
+  PreconditionFailed: 412,
+  PayloadTooLarge: 413,
+  UriTooLong: 414,
+  UnsupportedMediaType: 415,
+  RangeNotSatisfiable: 416,
+  ExpectationFailed: 417,
+  ImATeapot: 418,
+  MisdirectedRequest: 421,
+  UnprocessableEntity: 422,
+  Locked: 423,
+  FailedDependency: 424,
+  TooEarly: 425,
+  UpgradeRequired: 426,
+  PreconditionRequired: 428,
+  TooManyRequests: 429,
+  RequestHeaderFieldsTooLarge: 431,
+  UnavailableForLegalReasons: 451,
+  InternalServerError: 500,
+  NotImplemented: 501,
+  BadGateway: 502,
+  ServiceUnavailable: 503,
+  GatewayTimeout: 504,
+  HttpVersionNotSupported: 505,
+  VariantAlsoNegotiates: 506,
+  InsufficientStorage: 507,
+  LoopDetected: 508,
+  NotExtended: 510,
+  NetworkAuthenticationRequired: 511
+};
+Object.entries(HttpStatusCode).forEach(([key, value]) => {
+  HttpStatusCode[value] = key;
+});
+const HttpStatusCode$1 = HttpStatusCode;
+function createInstance(defaultConfig) {
+  const context = new Axios$1(defaultConfig);
+  const instance = bind(Axios$1.prototype.request, context);
+  utils$1.extend(instance, Axios$1.prototype, context, { allOwnKeys: true });
+  utils$1.extend(instance, context, null, { allOwnKeys: true });
+  instance.create = function create(instanceConfig) {
+    return createInstance(mergeConfig(defaultConfig, instanceConfig));
+  };
+  return instance;
+}
+const axios = createInstance(defaults$1);
+axios.Axios = Axios$1;
+axios.CanceledError = CanceledError;
+axios.CancelToken = CancelToken$1;
+axios.isCancel = isCancel;
+axios.VERSION = VERSION;
+axios.toFormData = toFormData;
+axios.AxiosError = AxiosError;
+axios.Cancel = axios.CanceledError;
+axios.all = function all(promises) {
+  return Promise.all(promises);
+};
+axios.spread = spread;
+axios.isAxiosError = isAxiosError;
+axios.mergeConfig = mergeConfig;
+axios.AxiosHeaders = AxiosHeaders$1;
+axios.formToJSON = (thing) => formDataToJSON(utils$1.isHTMLForm(thing) ? new FormData(thing) : thing);
+axios.getAdapter = adapters.getAdapter;
+axios.HttpStatusCode = HttpStatusCode$1;
+axios.default = axios;
+function rafTimeout(fn, delay = 0, interval = false) {
+  const requestAnimationFrame2 = typeof window !== "undefined" ? window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame : () => {
+  };
+  var start = null;
+  function timeElapse(timestamp) {
+    if (!start) {
+      start = timestamp;
+    }
+    const elapsed = timestamp - start;
+    if (elapsed >= delay) {
+      fn();
+      if (interval) {
+        start = null;
+        raf.id = requestAnimationFrame2(timeElapse);
+      }
+    } else {
+      raf.id = requestAnimationFrame2(timeElapse);
+    }
+  }
+  const raf = {
+    // 引用类型保存，方便获取 requestAnimationFrame()方法返回的 ID.
+    id: requestAnimationFrame2(timeElapse)
+  };
+  return raf;
+}
+function cancelRaf(raf) {
+  const cancelAnimationFrame = typeof window !== "undefined" ? window.cancelAnimationFrame || window.mozCancelAnimationFrame : () => {
+  };
+  if (raf && raf.id) {
+    cancelAnimationFrame(raf.id);
+  }
+}
+const _withScopeId = (n) => (pushScopeId("data-v-f5ae144b"), n = n(), popScopeId(), n);
+const _hoisted_1 = ["onMouseenter", "onMouseleave"];
+const _hoisted_2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("path", { d: "M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm32 664c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8V456c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8v272zm-32-344a48.01 48.01 0 0 1 0-96 48.01 48.01 0 0 1 0 96z" }, null, -1));
+const _hoisted_3 = [
+  _hoisted_2
+];
+const _hoisted_4 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("path", { d: "M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm193.5 301.7l-210.6 292a31.8 31.8 0 0 1-51.7 0L318.5 484.9c-3.8-5.3 0-12.7 6.5-12.7h46.9c10.2 0 19.9 4.9 25.9 13.3l71.2 98.8 157.2-218c6-8.3 15.6-13.3 25.9-13.3H699c6.5 0 10.3 7.4 6.5 12.7z" }, null, -1));
+const _hoisted_5 = [
+  _hoisted_4
+];
+const _hoisted_6 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("path", { d: "M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm165.4 618.2l-66-.3L512 563.4l-99.3 118.4-66.1.3c-4.4 0-8-3.5-8-8 0-1.9.7-3.7 1.9-5.2l130.1-155L340.5 359a8.32 8.32 0 0 1-1.9-5.2c0-4.4 3.6-8 8-8l66.1.3L512 464.6l99.3-118.4 66-.3c4.4 0 8 3.5 8 8 0 1.9-.7 3.7-1.9 5.2L553.5 514l130 155c1.2 1.5 1.9 3.3 1.9 5.2 0 4.4-3.6 8-8 8z" }, null, -1));
+const _hoisted_7 = [
+  _hoisted_6
+];
+const _hoisted_8 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("path", { d: "M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm-32 232c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8v272c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8V296zm32 440a48.01 48.01 0 0 1 0-96 48.01 48.01 0 0 1 0 96z" }, null, -1));
+const _hoisted_9 = [
+  _hoisted_8
+];
+const _hoisted_10 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("circle", {
+  class: "path",
+  cx: "25",
+  cy: "25",
+  r: "20",
+  fill: "none"
+}, null, -1));
+const _hoisted_11 = [
+  _hoisted_10
+];
+const _hoisted_12 = { class: "u-content" };
+var ColorStyle = /* @__PURE__ */ ((ColorStyle2) => {
+  ColorStyle2["info"] = "#1677FF";
+  ColorStyle2["success"] = "#52c41a";
+  ColorStyle2["error"] = "#ff4d4f";
+  ColorStyle2["warning"] = "#faad14";
+  ColorStyle2["loading"] = "#1677FF";
+  return ColorStyle2;
+})(ColorStyle || {});
+const _sfc_main = /* @__PURE__ */ defineComponent({
+  __name: "Message",
+  props: {
+    duration: { default: 2e3 },
+    top: { default: 30 }
+  },
+  emits: ["close"],
+  setup(__props, { expose: __expose, emit: __emit }) {
+    const props = __props;
+    const resetTimer = ref();
+    const showMessage = ref([]);
+    const hideTimers = ref([]);
+    const messageContent = ref([]);
+    const messTop = computed(() => {
+      if (typeof props.top === "number") {
+        return props.top + "px";
+      }
+      return props.top;
+    });
+    const clear2 = computed(() => {
+      return showMessage.value.every((show2) => !show2);
+    });
+    watch(clear2, (to, from) => {
+      if (!from && to) {
+        resetTimer.value = rafTimeout(() => {
+          messageContent.value.splice(0);
+          showMessage.value.splice(0);
+        }, 300);
+      }
+    });
+    function onEnter(index) {
+      cancelRaf(hideTimers.value[index]);
+    }
+    function onLeave(index) {
+      onHideMessage(index);
+    }
+    function show() {
+      cancelRaf(resetTimer.value);
+      const index = messageContent.value.length - 1;
+      showMessage.value[index] = true;
+      onHideMessage(index);
+    }
+    function info(content) {
+      messageContent.value.push({
+        content,
+        mode: "info"
+      });
+      show();
+    }
+    function success(content) {
+      messageContent.value.push({
+        content,
+        mode: "success"
+      });
+      show();
+    }
+    function error2(content) {
+      messageContent.value.push({
+        content,
+        mode: "error"
+      });
+      show();
+    }
+    function warning(content) {
+      messageContent.value.push({
+        content,
+        mode: "warning"
+      });
+      show();
+    }
+    function loading(content) {
+      messageContent.value.push({
+        content,
+        mode: "loading"
+      });
+      show();
+    }
+    __expose({
+      info,
+      success,
+      error: error2,
+      warning,
+      loading
+    });
+    const emit2 = __emit;
+    function onHideMessage(index) {
+      hideTimers.value[index] = rafTimeout(() => {
+        showMessage.value[index] = false;
+        emit2("close");
+      }, props.duration);
+    }
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("div", {
+        class: "m-message-wrap",
+        style: normalizeStyle(`top: ${messTop.value};`)
+      }, [
+        createVNode(TransitionGroup, { name: "slide-fade" }, {
+          default: withCtx(() => [
+            (openBlock(true), createElementBlock(Fragment, null, renderList(messageContent.value, (message2, index) => {
+              return withDirectives((openBlock(), createElementBlock("div", {
+                class: "m-message",
+                key: index
+              }, [
+                createBaseVNode("div", {
+                  class: "m-message-content",
+                  onMouseenter: ($event) => onEnter(index),
+                  onMouseleave: ($event) => onLeave(index)
+                }, [
+                  message2.mode === "info" ? (openBlock(), createElementBlock("svg", {
+                    key: 0,
+                    class: "u-svg",
+                    style: normalizeStyle({ fill: ColorStyle[message2.mode] }),
+                    viewBox: "64 64 896 896",
+                    "data-icon": "info-circle",
+                    "aria-hidden": "true",
+                    focusable: "false"
+                  }, _hoisted_3, 4)) : createCommentVNode("", true),
+                  message2.mode === "success" ? (openBlock(), createElementBlock("svg", {
+                    key: 1,
+                    class: "u-svg",
+                    style: normalizeStyle({ fill: ColorStyle[message2.mode] }),
+                    viewBox: "64 64 896 896",
+                    "data-icon": "check-circle",
+                    "aria-hidden": "true",
+                    focusable: "false"
+                  }, _hoisted_5, 4)) : createCommentVNode("", true),
+                  message2.mode === "error" ? (openBlock(), createElementBlock("svg", {
+                    key: 2,
+                    class: "u-svg",
+                    style: normalizeStyle({ fill: ColorStyle[message2.mode] }),
+                    viewBox: "64 64 896 896",
+                    "data-icon": "close-circle",
+                    "aria-hidden": "true",
+                    focusable: "false"
+                  }, _hoisted_7, 4)) : createCommentVNode("", true),
+                  message2.mode === "warning" ? (openBlock(), createElementBlock("svg", {
+                    key: 3,
+                    class: "u-svg",
+                    style: normalizeStyle({ fill: ColorStyle[message2.mode] }),
+                    viewBox: "64 64 896 896",
+                    "data-icon": "exclamation-circle",
+                    "aria-hidden": "true",
+                    focusable: "false"
+                  }, _hoisted_9, 4)) : createCommentVNode("", true),
+                  message2.mode === "loading" ? (openBlock(), createElementBlock("svg", {
+                    key: 4,
+                    class: "u-svg circular",
+                    style: normalizeStyle({ stroke: ColorStyle[message2.mode] }),
+                    viewBox: "0 0 50 50",
+                    focusable: "false"
+                  }, _hoisted_11, 4)) : createCommentVNode("", true),
+                  createBaseVNode("p", _hoisted_12, toDisplayString(message2.content), 1)
+                ], 40, _hoisted_1)
+              ])), [
+                [vShow, showMessage.value[index]]
+              ]);
+            }), 128))
+          ]),
+          _: 1
+        })
+      ], 4);
+    };
+  }
+});
+const message = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-f5ae144b"]]);
+const messageInstall = {
+  install(app2) {
+    var _a7;
+    const Vnode = createVNode(message);
+    render(Vnode, document.body);
+    app2.config.globalProperties.$toast = (_a7 = Vnode.component) == null ? void 0 : _a7.exposed;
+  }
+};
 const $bus = new mitt();
 axios.defaults.timeout = 40 * 1e3;
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = "/api1";
-const app = createApp(_sfc_main$6);
+const app = createApp(_sfc_main$e);
+app.use(messageInstall);
 app.use(createPinia());
 app.use(router);
 app.provide("$bus", $bus);
@@ -76210,3 +77280,4 @@ window.changeTheme = (val) => {
   }
 };
 window.changeTheme(true);
+//# sourceMappingURL=index.js.map

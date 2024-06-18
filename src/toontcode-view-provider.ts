@@ -112,7 +112,7 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 			<link rel="stylesheet" crossorigin href="${indexCss}">
 		  </head>
 		  <body class="overflow-hidden">
-			<div id="app"></div>
+			<div id="app" class="app-start"></div>
 		  </body>
 		</html>`;
 
