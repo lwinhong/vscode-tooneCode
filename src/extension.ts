@@ -2,10 +2,11 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import ChatGptViewProvider from './toontcode-view-provider.js';
-import changeIconColor from "./utils/changeIconColor.js";
-import { isCurrentLanguageDisable } from "./utils/isCurrentLanguageDisable.js";
+// import changeIconColor from "./utils/changeIconColor.js";
+// import { isCurrentLanguageDisable } from "./utils/isCurrentLanguageDisable.js";
 import { inlineCompletionEnabled } from "./param/configures.js";
 import getDocumentLanguage from "./utils/getDocumentLanguage.js";
+import { v4 as uuidv4 } from "uuid";
 
 let g_isLoading = false;
 let originalColor: string | vscode.ThemeColor | undefined;
@@ -20,6 +21,12 @@ export function activate(context: vscode.ExtensionContext) {
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "tooneCode" is now active!');
+
+	//当前插件的id
+	let appId = context.globalState.get("toonecodePluginAppId");
+	if (!appId) {
+		context.globalState.update("toonecodePluginAppId", uuidv4());
+	}
 
 	provider = new ChatGptViewProvider(context);
 	const view = vscode.window.registerWebviewViewProvider(
@@ -280,6 +287,7 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 	};
 	setContext();
+	
 }
 
 // This method is called when your extension is deactivated

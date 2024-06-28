@@ -81,6 +81,17 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 				case 'login':
 					this.login();
 					break;
+				case 'openSettings':
+					vscode.commands.executeCommand('workbench.action.openSettings', "@ext:toone.vscode-toonecode");
+					this.logEvent("settings-opened");
+					break;
+			}
+		});
+		this.sendMessage({
+			type: 'appId', value: {
+				appId: this.context.globalState.get("toonecodePluginAppId"),
+				ide: "vscode", pluginVersion: vscode.extensions.getExtension("toone.vscode-toonecode")?.packageJSON?.version || "",
+				ideVersion: vscode.version
 			}
 		});
 	}

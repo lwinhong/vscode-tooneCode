@@ -20844,40 +20844,55 @@ Check your Browserslist config to be sure that your targets are set up correctly
     function useRoute() {
       return inject(routeLocationKey);
     }
-    const _sfc_main$L = {
-      __name: "App",
-      setup(__props) {
-        return (_ctx, _cache) => {
-          return openBlock(), createBlock(unref(RouterView));
-        };
-      }
-    };
     const useStore = defineStore("useStore", {
       state: () => ({
         isVsCodeMode: false,
+        //vsocde
         isIdeaMode: false,
+        //idea
         isInCodeIDE: false,
+        //在IDE环境中
+        isChatOnlyMode: false,
+        //是否仅聊天模式
         chatInProgress: false,
-        IdeType: ""
+        //是否回答聊天中
+        IdeType: "",
+        //IDE类型
+        theme: "dark",
+        //主题
+        appId: "",
+        appInfo: void 0
       }),
       actions: {
+        setTheme(theme) {
+          this.theme = theme;
+        },
+        setAppInfo(appInfo) {
+          this.appInfo = appInfo;
+          this.appId = appInfo == null ? void 0 : appInfo.appId;
+        },
         setIdeType(type) {
           this.IdeType = type;
+          this.isVsCodeMode = type === "vscode";
+          this.isIdeaMode = type === "idea";
+          this.isInCodeIDE = this.isVsCodeMode || this.isIdeaMode;
+          this.isChatOnlyMode = type === "chatOnly";
+          console.log("环境：" + type);
         },
         setChatInProgress(ing) {
           this.chatInProgress = ing;
         },
-        setVsCodeMode(mode2) {
-          this.isVsCodeMode = mode2;
-          if (mode2)
-            this.isInCodeIDE = true;
-          console.log(mode2 ? "在vscode中" : "不在vscode中");
-        },
-        setIdeaMode(mode2) {
-          this.isIdeaMode = mode2;
-          if (mode2)
-            this.isInCodeIDE = true;
-        },
+        // setVsCodeMode(mode) {
+        //   this.isVsCodeMode = mode;
+        //   if (mode)
+        //     this.isInCodeIDE = true;
+        //   console.log(mode ? "在vscode中" : "不在vscode中");
+        // },
+        // setIdeaMode(mode) {
+        //   this.isIdeaMode = mode;
+        //   if (mode)
+        //     this.isInCodeIDE = true;
+        // },
         postMessageToCodeEditor(data) {
           if (this.isVsCodeMode && window.vscodeInstance) {
             window.vscodeInstance.postMessage(data);
@@ -20900,55 +20915,18 @@ Check your Browserslist config to be sure that your targets are set up correctly
         }
       }
     });
-    const _export_sfc$1 = (sfc, props) => {
-      const target = sfc.__vccOpts || sfc;
-      for (const [key, val] of props) {
-        target[key] = val;
-      }
-      return target;
-    };
-    const _hoisted_1$p = ["title"];
-    const _sfc_main$K = {
-      __name: "ToolView",
-      props: {
-        data: {
-          title: String,
-          subtitle: String,
-          icon: String,
-          color: String,
-          bgcolor: String,
-          click: Function,
-          disabled: Boolean,
-          tooltip: String
-        }
-      },
-      emits: ["click"],
-      setup(__props, { emit: __emit }) {
-        const props = __props;
-        const emit2 = __emit;
-        function handleClick(e) {
-          var _a7, _b2;
-          (_b2 = (_a7 = props.data).click) == null ? void 0 : _b2.call(_a7, props.data, e);
-          emit2("click", props.data, e);
-        }
+    const _sfc_main$Q = {
+      __name: "App",
+      setup(__props) {
+        onMounted(() => {
+          const store = useStore();
+          store.setTheme(window.changeTheme(localStorage.getItem("codeTheme") || store.theme));
+        });
         return (_ctx, _cache) => {
-          return openBlock(), createElementBlock("div", {
-            class: normalizeClass(["prompt_block", { "prompt_block_disabled": props.data.disabled }]),
-            onClick: handleClick,
-            title: props.data.tooltip || props.data.title + "\n" + props.data.subtitle
-          }, [
-            createBaseVNode("div", {
-              class: normalizeClass(["toolbox_prompt_title", { "toolbox_prompt_title_disabled": props.data.disabled }])
-            }, toDisplayString(props.data.title), 3),
-            createBaseVNode("div", {
-              class: normalizeClass(["toolbox_prompt_subtitle", { "toolbox_prompt_title_disabled": props.data.disabled }])
-            }, toDisplayString(props.data.subtitle), 3),
-            renderSlot(_ctx.$slots, "default", {}, void 0, true)
-          ], 10, _hoisted_1$p);
+          return openBlock(), createBlock(unref(RouterView));
         };
       }
     };
-    const ToolView = /* @__PURE__ */ _export_sfc$1(_sfc_main$K, [["__scopeId", "data-v-435f239f"]]);
     const composeEventHandlers = (theirsHandler, oursHandler, { checkForDefaultPrevented = true } = {}) => {
       const handleEvent = (event) => {
         const shouldPrevent = theirsHandler == null ? void 0 : theirsHandler(event);
@@ -23226,6 +23204,22 @@ Check your Browserslist config to be sure that your targets are set up correctly
       }
     });
     var close_default = close_vue_vue_type_script_setup_true_lang_default;
+    var download_vue_vue_type_script_setup_true_lang_default = /* @__PURE__ */ defineComponent({
+      name: "Download",
+      __name: "download",
+      setup(__props) {
+        return (_ctx, _cache) => (openBlock(), createElementBlock("svg", {
+          xmlns: "http://www.w3.org/2000/svg",
+          viewBox: "0 0 1024 1024"
+        }, [
+          createBaseVNode("path", {
+            fill: "currentColor",
+            d: "M160 832h704a32 32 0 1 1 0 64H160a32 32 0 1 1 0-64m384-253.696 236.288-236.352 45.248 45.248L508.8 704 192 387.2l45.248-45.248L480 584.704V128h64z"
+          })
+        ]));
+      }
+    });
+    var download_default = download_vue_vue_type_script_setup_true_lang_default;
     var full_screen_vue_vue_type_script_setup_true_lang_default = /* @__PURE__ */ defineComponent({
       name: "FullScreen",
       __name: "full-screen",
@@ -23294,6 +23288,22 @@ Check your Browserslist config to be sure that your targets are set up correctly
       }
     });
     var loading_default = loading_vue_vue_type_script_setup_true_lang_default;
+    var more_vue_vue_type_script_setup_true_lang_default = /* @__PURE__ */ defineComponent({
+      name: "More",
+      __name: "more",
+      setup(__props) {
+        return (_ctx, _cache) => (openBlock(), createElementBlock("svg", {
+          xmlns: "http://www.w3.org/2000/svg",
+          viewBox: "0 0 1024 1024"
+        }, [
+          createBaseVNode("path", {
+            fill: "currentColor",
+            d: "M176 416a112 112 0 1 0 0 224 112 112 0 0 0 0-224m0 64a48 48 0 1 1 0 96 48 48 0 0 1 0-96m336-64a112 112 0 1 1 0 224 112 112 0 0 1 0-224m0 64a48 48 0 1 0 0 96 48 48 0 0 0 0-96m336-64a112 112 0 1 1 0 224 112 112 0 0 1 0-224m0 64a48 48 0 1 0 0 96 48 48 0 0 0 0-96"
+          })
+        ]));
+      }
+    });
+    var more_default = more_vue_vue_type_script_setup_true_lang_default;
     var picture_vue_vue_type_script_setup_true_lang_default = /* @__PURE__ */ defineComponent({
       name: "Picture",
       __name: "picture",
@@ -23314,6 +23324,22 @@ Check your Browserslist config to be sure that your targets are set up correctly
       }
     });
     var picture_default = picture_vue_vue_type_script_setup_true_lang_default;
+    var plus_vue_vue_type_script_setup_true_lang_default = /* @__PURE__ */ defineComponent({
+      name: "Plus",
+      __name: "plus",
+      setup(__props) {
+        return (_ctx, _cache) => (openBlock(), createElementBlock("svg", {
+          xmlns: "http://www.w3.org/2000/svg",
+          viewBox: "0 0 1024 1024"
+        }, [
+          createBaseVNode("path", {
+            fill: "currentColor",
+            d: "M480 480V128a32 32 0 0 1 64 0v352h352a32 32 0 1 1 0 64H544v352a32 32 0 1 1-64 0V544H128a32 32 0 0 1 0-64z"
+          })
+        ]));
+      }
+    });
+    var plus_default = plus_vue_vue_type_script_setup_true_lang_default;
     var refresh_left_vue_vue_type_script_setup_true_lang_default = /* @__PURE__ */ defineComponent({
       name: "RefreshLeft",
       __name: "refresh-left",
@@ -23362,6 +23388,38 @@ Check your Browserslist config to be sure that your targets are set up correctly
       }
     });
     var scale_to_original_default = scale_to_original_vue_vue_type_script_setup_true_lang_default;
+    var select_vue_vue_type_script_setup_true_lang_default = /* @__PURE__ */ defineComponent({
+      name: "Select",
+      __name: "select",
+      setup(__props) {
+        return (_ctx, _cache) => (openBlock(), createElementBlock("svg", {
+          xmlns: "http://www.w3.org/2000/svg",
+          viewBox: "0 0 1024 1024"
+        }, [
+          createBaseVNode("path", {
+            fill: "currentColor",
+            d: "M77.248 415.04a64 64 0 0 1 90.496 0l226.304 226.304L846.528 188.8a64 64 0 1 1 90.56 90.496l-543.04 543.04-316.8-316.8a64 64 0 0 1 0-90.496z"
+          })
+        ]));
+      }
+    });
+    var select_default = select_vue_vue_type_script_setup_true_lang_default;
+    var setting_vue_vue_type_script_setup_true_lang_default = /* @__PURE__ */ defineComponent({
+      name: "Setting",
+      __name: "setting",
+      setup(__props) {
+        return (_ctx, _cache) => (openBlock(), createElementBlock("svg", {
+          xmlns: "http://www.w3.org/2000/svg",
+          viewBox: "0 0 1024 1024"
+        }, [
+          createBaseVNode("path", {
+            fill: "currentColor",
+            d: "M600.704 64a32 32 0 0 1 30.464 22.208l35.2 109.376c14.784 7.232 28.928 15.36 42.432 24.512l112.384-24.192a32 32 0 0 1 34.432 15.36L944.32 364.8a32 32 0 0 1-4.032 37.504l-77.12 85.12a357.12 357.12 0 0 1 0 49.024l77.12 85.248a32 32 0 0 1 4.032 37.504l-88.704 153.6a32 32 0 0 1-34.432 15.296L708.8 803.904c-13.44 9.088-27.648 17.28-42.368 24.512l-35.264 109.376A32 32 0 0 1 600.704 960H423.296a32 32 0 0 1-30.464-22.208L357.696 828.48a351.616 351.616 0 0 1-42.56-24.64l-112.32 24.256a32 32 0 0 1-34.432-15.36L79.68 659.2a32 32 0 0 1 4.032-37.504l77.12-85.248a357.12 357.12 0 0 1 0-48.896l-77.12-85.248A32 32 0 0 1 79.68 364.8l88.704-153.6a32 32 0 0 1 34.432-15.296l112.32 24.256c13.568-9.152 27.776-17.408 42.56-24.64l35.2-109.312A32 32 0 0 1 423.232 64H600.64zm-23.424 64H446.72l-36.352 113.088-24.512 11.968a294.113 294.113 0 0 0-34.816 20.096l-22.656 15.36-116.224-25.088-65.28 113.152 79.68 88.192-1.92 27.136a293.12 293.12 0 0 0 0 40.192l1.92 27.136-79.808 88.192 65.344 113.152 116.224-25.024 22.656 15.296a294.113 294.113 0 0 0 34.816 20.096l24.512 11.968L446.72 896h130.688l36.48-113.152 24.448-11.904a288.282 288.282 0 0 0 34.752-20.096l22.592-15.296 116.288 25.024 65.28-113.152-79.744-88.192 1.92-27.136a293.12 293.12 0 0 0 0-40.256l-1.92-27.136 79.808-88.128-65.344-113.152-116.288 24.96-22.592-15.232a287.616 287.616 0 0 0-34.752-20.096l-24.448-11.904L577.344 128zM512 320a192 192 0 1 1 0 384 192 192 0 0 1 0-384m0 64a128 128 0 1 0 0 256 128 128 0 0 0 0-256"
+          })
+        ]));
+      }
+    });
+    var setting_default = setting_vue_vue_type_script_setup_true_lang_default;
     var success_filled_vue_vue_type_script_setup_true_lang_default = /* @__PURE__ */ defineComponent({
       name: "SuccessFilled",
       __name: "success-filled",
@@ -23378,6 +23436,22 @@ Check your Browserslist config to be sure that your targets are set up correctly
       }
     });
     var success_filled_default = success_filled_vue_vue_type_script_setup_true_lang_default;
+    var user_vue_vue_type_script_setup_true_lang_default = /* @__PURE__ */ defineComponent({
+      name: "User",
+      __name: "user",
+      setup(__props) {
+        return (_ctx, _cache) => (openBlock(), createElementBlock("svg", {
+          xmlns: "http://www.w3.org/2000/svg",
+          viewBox: "0 0 1024 1024"
+        }, [
+          createBaseVNode("path", {
+            fill: "currentColor",
+            d: "M512 512a192 192 0 1 0 0-384 192 192 0 0 0 0 384m0 64a256 256 0 1 1 0-512 256 256 0 0 1 0 512m320 320v-96a96 96 0 0 0-96-96H288a96 96 0 0 0-96 96v96a32 32 0 1 1-64 0v-96a160 160 0 0 1 160-160h448a160 160 0 0 1 160 160v96a32 32 0 1 1-64 0"
+          })
+        ]));
+      }
+    });
+    var user_default = user_vue_vue_type_script_setup_true_lang_default;
     var view_vue_vue_type_script_setup_true_lang_default = /* @__PURE__ */ defineComponent({
       name: "View",
       __name: "view",
@@ -25140,7 +25214,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
       return obj2;
     };
     const messageConfig = {};
-    var _export_sfc = (sfc, props) => {
+    var _export_sfc$1 = (sfc, props) => {
       const target = sfc.__vccOpts || sfc;
       for (const [key, val] of props) {
         target[key] = val;
@@ -25155,12 +25229,12 @@ Check your Browserslist config to be sure that your targets are set up correctly
         type: String
       }
     });
-    const __default__$m = /* @__PURE__ */ defineComponent({
+    const __default__$r = /* @__PURE__ */ defineComponent({
       name: "ElIcon",
       inheritAttrs: false
     });
-    const _sfc_main$J = /* @__PURE__ */ defineComponent({
-      ...__default__$m,
+    const _sfc_main$P = /* @__PURE__ */ defineComponent({
+      ...__default__$r,
       props: iconProps,
       setup(__props) {
         const props = __props;
@@ -25184,7 +25258,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var Icon = /* @__PURE__ */ _export_sfc(_sfc_main$J, [["__file", "icon.vue"]]);
+    var Icon = /* @__PURE__ */ _export_sfc$1(_sfc_main$P, [["__file", "icon.vue"]]);
     const ElIcon = withInstall(Icon);
     const formContextKey = Symbol("formContextKey");
     const formItemContextKey = Symbol("formItemContextKey");
@@ -25340,11 +25414,11 @@ Check your Browserslist config to be sure that your targets are set up correctly
       return normalized.length > 0 ? fields.filter((field) => field.prop && normalized.includes(field.prop)) : fields;
     };
     const COMPONENT_NAME$4 = "ElForm";
-    const __default__$l = /* @__PURE__ */ defineComponent({
+    const __default__$q = /* @__PURE__ */ defineComponent({
       name: COMPONENT_NAME$4
     });
-    const _sfc_main$I = /* @__PURE__ */ defineComponent({
-      ...__default__$l,
+    const _sfc_main$O = /* @__PURE__ */ defineComponent({
+      ...__default__$q,
       props: formProps,
       emits: formEmits,
       setup(__props, { expose, emit: emit2 }) {
@@ -25477,7 +25551,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var Form = /* @__PURE__ */ _export_sfc(_sfc_main$I, [["__file", "form.vue"]]);
+    var Form = /* @__PURE__ */ _export_sfc$1(_sfc_main$O, [["__file", "form.vue"]]);
     var define_process_env_default = {};
     function _extends() {
       _extends = Object.assign ? Object.assign.bind() : function(target) {
@@ -26651,12 +26725,12 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    const _hoisted_1$o = ["role", "aria-labelledby"];
-    const __default__$k = /* @__PURE__ */ defineComponent({
+    const _hoisted_1$p = ["role", "aria-labelledby"];
+    const __default__$p = /* @__PURE__ */ defineComponent({
       name: "ElFormItem"
     });
-    const _sfc_main$H = /* @__PURE__ */ defineComponent({
-      ...__default__$k,
+    const _sfc_main$N = /* @__PURE__ */ defineComponent({
+      ...__default__$p,
       props: formItemProps,
       setup(__props, { expose }) {
         const props = __props;
@@ -26948,17 +27022,17 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 _: 3
               }, 8, ["name"])
             ], 6)
-          ], 10, _hoisted_1$o);
+          ], 10, _hoisted_1$p);
         };
       }
     });
-    var FormItem = /* @__PURE__ */ _export_sfc(_sfc_main$H, [["__file", "form-item.vue"]]);
+    var FormItem = /* @__PURE__ */ _export_sfc$1(_sfc_main$N, [["__file", "form-item.vue"]]);
     const ElForm = withInstall(Form, {
       FormItem
     });
     const ElFormItem = withNoopInstall(FormItem);
-    let hiddenTextarea = void 0;
-    const HIDDEN_STYLE = `
+    let hiddenTextarea$1 = void 0;
+    const HIDDEN_STYLE$1 = `
   height:0 !important;
   visibility:hidden !important;
   ${isFirefox() ? "" : "overflow:hidden !important;"}
@@ -26967,7 +27041,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
   top:0 !important;
   right:0 !important;
 `;
-    const CONTEXT_STYLE = [
+    const CONTEXT_STYLE$1 = [
       "letter-spacing",
       "line-height",
       "padding-top",
@@ -26984,32 +27058,32 @@ Check your Browserslist config to be sure that your targets are set up correctly
       "border-width",
       "box-sizing"
     ];
-    function calculateNodeStyling(targetElement) {
+    function calculateNodeStyling$1(targetElement) {
       const style = window.getComputedStyle(targetElement);
       const boxSizing = style.getPropertyValue("box-sizing");
       const paddingSize = Number.parseFloat(style.getPropertyValue("padding-bottom")) + Number.parseFloat(style.getPropertyValue("padding-top"));
       const borderSize = Number.parseFloat(style.getPropertyValue("border-bottom-width")) + Number.parseFloat(style.getPropertyValue("border-top-width"));
-      const contextStyle = CONTEXT_STYLE.map((name) => `${name}:${style.getPropertyValue(name)}`).join(";");
+      const contextStyle = CONTEXT_STYLE$1.map((name) => `${name}:${style.getPropertyValue(name)}`).join(";");
       return { contextStyle, paddingSize, borderSize, boxSizing };
     }
-    function calcTextareaHeight(targetElement, minRows = 1, maxRows) {
+    function calcTextareaHeight$1(targetElement, minRows = 1, maxRows) {
       var _a7;
-      if (!hiddenTextarea) {
-        hiddenTextarea = document.createElement("textarea");
-        document.body.appendChild(hiddenTextarea);
+      if (!hiddenTextarea$1) {
+        hiddenTextarea$1 = document.createElement("textarea");
+        document.body.appendChild(hiddenTextarea$1);
       }
-      const { paddingSize, borderSize, boxSizing, contextStyle } = calculateNodeStyling(targetElement);
-      hiddenTextarea.setAttribute("style", `${contextStyle};${HIDDEN_STYLE}`);
-      hiddenTextarea.value = targetElement.value || targetElement.placeholder || "";
-      let height = hiddenTextarea.scrollHeight;
+      const { paddingSize, borderSize, boxSizing, contextStyle } = calculateNodeStyling$1(targetElement);
+      hiddenTextarea$1.setAttribute("style", `${contextStyle};${HIDDEN_STYLE$1}`);
+      hiddenTextarea$1.value = targetElement.value || targetElement.placeholder || "";
+      let height = hiddenTextarea$1.scrollHeight;
       const result = {};
       if (boxSizing === "border-box") {
         height = height + borderSize;
       } else if (boxSizing === "content-box") {
         height = height - paddingSize;
       }
-      hiddenTextarea.value = "";
-      const singleRowHeight = hiddenTextarea.scrollHeight - paddingSize;
+      hiddenTextarea$1.value = "";
+      const singleRowHeight = hiddenTextarea$1.scrollHeight - paddingSize;
       if (isNumber(minRows)) {
         let minHeight = singleRowHeight * minRows;
         if (boxSizing === "border-box") {
@@ -27026,8 +27100,8 @@ Check your Browserslist config to be sure that your targets are set up correctly
         height = Math.min(maxHeight, height);
       }
       result.height = `${height}px`;
-      (_a7 = hiddenTextarea.parentNode) == null ? void 0 : _a7.removeChild(hiddenTextarea);
-      hiddenTextarea = void 0;
+      (_a7 = hiddenTextarea$1.parentNode) == null ? void 0 : _a7.removeChild(hiddenTextarea$1);
+      hiddenTextarea$1 = void 0;
       return result;
     }
     const inputProps = buildProps({
@@ -27141,15 +27215,15 @@ Check your Browserslist config to be sure that your targets are set up correctly
       compositionupdate: (evt) => evt instanceof CompositionEvent,
       compositionend: (evt) => evt instanceof CompositionEvent
     };
-    const _hoisted_1$n = ["role"];
+    const _hoisted_1$o = ["role"];
     const _hoisted_2$h = ["id", "minlength", "maxlength", "type", "disabled", "readonly", "autocomplete", "tabindex", "aria-label", "placeholder", "form", "autofocus"];
-    const _hoisted_3$c = ["id", "minlength", "maxlength", "tabindex", "disabled", "readonly", "autocomplete", "aria-label", "placeholder", "form", "autofocus"];
-    const __default__$j = /* @__PURE__ */ defineComponent({
+    const _hoisted_3$b = ["id", "minlength", "maxlength", "tabindex", "disabled", "readonly", "autocomplete", "aria-label", "placeholder", "form", "autofocus"];
+    const __default__$o = /* @__PURE__ */ defineComponent({
       name: "ElInput",
       inheritAttrs: false
     });
-    const _sfc_main$G = /* @__PURE__ */ defineComponent({
-      ...__default__$j,
+    const _sfc_main$M = /* @__PURE__ */ defineComponent({
+      ...__default__$o,
       props: inputProps,
       emits: inputEmits,
       setup(__props, { expose, emit: emit2 }) {
@@ -27254,7 +27328,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
           if (autosize) {
             const minRows = isObject$1(autosize) ? autosize.minRows : void 0;
             const maxRows = isObject$1(autosize) ? autosize.maxRows : void 0;
-            const textareaStyle2 = calcTextareaHeight(textarea.value, minRows, maxRows);
+            const textareaStyle2 = calcTextareaHeight$1(textarea.value, minRows, maxRows);
             textareaCalcStyle.value = {
               overflowY: "hidden",
               ...textareaStyle2
@@ -27265,7 +27339,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             });
           } else {
             textareaCalcStyle.value = {
-              minHeight: calcTextareaHeight(textarea.value).minHeight
+              minHeight: calcTextareaHeight$1(textarea.value).minHeight
             };
           }
         };
@@ -27568,18 +27642,18 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 onBlur: _cache[3] || (_cache[3] = (...args) => unref(handleBlur) && unref(handleBlur)(...args)),
                 onChange: handleChange,
                 onKeydown: handleKeydown
-              }), null, 16, _hoisted_3$c),
+              }), null, 16, _hoisted_3$b),
               unref(isWordLimitVisible) ? (openBlock(), createElementBlock("span", {
                 key: 0,
                 style: normalizeStyle(countStyle.value),
                 class: normalizeClass(unref(nsInput).e("count"))
               }, toDisplayString(unref(textLength)) + " / " + toDisplayString(_ctx.maxlength), 7)) : createCommentVNode("v-if", true)
             ], 64))
-          ], 16, _hoisted_1$n);
+          ], 16, _hoisted_1$o);
         };
       }
     });
-    var Input = /* @__PURE__ */ _export_sfc(_sfc_main$G, [["__file", "input.vue"]]);
+    var Input = /* @__PURE__ */ _export_sfc$1(_sfc_main$M, [["__file", "input.vue"]]);
     const ElInput = withInstall(Input);
     const GAP = 4;
     const BAR_MAP = {
@@ -27624,7 +27698,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
       always: Boolean
     });
     const COMPONENT_NAME$2 = "Thumb";
-    const _sfc_main$F = /* @__PURE__ */ defineComponent({
+    const _sfc_main$L = /* @__PURE__ */ defineComponent({
       __name: "thumb",
       props: thumbProps,
       setup(__props) {
@@ -27743,7 +27817,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var Thumb = /* @__PURE__ */ _export_sfc(_sfc_main$F, [["__file", "thumb.vue"]]);
+    var Thumb = /* @__PURE__ */ _export_sfc$1(_sfc_main$L, [["__file", "thumb.vue"]]);
     const barProps = buildProps({
       always: {
         type: Boolean,
@@ -27754,7 +27828,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         required: true
       }
     });
-    const _sfc_main$E = /* @__PURE__ */ defineComponent({
+    const _sfc_main$K = /* @__PURE__ */ defineComponent({
       __name: "bar",
       props: barProps,
       setup(__props, { expose }) {
@@ -27812,7 +27886,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var Bar = /* @__PURE__ */ _export_sfc(_sfc_main$E, [["__file", "bar.vue"]]);
+    var Bar = /* @__PURE__ */ _export_sfc$1(_sfc_main$K, [["__file", "bar.vue"]]);
     const scrollbarProps = buildProps({
       height: {
         type: [String, Number],
@@ -27863,11 +27937,11 @@ Check your Browserslist config to be sure that your targets are set up correctly
       }) => [scrollTop, scrollLeft].every(isNumber)
     };
     const COMPONENT_NAME$1 = "ElScrollbar";
-    const __default__$i = /* @__PURE__ */ defineComponent({
+    const __default__$n = /* @__PURE__ */ defineComponent({
       name: COMPONENT_NAME$1
     });
-    const _sfc_main$D = /* @__PURE__ */ defineComponent({
-      ...__default__$i,
+    const _sfc_main$J = /* @__PURE__ */ defineComponent({
+      ...__default__$n,
       props: scrollbarProps,
       emits: scrollbarEmits,
       setup(__props, { expose, emit: emit2 }) {
@@ -28008,7 +28082,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var Scrollbar = /* @__PURE__ */ _export_sfc(_sfc_main$D, [["__file", "scrollbar.vue"]]);
+    var Scrollbar = /* @__PURE__ */ _export_sfc$1(_sfc_main$J, [["__file", "scrollbar.vue"]]);
     const ElScrollbar = withInstall(Scrollbar);
     const POPPER_INJECTION_KEY = Symbol("popper");
     const POPPER_CONTENT_INJECTION_KEY = Symbol("popperContent");
@@ -28029,12 +28103,12 @@ Check your Browserslist config to be sure that your targets are set up correctly
         default: "tooltip"
       }
     });
-    const __default__$h = /* @__PURE__ */ defineComponent({
+    const __default__$m = /* @__PURE__ */ defineComponent({
       name: "ElPopper",
       inheritAttrs: false
     });
-    const _sfc_main$C = /* @__PURE__ */ defineComponent({
-      ...__default__$h,
+    const _sfc_main$I = /* @__PURE__ */ defineComponent({
+      ...__default__$m,
       props: popperProps,
       setup(__props, { expose }) {
         const props = __props;
@@ -28057,19 +28131,19 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var Popper = /* @__PURE__ */ _export_sfc(_sfc_main$C, [["__file", "popper.vue"]]);
+    var Popper = /* @__PURE__ */ _export_sfc$1(_sfc_main$I, [["__file", "popper.vue"]]);
     const popperArrowProps = buildProps({
       arrowOffset: {
         type: Number,
         default: 5
       }
     });
-    const __default__$g = /* @__PURE__ */ defineComponent({
+    const __default__$l = /* @__PURE__ */ defineComponent({
       name: "ElPopperArrow",
       inheritAttrs: false
     });
-    const _sfc_main$B = /* @__PURE__ */ defineComponent({
-      ...__default__$g,
+    const _sfc_main$H = /* @__PURE__ */ defineComponent({
+      ...__default__$l,
       props: popperArrowProps,
       setup(__props, { expose }) {
         const props = __props;
@@ -28095,7 +28169,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var ElPopperArrow = /* @__PURE__ */ _export_sfc(_sfc_main$B, [["__file", "arrow.vue"]]);
+    var ElPopperArrow = /* @__PURE__ */ _export_sfc$1(_sfc_main$H, [["__file", "arrow.vue"]]);
     const NAME = "ElOnlyChild";
     const OnlyChild = /* @__PURE__ */ defineComponent({
       name: NAME,
@@ -28179,12 +28253,12 @@ Check your Browserslist config to be sure that your targets are set up correctly
       id: String,
       open: Boolean
     });
-    const __default__$f = /* @__PURE__ */ defineComponent({
+    const __default__$k = /* @__PURE__ */ defineComponent({
       name: "ElPopperTrigger",
       inheritAttrs: false
     });
-    const _sfc_main$A = /* @__PURE__ */ defineComponent({
-      ...__default__$f,
+    const _sfc_main$G = /* @__PURE__ */ defineComponent({
+      ...__default__$k,
       props: popperTriggerProps,
       setup(__props, { expose }) {
         const props = __props;
@@ -28282,7 +28356,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var ElPopperTrigger = /* @__PURE__ */ _export_sfc(_sfc_main$A, [["__file", "trigger.vue"]]);
+    var ElPopperTrigger = /* @__PURE__ */ _export_sfc$1(_sfc_main$G, [["__file", "trigger.vue"]]);
     const FOCUS_AFTER_TRAPPED = "focus-trap.focus-after-trapped";
     const FOCUS_AFTER_RELEASED = "focus-trap.focus-after-released";
     const FOCUSOUT_PREVENTED = "focus-trap.focusout-prevented";
@@ -28429,7 +28503,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         detail
       });
     };
-    const _sfc_main$z = /* @__PURE__ */ defineComponent({
+    const _sfc_main$F = /* @__PURE__ */ defineComponent({
       name: "ElFocusTrap",
       inheritAttrs: false,
       props: {
@@ -28665,10 +28739,10 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    function _sfc_render$b(_ctx, _cache, $props, $setup, $data, $options) {
+    function _sfc_render$a(_ctx, _cache, $props, $setup, $data, $options) {
       return renderSlot(_ctx.$slots, "default", { handleKeydown: _ctx.onKeydown });
     }
-    var ElFocusTrap = /* @__PURE__ */ _export_sfc(_sfc_main$z, [["render", _sfc_render$b], ["__file", "focus-trap.vue"]]);
+    var ElFocusTrap = /* @__PURE__ */ _export_sfc$1(_sfc_main$F, [["render", _sfc_render$a], ["__file", "focus-trap.vue"]]);
     const POSITIONING_STRATEGIES = ["fixed", "absolute"];
     const popperCoreConfigProps = buildProps({
       boundariesPadding: {
@@ -28950,11 +29024,11 @@ Check your Browserslist config to be sure that your targets are set up correctly
         onReleaseRequested
       };
     };
-    const __default__$e = /* @__PURE__ */ defineComponent({
+    const __default__$j = /* @__PURE__ */ defineComponent({
       name: "ElPopperContent"
     });
-    const _sfc_main$y = /* @__PURE__ */ defineComponent({
-      ...__default__$e,
+    const _sfc_main$E = /* @__PURE__ */ defineComponent({
+      ...__default__$j,
       props: popperContentProps,
       emits: popperContentEmits,
       setup(__props, { expose, emit: emit2 }) {
@@ -29070,7 +29144,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var ElPopperContent = /* @__PURE__ */ _export_sfc(_sfc_main$y, [["__file", "content.vue"]]);
+    var ElPopperContent = /* @__PURE__ */ _export_sfc$1(_sfc_main$E, [["__file", "content.vue"]]);
     const ElPopper = withInstall(Popper);
     const TOOLTIP_INJECTION_KEY = Symbol("elTooltip");
     const useTooltipContentProps = buildProps({
@@ -29148,11 +29222,11 @@ Check your Browserslist config to be sure that your targets are set up correctly
         isTriggerType(unref(trigger2), type) && handler(e);
       };
     };
-    const __default__$d = /* @__PURE__ */ defineComponent({
+    const __default__$i = /* @__PURE__ */ defineComponent({
       name: "ElTooltipTrigger"
     });
-    const _sfc_main$x = /* @__PURE__ */ defineComponent({
-      ...__default__$d,
+    const _sfc_main$D = /* @__PURE__ */ defineComponent({
+      ...__default__$i,
       props: useTooltipTriggerProps,
       setup(__props, { expose }) {
         const props = __props;
@@ -29211,13 +29285,13 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var ElTooltipTrigger = /* @__PURE__ */ _export_sfc(_sfc_main$x, [["__file", "trigger.vue"]]);
-    const __default__$c = /* @__PURE__ */ defineComponent({
+    var ElTooltipTrigger = /* @__PURE__ */ _export_sfc$1(_sfc_main$D, [["__file", "trigger.vue"]]);
+    const __default__$h = /* @__PURE__ */ defineComponent({
       name: "ElTooltipContent",
       inheritAttrs: false
     });
-    const _sfc_main$w = /* @__PURE__ */ defineComponent({
-      ...__default__$c,
+    const _sfc_main$C = /* @__PURE__ */ defineComponent({
+      ...__default__$h,
       props: useTooltipContentProps,
       setup(__props, { expose }) {
         const props = __props;
@@ -29375,14 +29449,14 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var ElTooltipContent = /* @__PURE__ */ _export_sfc(_sfc_main$w, [["__file", "content.vue"]]);
-    const _hoisted_1$m = ["innerHTML"];
+    var ElTooltipContent = /* @__PURE__ */ _export_sfc$1(_sfc_main$C, [["__file", "content.vue"]]);
+    const _hoisted_1$n = ["innerHTML"];
     const _hoisted_2$g = { key: 1 };
-    const __default__$b = /* @__PURE__ */ defineComponent({
+    const __default__$g = /* @__PURE__ */ defineComponent({
       name: "ElTooltip"
     });
-    const _sfc_main$v = /* @__PURE__ */ defineComponent({
-      ...__default__$b,
+    const _sfc_main$B = /* @__PURE__ */ defineComponent({
+      ...__default__$g,
       props: useTooltipProps,
       emits: tooltipEmits,
       setup(__props, { expose, emit: emit2 }) {
@@ -29519,7 +29593,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                     _ctx.rawContent ? (openBlock(), createElementBlock("span", {
                       key: 0,
                       innerHTML: _ctx.content
-                    }, null, 8, _hoisted_1$m)) : (openBlock(), createElementBlock("span", _hoisted_2$g, toDisplayString(_ctx.content), 1))
+                    }, null, 8, _hoisted_1$n)) : (openBlock(), createElementBlock("span", _hoisted_2$g, toDisplayString(_ctx.content), 1))
                   ]),
                   _ctx.showArrow ? (openBlock(), createBlock(unref(ElPopperArrow), {
                     key: 0,
@@ -29534,7 +29608,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var Tooltip = /* @__PURE__ */ _export_sfc(_sfc_main$v, [["__file", "tooltip.vue"]]);
+    var Tooltip = /* @__PURE__ */ _export_sfc$1(_sfc_main$B, [["__file", "tooltip.vue"]]);
     const ElTooltip = withInstall(Tooltip);
     const badgeProps = buildProps({
       value: {
@@ -29574,12 +29648,12 @@ Check your Browserslist config to be sure that your targets are set up correctly
         type: String
       }
     });
-    const _hoisted_1$l = ["textContent"];
-    const __default__$a = /* @__PURE__ */ defineComponent({
+    const _hoisted_1$m = ["textContent"];
+    const __default__$f = /* @__PURE__ */ defineComponent({
       name: "ElBadge"
     });
-    const _sfc_main$u = /* @__PURE__ */ defineComponent({
-      ...__default__$a,
+    const _sfc_main$A = /* @__PURE__ */ defineComponent({
+      ...__default__$f,
       props: badgeProps,
       setup(__props, { expose }) {
         const props = __props;
@@ -29645,7 +29719,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                   ]),
                   style: normalizeStyle(unref(style)),
                   textContent: toDisplayString(unref(content))
-                }, null, 14, _hoisted_1$l), [
+                }, null, 14, _hoisted_1$m), [
                   [vShow, !_ctx.hidden && (unref(content) || _ctx.isDot)]
                 ])
               ]),
@@ -29655,7 +29729,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var Badge = /* @__PURE__ */ _export_sfc(_sfc_main$u, [["__file", "badge.vue"]]);
+    var Badge = /* @__PURE__ */ _export_sfc$1(_sfc_main$A, [["__file", "badge.vue"]]);
     const ElBadge = withInstall(Badge);
     const buttonGroupContextKey = Symbol("buttonGroupContextKey");
     const useButton = (props, emit2) => {
@@ -30706,11 +30780,11 @@ Check your Browserslist config to be sure that your targets are set up correctly
         return styles;
       });
     }
-    const __default__$9 = /* @__PURE__ */ defineComponent({
+    const __default__$e = /* @__PURE__ */ defineComponent({
       name: "ElButton"
     });
-    const _sfc_main$t = /* @__PURE__ */ defineComponent({
-      ...__default__$9,
+    const _sfc_main$z = /* @__PURE__ */ defineComponent({
+      ...__default__$e,
       props: buttonProps,
       emits: buttonEmits,
       setup(__props, { expose, emit: emit2 }) {
@@ -30776,16 +30850,16 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var Button = /* @__PURE__ */ _export_sfc(_sfc_main$t, [["__file", "button.vue"]]);
+    var Button = /* @__PURE__ */ _export_sfc$1(_sfc_main$z, [["__file", "button.vue"]]);
     const buttonGroupProps = {
       size: buttonProps.size,
       type: buttonProps.type
     };
-    const __default__$8 = /* @__PURE__ */ defineComponent({
+    const __default__$d = /* @__PURE__ */ defineComponent({
       name: "ElButtonGroup"
     });
-    const _sfc_main$s = /* @__PURE__ */ defineComponent({
-      ...__default__$8,
+    const _sfc_main$y = /* @__PURE__ */ defineComponent({
+      ...__default__$d,
       props: buttonGroupProps,
       setup(__props) {
         const props = __props;
@@ -30803,7 +30877,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var ButtonGroup = /* @__PURE__ */ _export_sfc(_sfc_main$s, [["__file", "button-group.vue"]]);
+    var ButtonGroup = /* @__PURE__ */ _export_sfc$1(_sfc_main$y, [["__file", "button-group.vue"]]);
     const ElButton = withInstall(Button, {
       ButtonGroup
     });
@@ -30926,11 +31000,11 @@ Check your Browserslist config to be sure that your targets are set up correctly
       close: (evt) => evt instanceof MouseEvent,
       click: (evt) => evt instanceof MouseEvent
     };
-    const __default__$7 = /* @__PURE__ */ defineComponent({
+    const __default__$c = /* @__PURE__ */ defineComponent({
       name: "ElTag"
     });
-    const _sfc_main$r = /* @__PURE__ */ defineComponent({
-      ...__default__$7,
+    const _sfc_main$x = /* @__PURE__ */ defineComponent({
+      ...__default__$c,
       props: tagProps,
       emits: tagEmits,
       setup(__props, { emit: emit2 }) {
@@ -31010,7 +31084,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var Tag = /* @__PURE__ */ _export_sfc(_sfc_main$r, [["__file", "tag.vue"]]);
+    var Tag = /* @__PURE__ */ _export_sfc$1(_sfc_main$x, [["__file", "tag.vue"]]);
     const ElTag = withInstall(Tag);
     const rowContextKey = Symbol("rowContextKey");
     const RowJustify = [
@@ -31041,11 +31115,11 @@ Check your Browserslist config to be sure that your targets are set up correctly
         values: RowAlign
       }
     });
-    const __default__$6 = /* @__PURE__ */ defineComponent({
+    const __default__$b = /* @__PURE__ */ defineComponent({
       name: "ElRow"
     });
-    const _sfc_main$q = /* @__PURE__ */ defineComponent({
-      ...__default__$6,
+    const _sfc_main$w = /* @__PURE__ */ defineComponent({
+      ...__default__$b,
       props: rowProps,
       setup(__props) {
         const props = __props;
@@ -31080,7 +31154,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var Row = /* @__PURE__ */ _export_sfc(_sfc_main$q, [["__file", "row.vue"]]);
+    var Row = /* @__PURE__ */ _export_sfc$1(_sfc_main$w, [["__file", "row.vue"]]);
     const ElRow = withInstall(Row);
     const colProps = buildProps({
       tag: {
@@ -31124,11 +31198,11 @@ Check your Browserslist config to be sure that your targets are set up correctly
         default: () => mutable({})
       }
     });
-    const __default__$5 = /* @__PURE__ */ defineComponent({
+    const __default__$a = /* @__PURE__ */ defineComponent({
       name: "ElCol"
     });
-    const _sfc_main$p = /* @__PURE__ */ defineComponent({
-      ...__default__$5,
+    const _sfc_main$v = /* @__PURE__ */ defineComponent({
+      ...__default__$a,
       props: colProps,
       setup(__props) {
         const props = __props;
@@ -31181,8 +31255,157 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var Col = /* @__PURE__ */ _export_sfc(_sfc_main$p, [["__file", "col.vue"]]);
+    var Col = /* @__PURE__ */ _export_sfc$1(_sfc_main$v, [["__file", "col.vue"]]);
     const ElCol = withInstall(Col);
+    const __default__$9 = /* @__PURE__ */ defineComponent({
+      name: "ElContainer"
+    });
+    const _sfc_main$u = /* @__PURE__ */ defineComponent({
+      ...__default__$9,
+      props: {
+        direction: {
+          type: String
+        }
+      },
+      setup(__props) {
+        const props = __props;
+        const slots = useSlots();
+        const ns = useNamespace("container");
+        const isVertical = computed(() => {
+          if (props.direction === "vertical") {
+            return true;
+          } else if (props.direction === "horizontal") {
+            return false;
+          }
+          if (slots && slots.default) {
+            const vNodes = slots.default();
+            return vNodes.some((vNode) => {
+              const tag2 = vNode.type.name;
+              return tag2 === "ElHeader" || tag2 === "ElFooter";
+            });
+          } else {
+            return false;
+          }
+        });
+        return (_ctx, _cache) => {
+          return openBlock(), createElementBlock("section", {
+            class: normalizeClass([unref(ns).b(), unref(ns).is("vertical", unref(isVertical))])
+          }, [
+            renderSlot(_ctx.$slots, "default")
+          ], 2);
+        };
+      }
+    });
+    var Container = /* @__PURE__ */ _export_sfc$1(_sfc_main$u, [["__file", "container.vue"]]);
+    const __default__$8 = /* @__PURE__ */ defineComponent({
+      name: "ElAside"
+    });
+    const _sfc_main$t = /* @__PURE__ */ defineComponent({
+      ...__default__$8,
+      props: {
+        width: {
+          type: String,
+          default: null
+        }
+      },
+      setup(__props) {
+        const props = __props;
+        const ns = useNamespace("aside");
+        const style = computed(() => props.width ? ns.cssVarBlock({ width: props.width }) : {});
+        return (_ctx, _cache) => {
+          return openBlock(), createElementBlock("aside", {
+            class: normalizeClass(unref(ns).b()),
+            style: normalizeStyle(unref(style))
+          }, [
+            renderSlot(_ctx.$slots, "default")
+          ], 6);
+        };
+      }
+    });
+    var Aside = /* @__PURE__ */ _export_sfc$1(_sfc_main$t, [["__file", "aside.vue"]]);
+    const __default__$7 = /* @__PURE__ */ defineComponent({
+      name: "ElFooter"
+    });
+    const _sfc_main$s = /* @__PURE__ */ defineComponent({
+      ...__default__$7,
+      props: {
+        height: {
+          type: String,
+          default: null
+        }
+      },
+      setup(__props) {
+        const props = __props;
+        const ns = useNamespace("footer");
+        const style = computed(() => props.height ? ns.cssVarBlock({ height: props.height }) : {});
+        return (_ctx, _cache) => {
+          return openBlock(), createElementBlock("footer", {
+            class: normalizeClass(unref(ns).b()),
+            style: normalizeStyle(unref(style))
+          }, [
+            renderSlot(_ctx.$slots, "default")
+          ], 6);
+        };
+      }
+    });
+    var Footer = /* @__PURE__ */ _export_sfc$1(_sfc_main$s, [["__file", "footer.vue"]]);
+    const __default__$6 = /* @__PURE__ */ defineComponent({
+      name: "ElHeader"
+    });
+    const _sfc_main$r = /* @__PURE__ */ defineComponent({
+      ...__default__$6,
+      props: {
+        height: {
+          type: String,
+          default: null
+        }
+      },
+      setup(__props) {
+        const props = __props;
+        const ns = useNamespace("header");
+        const style = computed(() => {
+          return props.height ? ns.cssVarBlock({
+            height: props.height
+          }) : {};
+        });
+        return (_ctx, _cache) => {
+          return openBlock(), createElementBlock("header", {
+            class: normalizeClass(unref(ns).b()),
+            style: normalizeStyle(unref(style))
+          }, [
+            renderSlot(_ctx.$slots, "default")
+          ], 6);
+        };
+      }
+    });
+    var Header = /* @__PURE__ */ _export_sfc$1(_sfc_main$r, [["__file", "header.vue"]]);
+    const __default__$5 = /* @__PURE__ */ defineComponent({
+      name: "ElMain"
+    });
+    const _sfc_main$q = /* @__PURE__ */ defineComponent({
+      ...__default__$5,
+      setup(__props) {
+        const ns = useNamespace("main");
+        return (_ctx, _cache) => {
+          return openBlock(), createElementBlock("main", {
+            class: normalizeClass(unref(ns).b())
+          }, [
+            renderSlot(_ctx.$slots, "default")
+          ], 2);
+        };
+      }
+    });
+    var Main = /* @__PURE__ */ _export_sfc$1(_sfc_main$q, [["__file", "main.vue"]]);
+    const ElContainer = withInstall(Container, {
+      Aside,
+      Footer,
+      Header,
+      Main
+    });
+    withNoopInstall(Aside);
+    const ElFooter = withNoopInstall(Footer);
+    withNoopInstall(Header);
+    const ElMain = withNoopInstall(Main);
     const overlayProps = buildProps({
       mask: {
         type: Boolean,
@@ -31267,11 +31490,11 @@ Check your Browserslist config to be sure that your targets are set up correctly
     const dialogContentEmits = {
       close: () => true
     };
-    const _hoisted_1$k = ["aria-level"];
+    const _hoisted_1$l = ["aria-level"];
     const _hoisted_2$f = ["aria-label"];
-    const _hoisted_3$b = ["id"];
+    const _hoisted_3$a = ["id"];
     const __default__$4 = /* @__PURE__ */ defineComponent({ name: "ElDialogContent" });
-    const _sfc_main$o = /* @__PURE__ */ defineComponent({
+    const _sfc_main$p = /* @__PURE__ */ defineComponent({
       ...__default__$4,
       props: dialogContentProps,
       emits: dialogContentEmits,
@@ -31309,7 +31532,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                   role: "heading",
                   "aria-level": _ctx.ariaLevel,
                   class: normalizeClass(unref(ns).e("title"))
-                }, toDisplayString(_ctx.title), 11, _hoisted_1$k)
+                }, toDisplayString(_ctx.title), 11, _hoisted_1$l)
               ]),
               _ctx.showClose ? (openBlock(), createElementBlock("button", {
                 key: 0,
@@ -31333,7 +31556,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
               class: normalizeClass(unref(ns).e("body"))
             }, [
               renderSlot(_ctx.$slots, "default")
-            ], 10, _hoisted_3$b),
+            ], 10, _hoisted_3$a),
             _ctx.$slots.footer ? (openBlock(), createElementBlock("footer", {
               key: 0,
               class: normalizeClass(unref(ns).e("footer"))
@@ -31344,7 +31567,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var ElDialogContent = /* @__PURE__ */ _export_sfc(_sfc_main$o, [["__file", "dialog-content.vue"]]);
+    var ElDialogContent = /* @__PURE__ */ _export_sfc$1(_sfc_main$p, [["__file", "dialog-content.vue"]]);
     const dialogProps = buildProps({
       ...dialogContentProps,
       appendToBody: Boolean,
@@ -31577,12 +31800,12 @@ Check your Browserslist config to be sure that your targets are set up correctly
         zIndex: zIndex2
       };
     };
-    const _hoisted_1$j = ["aria-label", "aria-labelledby", "aria-describedby"];
+    const _hoisted_1$k = ["aria-label", "aria-labelledby", "aria-describedby"];
     const __default__$3 = /* @__PURE__ */ defineComponent({
       name: "ElDialog",
       inheritAttrs: false
     });
-    const _sfc_main$n = /* @__PURE__ */ defineComponent({
+    const _sfc_main$o = /* @__PURE__ */ defineComponent({
       ...__default__$3,
       props: dialogProps,
       emits: dialogEmits,
@@ -31713,7 +31936,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                         ]),
                         _: 3
                       }, 8, ["trapped", "onFocusAfterTrapped", "onFocusAfterReleased", "onFocusoutPrevented", "onReleaseRequested"])
-                    ], 46, _hoisted_1$j)
+                    ], 46, _hoisted_1$k)
                   ]),
                   _: 3
                 }, 8, ["mask", "overlay-class", "z-index"]), [
@@ -31726,7 +31949,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var Dialog = /* @__PURE__ */ _export_sfc(_sfc_main$n, [["__file", "dialog.vue"]]);
+    var Dialog = /* @__PURE__ */ _export_sfc$1(_sfc_main$o, [["__file", "dialog.vue"]]);
     const ElDialog = withInstall(Dialog);
     const imageViewerProps = buildProps({
       urlList: {
@@ -31771,11 +31994,11 @@ Check your Browserslist config to be sure that your targets are set up correctly
       switch: (index) => isNumber(index),
       rotate: (deg) => isNumber(deg)
     };
-    const _hoisted_1$i = ["src", "crossorigin"];
+    const _hoisted_1$j = ["src", "crossorigin"];
     const __default__$2 = /* @__PURE__ */ defineComponent({
       name: "ElImageViewer"
     });
-    const _sfc_main$m = /* @__PURE__ */ defineComponent({
+    const _sfc_main$n = /* @__PURE__ */ defineComponent({
       ...__default__$2,
       props: imageViewerProps,
       emits: imageViewerEmits,
@@ -32141,7 +32364,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                         onLoad: handleImgLoad,
                         onError: handleImgError,
                         onMousedown: handleMouseDown
-                      }, null, 46, _hoisted_1$i)), [
+                      }, null, 46, _hoisted_1$j)), [
                         [vShow, i === activeIndex.value]
                       ]);
                     }), 128))
@@ -32155,7 +32378,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var ImageViewer = /* @__PURE__ */ _export_sfc(_sfc_main$m, [["__file", "image-viewer.vue"]]);
+    var ImageViewer = /* @__PURE__ */ _export_sfc$1(_sfc_main$n, [["__file", "image-viewer.vue"]]);
     const ElImageViewer = withInstall(ImageViewer);
     const imageProps = buildProps({
       hideOnClickModal: Boolean,
@@ -32219,13 +32442,13 @@ Check your Browserslist config to be sure that your targets are set up correctly
       close: () => true,
       show: () => true
     };
-    const _hoisted_1$h = ["src", "loading", "crossorigin"];
+    const _hoisted_1$i = ["src", "loading", "crossorigin"];
     const _hoisted_2$e = { key: 0 };
     const __default__$1 = /* @__PURE__ */ defineComponent({
       name: "ElImage",
       inheritAttrs: false
     });
-    const _sfc_main$l = /* @__PURE__ */ defineComponent({
+    const _sfc_main$m = /* @__PURE__ */ defineComponent({
       ...__default__$1,
       props: imageProps,
       emits: imageEmits,
@@ -32392,7 +32615,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 onClick: clickHandler,
                 onLoad: handleLoad,
                 onError: handleError2
-              }), null, 16, _hoisted_1$h)) : createCommentVNode("v-if", true),
+              }), null, 16, _hoisted_1$i)) : createCommentVNode("v-if", true),
               isLoading.value ? (openBlock(), createElementBlock("div", {
                 key: 1,
                 class: normalizeClass(unref(ns).e("wrapper"))
@@ -32432,7 +32655,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var Image$1 = /* @__PURE__ */ _export_sfc(_sfc_main$l, [["__file", "image.vue"]]);
+    var Image$1 = /* @__PURE__ */ _export_sfc$1(_sfc_main$m, [["__file", "image.vue"]]);
     const ElImage = withInstall(Image$1);
     const selectGroupKey = Symbol("ElSelectGroup");
     const selectKey = Symbol("ElSelect");
@@ -32513,7 +32736,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         updateOption
       };
     }
-    const _sfc_main$k = /* @__PURE__ */ defineComponent({
+    const _sfc_main$l = /* @__PURE__ */ defineComponent({
       name: "ElOption",
       componentName: "ElOption",
       props: {
@@ -32587,8 +32810,8 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    const _hoisted_1$g = ["id", "aria-disabled", "aria-selected"];
-    function _sfc_render$a(_ctx, _cache, $props, $setup, $data, $options) {
+    const _hoisted_1$h = ["id", "aria-disabled", "aria-selected"];
+    function _sfc_render$9(_ctx, _cache, $props, $setup, $data, $options) {
       return withDirectives((openBlock(), createElementBlock("li", {
         id: _ctx.id,
         class: normalizeClass(_ctx.containerKls),
@@ -32601,12 +32824,12 @@ Check your Browserslist config to be sure that your targets are set up correctly
         renderSlot(_ctx.$slots, "default", {}, () => [
           createBaseVNode("span", null, toDisplayString(_ctx.currentLabel), 1)
         ])
-      ], 42, _hoisted_1$g)), [
+      ], 42, _hoisted_1$h)), [
         [vShow, _ctx.visible]
       ]);
     }
-    var Option = /* @__PURE__ */ _export_sfc(_sfc_main$k, [["render", _sfc_render$a], ["__file", "option.vue"]]);
-    const _sfc_main$j = /* @__PURE__ */ defineComponent({
+    var Option = /* @__PURE__ */ _export_sfc$1(_sfc_main$l, [["render", _sfc_render$9], ["__file", "option.vue"]]);
+    const _sfc_main$k = /* @__PURE__ */ defineComponent({
       name: "ElSelectDropdown",
       componentName: "ElSelectDropdown",
       setup() {
@@ -32633,7 +32856,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    function _sfc_render$9(_ctx, _cache, $props, $setup, $data, $options) {
+    function _sfc_render$8(_ctx, _cache, $props, $setup, $data, $options) {
       return openBlock(), createElementBlock("div", {
         class: normalizeClass([_ctx.ns.b("dropdown"), _ctx.ns.is("multiple", _ctx.isMultiple), _ctx.popperClass]),
         style: normalizeStyle({ [_ctx.isFitInputWidth ? "width" : "minWidth"]: _ctx.minWidth })
@@ -32653,7 +32876,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         ], 2)) : createCommentVNode("v-if", true)
       ], 6);
     }
-    var ElSelectMenu = /* @__PURE__ */ _export_sfc(_sfc_main$j, [["render", _sfc_render$9], ["__file", "select-dropdown.vue"]]);
+    var ElSelectMenu = /* @__PURE__ */ _export_sfc$1(_sfc_main$k, [["render", _sfc_render$8], ["__file", "select-dropdown.vue"]]);
     function useInput(handleInput) {
       const isComposing = ref(false);
       const handleCompositionStart = () => {
@@ -33434,7 +33657,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
       ...useAriaProps(["ariaLabel"])
     });
     const COMPONENT_NAME = "ElSelect";
-    const _sfc_main$i = /* @__PURE__ */ defineComponent({
+    const _sfc_main$j = /* @__PURE__ */ defineComponent({
       name: COMPONENT_NAME,
       componentName: COMPONENT_NAME,
       components: {
@@ -33475,10 +33698,10 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    const _hoisted_1$f = ["id", "disabled", "autocomplete", "readonly", "aria-activedescendant", "aria-controls", "aria-expanded", "aria-label"];
+    const _hoisted_1$g = ["id", "disabled", "autocomplete", "readonly", "aria-activedescendant", "aria-controls", "aria-expanded", "aria-label"];
     const _hoisted_2$d = ["textContent"];
-    const _hoisted_3$a = { key: 1 };
-    function _sfc_render$8(_ctx, _cache, $props, $setup, $data, $options) {
+    const _hoisted_3$9 = { key: 1 };
+    function _sfc_render$7(_ctx, _cache, $props, $setup, $data, $options) {
       const _component_el_tag = resolveComponent("el-tag");
       const _component_el_tooltip = resolveComponent("el-tooltip");
       const _component_el_icon = resolveComponent("el-icon");
@@ -33678,7 +33901,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                       onCompositionend: _cache[10] || (_cache[10] = (...args) => _ctx.handleCompositionEnd && _ctx.handleCompositionEnd(...args)),
                       onInput: _cache[11] || (_cache[11] = (...args) => _ctx.onInput && _ctx.onInput(...args)),
                       onClick: _cache[12] || (_cache[12] = withModifiers((...args) => _ctx.toggleMenu && _ctx.toggleMenu(...args), ["stop"]))
-                    }, null, 46, _hoisted_1$f), [
+                    }, null, 46, _hoisted_1$g), [
                       [vModelText, _ctx.states.inputValue]
                     ]),
                     _ctx.filterable ? (openBlock(), createElementBlock("span", {
@@ -33703,7 +33926,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                       value: _ctx.modelValue
                     }, () => [
                       createBaseVNode("span", null, toDisplayString(_ctx.currentPlaceholder), 1)
-                    ]) : (openBlock(), createElementBlock("span", _hoisted_3$a, toDisplayString(_ctx.currentPlaceholder), 1))
+                    ]) : (openBlock(), createElementBlock("span", _hoisted_3$9, toDisplayString(_ctx.currentPlaceholder), 1))
                   ], 2)) : createCommentVNode("v-if", true)
                 ], 2),
                 createBaseVNode("div", {
@@ -33812,8 +34035,8 @@ Check your Browserslist config to be sure that your targets are set up correctly
         [_directive_click_outside, _ctx.handleClickOutside, _ctx.popperRef]
       ]);
     }
-    var Select = /* @__PURE__ */ _export_sfc(_sfc_main$i, [["render", _sfc_render$8], ["__file", "select.vue"]]);
-    const _sfc_main$h = /* @__PURE__ */ defineComponent({
+    var Select = /* @__PURE__ */ _export_sfc$1(_sfc_main$j, [["render", _sfc_render$7], ["__file", "select.vue"]]);
+    const _sfc_main$i = /* @__PURE__ */ defineComponent({
       name: "ElOptionGroup",
       componentName: "ElOptionGroup",
       props: {
@@ -33866,7 +34089,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    function _sfc_render$7(_ctx, _cache, $props, $setup, $data, $options) {
+    function _sfc_render$6(_ctx, _cache, $props, $setup, $data, $options) {
       return withDirectives((openBlock(), createElementBlock("ul", {
         ref: "groupRef",
         class: normalizeClass(_ctx.ns.be("group", "wrap"))
@@ -33885,7 +34108,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         [vShow, _ctx.visible]
       ]);
     }
-    var OptionGroup = /* @__PURE__ */ _export_sfc(_sfc_main$h, [["render", _sfc_render$7], ["__file", "option-group.vue"]]);
+    var OptionGroup = /* @__PURE__ */ _export_sfc$1(_sfc_main$i, [["render", _sfc_render$6], ["__file", "option-group.vue"]]);
     const ElSelect = withInstall(Select, {
       Option,
       OptionGroup
@@ -34001,12 +34224,12 @@ Check your Browserslist config to be sure that your targets are set up correctly
       const idx = instances.findIndex((instance) => instance.id === id);
       return idx > 0 ? 16 : offset;
     };
-    const _hoisted_1$e = ["id"];
+    const _hoisted_1$f = ["id"];
     const _hoisted_2$c = ["innerHTML"];
     const __default__ = /* @__PURE__ */ defineComponent({
       name: "ElMessage"
     });
-    const _sfc_main$g = /* @__PURE__ */ defineComponent({
+    const _sfc_main$h = /* @__PURE__ */ defineComponent({
       ...__default__,
       props: messageProps,
       emits: messageEmits,
@@ -34130,7 +34353,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                   ]),
                   _: 1
                 }, 8, ["class", "onClick"])) : createCommentVNode("v-if", true)
-              ], 46, _hoisted_1$e), [
+              ], 46, _hoisted_1$f), [
                 [vShow, visible.value]
               ])
             ]),
@@ -34139,7 +34362,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         };
       }
     });
-    var MessageConstructor = /* @__PURE__ */ _export_sfc(_sfc_main$g, [["__file", "message.vue"]]);
+    var MessageConstructor = /* @__PURE__ */ _export_sfc$1(_sfc_main$h, [["__file", "message.vue"]]);
     let seed = 1;
     const normalizeOptions = (params) => {
       const options = !params || isString$1(params) || isVNode(params) || isFunction$1(params) ? { message: params } : params;
@@ -34240,2964 +34463,6 @@ Check your Browserslist config to be sure that your targets are set up correctly
     message.closeAll = closeAll;
     message._context = null;
     const ElMessage = withInstallFunction(message, "$message");
-    var FileSaver_min = { exports: {} };
-    (function(module2, exports2) {
-      (function(a, b) {
-        b();
-      })(commonjsGlobal, function() {
-        function b(a2, b2) {
-          return "undefined" == typeof b2 ? b2 = { autoBom: false } : "object" != typeof b2 && (console.warn("Deprecated: Expected third argument to be a object"), b2 = { autoBom: !b2 }), b2.autoBom && /^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(a2.type) ? new Blob(["\uFEFF", a2], { type: a2.type }) : a2;
-        }
-        function c(a2, b2, c2) {
-          var d2 = new XMLHttpRequest();
-          d2.open("GET", a2), d2.responseType = "blob", d2.onload = function() {
-            g(d2.response, b2, c2);
-          }, d2.onerror = function() {
-            console.error("could not download file");
-          }, d2.send();
-        }
-        function d(a2) {
-          var b2 = new XMLHttpRequest();
-          b2.open("HEAD", a2, false);
-          try {
-            b2.send();
-          } catch (a3) {
-          }
-          return 200 <= b2.status && 299 >= b2.status;
-        }
-        function e(a2) {
-          try {
-            a2.dispatchEvent(new MouseEvent("click"));
-          } catch (c2) {
-            var b2 = document.createEvent("MouseEvents");
-            b2.initMouseEvent("click", true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null), a2.dispatchEvent(b2);
-          }
-        }
-        var f = "object" == typeof window && window.window === window ? window : "object" == typeof self && self.self === self ? self : "object" == typeof commonjsGlobal && commonjsGlobal.global === commonjsGlobal ? commonjsGlobal : void 0, a = f.navigator && /Macintosh/.test(navigator.userAgent) && /AppleWebKit/.test(navigator.userAgent) && !/Safari/.test(navigator.userAgent), g = f.saveAs || ("object" != typeof window || window !== f ? function() {
-        } : "download" in HTMLAnchorElement.prototype && !a ? function(b2, g2, h2) {
-          var i = f.URL || f.webkitURL, j = document.createElement("a");
-          g2 = g2 || b2.name || "download", j.download = g2, j.rel = "noopener", "string" == typeof b2 ? (j.href = b2, j.origin === location.origin ? e(j) : d(j.href) ? c(b2, g2, h2) : e(j, j.target = "_blank")) : (j.href = i.createObjectURL(b2), setTimeout(function() {
-            i.revokeObjectURL(j.href);
-          }, 4e4), setTimeout(function() {
-            e(j);
-          }, 0));
-        } : "msSaveOrOpenBlob" in navigator ? function(f2, g2, h2) {
-          if (g2 = g2 || f2.name || "download", "string" != typeof f2) navigator.msSaveOrOpenBlob(b(f2, h2), g2);
-          else if (d(f2)) c(f2, g2, h2);
-          else {
-            var i = document.createElement("a");
-            i.href = f2, i.target = "_blank", setTimeout(function() {
-              e(i);
-            });
-          }
-        } : function(b2, d2, e2, g2) {
-          if (g2 = g2 || open("", "_blank"), g2 && (g2.document.title = g2.document.body.innerText = "downloading..."), "string" == typeof b2) return c(b2, d2, e2);
-          var h2 = "application/octet-stream" === b2.type, i = /constructor/i.test(f.HTMLElement) || f.safari, j = /CriOS\/[\d]+/.test(navigator.userAgent);
-          if ((j || h2 && i || a) && "undefined" != typeof FileReader) {
-            var k = new FileReader();
-            k.onloadend = function() {
-              var a2 = k.result;
-              a2 = j ? a2 : a2.replace(/^data:[^;]*;/, "data:attachment/file;"), g2 ? g2.location.href = a2 : location = a2, g2 = null;
-            }, k.readAsDataURL(b2);
-          } else {
-            var l = f.URL || f.webkitURL, m = l.createObjectURL(b2);
-            g2 ? g2.location = m : location.href = m, g2 = null, setTimeout(function() {
-              l.revokeObjectURL(m);
-            }, 4e4);
-          }
-        });
-        f.saveAs = g.saveAs = g, module2.exports = g;
-      });
-    })(FileSaver_min);
-    var FileSaver_minExports = FileSaver_min.exports;
-    class FileHandlerCore {
-      async uploadFile(url, file, options, dataType) {
-        if (!url) {
-          throw new Error(`url 不能空`);
-        }
-        if (!file) {
-          throw new Error(`file 不能空`);
-        }
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("options", JSON.stringify(options));
-        formData.append("dataType", dataType);
-        const response = await fetch(url, {
-          method: "POST",
-          body: formData
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.statusText}`);
-        }
-        const data = await response.json();
-        return data;
-      }
-      async saveFileByFileId(url, fileId, filePath) {
-        const response = await fetch(url, {
-          method: "POST",
-          body: JSON.stringify({ fileId })
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.statusText}`);
-        }
-        const blob = await response.blob();
-        FileSaver_minExports.saveAs(blob, filePath);
-      }
-      async saveAsFile(url, filePath) {
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.statusText}`);
-        }
-        const blob = await response.blob();
-        FileSaver_minExports.saveAs(blob, filePath);
-      }
-    }
-    const defaltOption = {
-      "dataType": "sql",
-      "dbType": "mysql",
-      "authorName": "tooneCode",
-      "packageName": "com.toone.masterdata",
-      "returnUtilSuccess": "Return.success",
-      "returnUtilFailure": "Return.error",
-      "isPackageType": true,
-      "isSwagger": false,
-      "isAutoImport": true,
-      "isWithPackage": false,
-      "isComment": true,
-      "isLombok": true,
-      "ignorePrefix": "sys_",
-      "tinyintTransType": "Date",
-      "nameCaseType": "CamelCase"
-    };
-    class Translate2j {
-      async sql2j(sqlContent, options, fileName) {
-        const param = {
-          tableSql: sqlContent,
-          options: this.mergeOptions(options)
-        };
-        let url = "/code/generate4SQL";
-        {
-          url = "http://codegen.t.vtoone.com/generator" + url;
-        }
-        let abor = new AbortController();
-        const timerout = setTimeout(() => {
-          abor == null ? void 0 : abor.abort();
-        }, 1e3 * 10);
-        const response = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          signal: abor.signal,
-          body: JSON.stringify(param)
-        });
-        abor = null;
-        timerout && clearTimeout(timerout);
-        if (response.ok) {
-          let { code, msg } = await response.json();
-          if (code === 0) {
-            await new Promise((resolve2) => setTimeout(resolve2, 1e3));
-            await this.downloadByUrl(msg[0].fileUrl, fileName);
-            return;
-          }
-          throw new Error(msg);
-        }
-        throw new Error("服务异常");
-      }
-      async excelFile2J(file, options) {
-        let url = "/code/generate4file";
-        {
-          url = "http://codegen.t.vtoone.com/generator" + url;
-        }
-        const fileHandler = new FileHandlerCore();
-        let { code, msg } = await fileHandler.uploadFile(
-          url,
-          file,
-          this.mergeOptions(options)
-        );
-        if (code === 0) {
-          await this.downloadResult(msg[0].fileId, file.name, fileHandler);
-        } else {
-          throw new Error(msg);
-        }
-      }
-      async downloadResult(fileId, saveName, fileHandler) {
-        let url = "/code/download";
-        {
-          url = "http://codegen.t.vtoone.com/generator" + url;
-        }
-        url += `?fileId=${fileId}`;
-        await this.downloadByUrl(url, saveName, fileHandler);
-      }
-      async downloadByUrl(url, saveName, fileHandler) {
-        if (saveName) {
-          saveName = saveName.substring(0, saveName.lastIndexOf(".")) + ".zip";
-        }
-        await (fileHandler || new FileHandlerCore()).saveAsFile(url, saveName);
-      }
-      mergeOptions(options) {
-        return Object.assign(defaltOption, options || {});
-      }
-    }
-    const readFileText = (file) => {
-      return new Promise((resolve2, reject) => {
-        const reader = new FileReader();
-        reader.onload = async () => {
-          resolve2(reader.result);
-        };
-        reader.onerror = (e) => {
-          reject(e || "文件读取失败");
-        };
-        reader.readAsText(file, "utf-8");
-      });
-    };
-    const _hoisted_1$d = ["accept"];
-    const _hoisted_2$b = { class: "button-container" };
-    const defaultSqlType = "mysql";
-    const _sfc_main$f = {
-      __name: "SQL2JavaTool",
-      setup(__props) {
-        const dialogFormVisible = ref(false);
-        const fileUploadInputRef = ref(null);
-        const acceptExt = ref(".sql");
-        const inputSqlRef = ref(null);
-        const doing = ref(false);
-        const sqlStr = ref("");
-        const fileName = ref("");
-        const sqlTypeOption = ref([defaultSqlType, "oracle", "postgresql", "sqlserver"]);
-        const sqlType = ref(defaultSqlType);
-        const data = ref({
-          title: "SQL转Java类",
-          subtitle: "根据SQL脚本生成Java类",
-          name: "sql2java",
-          //click: onToolClick,
-          disabled: false
-        });
-        const demo = ref(`CREATE TABLE md_template_table  (
-  id varchar(64) NOT NULL,
-  project_id varchar(64),
-  org_name varchar(255),
-  leader varchar(20),
-  duty varchar(20),
-  phone varchar(20) COMMENT '手机号码',
-  remark varchar(255) NULL DEFAULT NULL,
-  PRIMARY KEY (id) USING BTREE
-) COMMENT= '模板样例表';`);
-        const onToolClick = () => {
-          dialogFormVisible.value = true;
-          setTimeout(() => {
-            var _a7;
-            (_a7 = inputSqlRef.value) == null ? void 0 : _a7.focus();
-          }, 200);
-        };
-        const onUploadFileChange = async (e) => {
-          const file = e.target.files[0];
-          try {
-            fileName.value = file.name;
-            readFileText(file).then(async (result) => {
-              sqlStr.value = result == null ? void 0 : result.trim();
-            }).catch((e2) => {
-              ElMessage.error("文件读取失败");
-              console.error(e2);
-            });
-          } catch (e2) {
-            ElMessage.error("文件格式错误");
-            console.error(e2);
-          } finally {
-            fileUploadInputRef.value.value = "";
-          }
-        };
-        const doGenerate = async () => {
-          data.value.disabled = true;
-          doing.value = true;
-          const options = { dbType: sqlType.value || defaultSqlType, dataType: "sql" };
-          try {
-            await new Translate2j().sql2j(sqlStr.value, options, fileName.value || "sql2java.zip");
-            dialogFormVisible.value = false;
-          } catch (e) {
-            ElMessage.error("SQL转java失败");
-            console.error(e);
-          }
-          fileName.value = void 0;
-          data.value.disabled = false;
-          doing.value = false;
-        };
-        const beforeClose = (done) => {
-          if (doing.value === true) {
-            return;
-          }
-          done == null ? void 0 : done();
-          sqlStr.value = "";
-          doing.value = false;
-        };
-        const templateDownload = () => {
-          sqlStr.value = demo.value;
-          sqlType.value = defaultSqlType;
-        };
-        return (_ctx, _cache) => {
-          const _component_el_option = ElOption;
-          const _component_el_select = ElSelect;
-          const _component_el_form_item = ElFormItem;
-          const _component_el_input = ElInput;
-          const _component_el_form = ElForm;
-          const _component_el_button = ElButton;
-          const _component_el_col = ElCol;
-          const _component_el_row = ElRow;
-          const _component_el_dialog = ElDialog;
-          return openBlock(), createElementBlock(Fragment, null, [
-            createVNode(ToolView, {
-              data: data.value,
-              onClick: onToolClick
-            }, null, 8, ["data"]),
-            createBaseVNode("input", {
-              ref_key: "fileUploadInputRef",
-              ref: fileUploadInputRef,
-              type: "file",
-              class: "fileInput-hide",
-              onChange: onUploadFileChange,
-              accept: acceptExt.value,
-              required: ""
-            }, null, 40, _hoisted_1$d),
-            createVNode(_component_el_dialog, {
-              modelValue: dialogFormVisible.value,
-              "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => dialogFormVisible.value = $event),
-              title: "SQL转Java类",
-              width: "95%",
-              "destroy-on-close": "",
-              "close-on-click-modal": !doing.value,
-              "before-close": beforeClose
-            }, {
-              default: withCtx(() => [
-                createVNode(_component_el_form, null, {
-                  default: withCtx(() => [
-                    createVNode(_component_el_form_item, { label: "数据库" }, {
-                      default: withCtx(() => [
-                        createVNode(_component_el_select, {
-                          modelValue: sqlType.value,
-                          "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => sqlType.value = $event),
-                          placeholder: "Select"
-                        }, {
-                          default: withCtx(() => [
-                            (openBlock(true), createElementBlock(Fragment, null, renderList(sqlTypeOption.value, (item) => {
-                              return openBlock(), createBlock(_component_el_option, {
-                                key: item,
-                                label: item,
-                                value: item
-                              }, null, 8, ["label", "value"]);
-                            }), 128))
-                          ]),
-                          _: 1
-                        }, 8, ["modelValue"])
-                      ]),
-                      _: 1
-                    }),
-                    createVNode(_component_el_form_item, null, {
-                      default: withCtx(() => [
-                        createVNode(_component_el_input, {
-                          ref_key: "inputSqlRef",
-                          ref: inputSqlRef,
-                          type: "textarea",
-                          placeholder: "请键入SQL脚本或选择文件",
-                          rows: 10,
-                          modelValue: sqlStr.value,
-                          "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => sqlStr.value = $event),
-                          autosize: { minRows: 10, maxRows: 20 },
-                          disabled: doing.value
-                        }, null, 8, ["modelValue", "disabled"])
-                      ]),
-                      _: 1
-                    })
-                  ]),
-                  _: 1
-                }),
-                createVNode(_component_el_row, {
-                  gutter: 20,
-                  justify: "space-between",
-                  class: "row-button-container"
-                }, {
-                  default: withCtx(() => [
-                    createVNode(_component_el_col, { span: 18 }, {
-                      default: withCtx(() => [
-                        createVNode(_component_el_button, {
-                          onClick: _cache[2] || (_cache[2] = ($event) => fileUploadInputRef.value.click()),
-                          disabled: doing.value,
-                          title: "打开JSON文件",
-                          link: ""
-                        }, {
-                          default: withCtx(() => [
-                            createTextVNode("选择文件")
-                          ]),
-                          _: 1
-                        }, 8, ["disabled"]),
-                        createVNode(_component_el_button, {
-                          onClick: templateDownload,
-                          disabled: doing.value,
-                          link: "",
-                          title: "加载样例模板"
-                        }, {
-                          default: withCtx(() => [
-                            createTextVNode("模板")
-                          ]),
-                          _: 1
-                        }, 8, ["disabled"])
-                      ]),
-                      _: 1
-                    }),
-                    createVNode(_component_el_col, { span: 6 }, {
-                      default: withCtx(() => [
-                        createBaseVNode("div", _hoisted_2$b, [
-                          createVNode(_component_el_button, {
-                            onClick: doGenerate,
-                            loading: doing.value,
-                            disabled: doing.value || !sqlStr.value,
-                            plain: "",
-                            type: "primary"
-                          }, {
-                            default: withCtx(() => [
-                              createTextVNode("生成")
-                            ]),
-                            _: 1
-                          }, 8, ["loading", "disabled"])
-                        ])
-                      ]),
-                      _: 1
-                    })
-                  ]),
-                  _: 1
-                })
-              ]),
-              _: 1
-            }, 8, ["modelValue", "close-on-click-modal"])
-          ], 64);
-        };
-      }
-    };
-    const SQL2JavaTool = /* @__PURE__ */ _export_sfc$1(_sfc_main$f, [["__scopeId", "data-v-d9327924"]]);
-    const _hoisted_1$c = { class: "button-container" };
-    const _sfc_main$e = {
-      __name: "JSON2JavaTool",
-      setup(__props) {
-        const dialogFormVisible = ref(false);
-        const fileUploadInputRef = ref(null);
-        const inputJsonrRef = ref(null);
-        const doing = ref(false);
-        const jsonStr = ref("");
-        const fileName = ref("");
-        const data = ref({
-          title: "JSON转Java类",
-          subtitle: "根据JSON数据生成Java类",
-          name: "json2java",
-          disabled: false
-        });
-        const demo = ref(`[{
-        "table": {
-            "name": "md_project",
-            "comment": "项目"
-        },
-        "fields": [{
-                "name": "id",
-                "dataType": "varchar(64)",
-                "comment": ""
-            }, {
-                "name": "name",
-                "dataType": "varchar(255)",
-                "comment": "名称"
-            }, {
-                "name": "sex",
-                "dataType": "tinyint",
-                "comment": "性别"
-            }, {
-                "name": "birthday",
-                "dataType": "date",
-                "comment": "生日"
-            }
-        ]
-    }
-]`);
-        const onToolClick = () => {
-          dialogFormVisible.value = true;
-          setTimeout(() => {
-            var _a7;
-            (_a7 = inputJsonrRef.value) == null ? void 0 : _a7.focus();
-          }, 200);
-        };
-        const onUploadFileChange = async (e) => {
-          const file = e.target.files[0];
-          try {
-            fileName.value = file.name;
-            readFileText(file).then(async (result) => {
-              jsonStr.value = result;
-            }).catch((e2) => {
-              ElMessage.error("文件读取失败");
-              console.error(e2);
-            });
-          } catch (e2) {
-            ElMessage.error("文件格式错误");
-            console.error(e2);
-          } finally {
-            fileUploadInputRef.value.value = "";
-          }
-        };
-        const doChanged = async () => {
-          data.value.disabled = true;
-          doing.value = true;
-          try {
-            let option = { dataType: "json" };
-            await new Translate2j().sql2j(jsonStr.value, option, fileName.value || "json2java.zip");
-            dialogFormVisible.value = false;
-          } catch (e) {
-            ElMessage.error("JSON转java失败");
-            console.error(e);
-          }
-          fileName.value = void 0;
-          data.value.disabled = false;
-          doing.value = false;
-        };
-        const beforeClose = (done) => {
-          if (doing.value === true) {
-            return;
-          }
-          done == null ? void 0 : done();
-          jsonStr.value = "";
-          doing.value = false;
-        };
-        const templateDownload = () => {
-          jsonStr.value = demo.value;
-        };
-        return (_ctx, _cache) => {
-          const _component_el_input = ElInput;
-          const _component_el_button = ElButton;
-          const _component_el_col = ElCol;
-          const _component_el_row = ElRow;
-          const _component_el_dialog = ElDialog;
-          return openBlock(), createElementBlock(Fragment, null, [
-            createVNode(ToolView, {
-              data: data.value,
-              onClick: onToolClick
-            }, null, 8, ["data"]),
-            createBaseVNode("input", {
-              ref_key: "fileUploadInputRef",
-              ref: fileUploadInputRef,
-              type: "file",
-              class: "fileInput-hide",
-              onChange: onUploadFileChange,
-              accept: ".json",
-              required: ""
-            }, null, 544),
-            createVNode(_component_el_dialog, {
-              modelValue: dialogFormVisible.value,
-              "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => dialogFormVisible.value = $event),
-              title: "JSON转Java类",
-              width: "95%",
-              "destroy-on-close": "",
-              "close-on-click-modal": !doing.value,
-              "before-close": beforeClose
-            }, {
-              default: withCtx(() => [
-                createVNode(_component_el_input, {
-                  ref_key: "inputJsonrRef",
-                  ref: inputJsonrRef,
-                  type: "textarea",
-                  placeholder: "请键入JSON字符",
-                  rows: 10,
-                  modelValue: jsonStr.value,
-                  "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => jsonStr.value = $event),
-                  autosize: { minRows: 10, maxRows: 20 },
-                  disabled: doing.value
-                }, null, 8, ["modelValue", "disabled"]),
-                createVNode(_component_el_row, {
-                  gutter: 20,
-                  justify: "space-between",
-                  class: "row-button-container"
-                }, {
-                  default: withCtx(() => [
-                    createVNode(_component_el_col, { span: 18 }, {
-                      default: withCtx(() => [
-                        createVNode(_component_el_button, {
-                          onClick: _cache[1] || (_cache[1] = ($event) => fileUploadInputRef.value.click()),
-                          disabled: doing.value,
-                          title: "打开JSON文件",
-                          link: ""
-                        }, {
-                          default: withCtx(() => [
-                            createTextVNode("选择文件")
-                          ]),
-                          _: 1
-                        }, 8, ["disabled"]),
-                        createVNode(_component_el_button, {
-                          onClick: templateDownload,
-                          disabled: doing.value,
-                          link: "",
-                          title: "加载样例模板"
-                        }, {
-                          default: withCtx(() => [
-                            createTextVNode("模板")
-                          ]),
-                          _: 1
-                        }, 8, ["disabled"])
-                      ]),
-                      _: 1
-                    }),
-                    createVNode(_component_el_col, { span: 6 }, {
-                      default: withCtx(() => [
-                        createBaseVNode("div", _hoisted_1$c, [
-                          createVNode(_component_el_button, {
-                            onClick: doChanged,
-                            loading: doing.value,
-                            disabled: doing.value || !jsonStr.value
-                          }, {
-                            default: withCtx(() => [
-                              createTextVNode("生成")
-                            ]),
-                            _: 1
-                          }, 8, ["loading", "disabled"])
-                        ])
-                      ]),
-                      _: 1
-                    })
-                  ]),
-                  _: 1
-                })
-              ]),
-              _: 1
-            }, 8, ["modelValue", "close-on-click-modal"])
-          ], 64);
-        };
-      }
-    };
-    const JSON2JavaTool = /* @__PURE__ */ _export_sfc$1(_sfc_main$e, [["__scopeId", "data-v-16888faa"]]);
-    var TEXT_PLAIN = "text/plain";
-    function warnOrLog() {
-      (console.warn || console.log).apply(console, arguments);
-    }
-    warnOrLog.bind("[clipboard-polyfill]");
-    var originalWindow = typeof window === "undefined" ? void 0 : window;
-    var originalGlobalThis = typeof globalThis === "undefined" ? void 0 : globalThis;
-    var _a, _b, _c;
-    var promiseConstructorImpl = (_c = (_a = originalWindow) == null ? void 0 : _a.Promise) != null ? _c : (_b = originalGlobalThis) == null ? void 0 : _b.Promise;
-    function getPromiseConstructor() {
-      if (!promiseConstructorImpl) {
-        throw new Error(
-          "No `Promise` implementation available for `clipboard-polyfill`. Consider using: https://github.com/lgarron/clipboard-polyfill#flat-file-version-with-promise-included"
-        );
-      }
-      return promiseConstructorImpl;
-    }
-    var originalNavigator = typeof navigator === "undefined" ? void 0 : navigator;
-    var originalNavigatorClipboard = originalNavigator == null ? void 0 : originalNavigator.clipboard;
-    var _a2;
-    (_a2 = originalNavigatorClipboard == null ? void 0 : originalNavigatorClipboard.read) == null ? void 0 : _a2.bind(
-      originalNavigatorClipboard
-    );
-    var _a3;
-    (_a3 = originalNavigatorClipboard == null ? void 0 : originalNavigatorClipboard.readText) == null ? void 0 : _a3.bind(
-      originalNavigatorClipboard
-    );
-    var _a4;
-    (_a4 = originalNavigatorClipboard == null ? void 0 : originalNavigatorClipboard.write) == null ? void 0 : _a4.bind(
-      originalNavigatorClipboard
-    );
-    var _a5;
-    var originalNavigatorClipboardWriteText = (_a5 = originalNavigatorClipboard == null ? void 0 : originalNavigatorClipboard.writeText) == null ? void 0 : _a5.bind(
-      originalNavigatorClipboard
-    );
-    var _a6;
-    (_a6 = originalWindow) == null ? void 0 : _a6.ClipboardItem;
-    var promiseConstructor = getPromiseConstructor();
-    var ieWindow = originalWindow;
-    function seemToBeInIE() {
-      return typeof ClipboardEvent === "undefined" && typeof (ieWindow == null ? void 0 : ieWindow.clipboardData) !== "undefined" && typeof (ieWindow == null ? void 0 : ieWindow.clipboardData.setData) !== "undefined";
-    }
-    function writeTextIE(text) {
-      if (!ieWindow.clipboardData) {
-        return false;
-      }
-      var success = ieWindow.clipboardData.setData("Text", text);
-      return success;
-    }
-    function copyListener(tracker, data, e) {
-      tracker.success = true;
-      for (var type in data) {
-        var value = data[type];
-        var clipboardData = e.clipboardData;
-        clipboardData.setData(type, value);
-        if (type === TEXT_PLAIN && clipboardData.getData(type) !== value) {
-          tracker.success = false;
-        }
-      }
-      e.preventDefault();
-    }
-    function execCopy(data) {
-      var tracker = { success: false };
-      var listener = copyListener.bind(this, tracker, data);
-      document.addEventListener("copy", listener);
-      try {
-        document.execCommand("copy");
-      } finally {
-        document.removeEventListener("copy", listener);
-      }
-      return tracker.success;
-    }
-    function copyUsingTempSelection(e, data) {
-      selectionSet(e);
-      var success = execCopy(data);
-      selectionClear();
-      return success;
-    }
-    function copyUsingTempElem(data) {
-      var tempElem = document.createElement("div");
-      tempElem.setAttribute("style", "-webkit-user-select: text !important");
-      tempElem.textContent = "temporary element";
-      document.body.appendChild(tempElem);
-      var success = copyUsingTempSelection(tempElem, data);
-      document.body.removeChild(tempElem);
-      return success;
-    }
-    function copyTextUsingDOM(str) {
-      var tempElem = document.createElement("div");
-      tempElem.setAttribute("style", "-webkit-user-select: text !important");
-      var spanParent = tempElem;
-      if (tempElem.attachShadow) {
-        spanParent = tempElem.attachShadow({ mode: "open" });
-      }
-      var span = document.createElement("span");
-      span.innerText = str;
-      spanParent.appendChild(span);
-      document.body.appendChild(tempElem);
-      selectionSet(span);
-      var result = document.execCommand("copy");
-      selectionClear();
-      document.body.removeChild(tempElem);
-      return result;
-    }
-    function selectionSet(elem) {
-      var sel = document.getSelection();
-      if (sel) {
-        var range2 = document.createRange();
-        range2.selectNodeContents(elem);
-        sel.removeAllRanges();
-        sel.addRange(range2);
-      }
-    }
-    function selectionClear() {
-      var sel = document.getSelection();
-      if (sel) {
-        sel.removeAllRanges();
-      }
-    }
-    function writeFallback(stringItem) {
-      var hasTextPlain = TEXT_PLAIN in stringItem;
-      if (seemToBeInIE()) {
-        if (!hasTextPlain) {
-          throw new Error("No `text/plain` value was specified.");
-        }
-        if (writeTextIE(stringItem[TEXT_PLAIN])) {
-          return true;
-        } else {
-          throw new Error("Copying failed, possibly because the user rejected it.");
-        }
-      }
-      if (execCopy(stringItem)) {
-        return true;
-      }
-      if (navigator.userAgent.indexOf("Edge") > -1) {
-        return true;
-      }
-      if (copyUsingTempSelection(document.body, stringItem)) {
-        return true;
-      }
-      if (copyUsingTempElem(stringItem)) {
-        return true;
-      }
-      if (copyTextUsingDOM(stringItem[TEXT_PLAIN])) {
-        return true;
-      }
-      return false;
-    }
-    promiseConstructor.resolve();
-    promiseConstructor.resolve(false);
-    function rejectThrownErrors(executor) {
-      return new promiseConstructor((resolve2, reject) => {
-        try {
-          resolve2(executor());
-        } catch (e) {
-          reject(e);
-        }
-      });
-    }
-    function stringToStringItem(s) {
-      var stringItem = {};
-      stringItem[TEXT_PLAIN] = s;
-      return stringItem;
-    }
-    function writeText(s) {
-      if (originalNavigatorClipboardWriteText) {
-        return originalNavigatorClipboardWriteText(s).catch((e) => {
-          writeTextStringFallbackPromise(s);
-        });
-      }
-      return writeTextStringFallbackPromise(s);
-    }
-    function writeTextStringFallbackPromise(s) {
-      return rejectThrownErrors(
-        () => promiseConstructor.resolve(writeTextStringFallback(s))
-      );
-    }
-    function writeTextStringFallback(s) {
-      if (!writeFallback(stringToStringItem(s))) {
-        throw new Error("writeText() failed");
-      }
-    }
-    const _hoisted_1$b = { class: "rgb2hex-result-show" };
-    const _hoisted_2$a = { class: "p-3 rgb2hex-color-result" };
-    const _hoisted_3$9 = { class: "rgb2hex-result-show" };
-    const _hoisted_4$3 = { class: "p-3 rgb2hex-color-result" };
-    const formLabelWidth = "100px";
-    const _sfc_main$d = {
-      __name: "ColorTransferTool",
-      setup(__props) {
-        const dialogFormVisible = ref(false);
-        const form = reactive({
-          rgb: "106,90,205",
-          hex: "#6a5acd"
-        });
-        const rgbToHexResult = ref("#6a5acd");
-        const hex2rgbResult = computed(() => {
-          return hexToRgb(form.hex);
-        });
-        let data = ref({ title: "RGB 转 HEX", subtitle: "颜色RGB<-->HEX互转", name: "rgb-hex", disabled: false });
-        watch(() => form.rgb, (n) => {
-          rgbToHexResult.value = rgbToHex2(n);
-        });
-        const onToolClick = () => {
-          dialogFormVisible.value = true;
-        };
-        const copy = (text) => {
-          writeText(text).then(() => {
-            ElMessage.success({
-              duration: 1500,
-              message: "已复制"
-            });
-          });
-        };
-        function rgbToHex2(rgb) {
-          let colors = rgb.toLowerCase().replace("rgb", "").replace("(", "").replace(")", "").split(",");
-          const r = parseInt(colors[0]).toString(16).length === 1 ? "0" + parseInt(colors[0]).toString(16) : parseInt(colors[0]).toString(16);
-          const g = parseInt(colors[1]).toString(16).length === 1 ? "0" + parseInt(colors[1]).toString(16) : parseInt(colors[1]).toString(16);
-          const b = parseInt(colors[2]).toString(16).length === 1 ? "0" + parseInt(colors[2]).toString(16) : parseInt(colors[2]).toString(16);
-          return `#${r}${g}${b}`;
-        }
-        function hexToRgb(hex) {
-          let str = hex.replace("#", "");
-          if (str.length % 3) {
-            return "格式有误";
-          }
-          let count = str.length / 3;
-          let power = 6 / str.length;
-          let r = parseInt("0x" + str.substring(0 * count, 1 * count)) ** power;
-          let g = parseInt("0x" + str.substring(1 * count, 2 * count)) ** power;
-          let b = parseInt("0x" + str.substring(2 * count)) ** power;
-          return `${r}, ${g}, ${b}`;
-        }
-        return (_ctx, _cache) => {
-          const _component_el_input = ElInput;
-          const _component_el_form_item = ElFormItem;
-          const _component_el_button = ElButton;
-          const _component_el_form = ElForm;
-          const _component_el_dialog = ElDialog;
-          return openBlock(), createElementBlock(Fragment, null, [
-            createVNode(ToolView, {
-              data: unref(data),
-              onClick: onToolClick
-            }, null, 8, ["data"]),
-            createVNode(_component_el_dialog, {
-              modelValue: dialogFormVisible.value,
-              "onUpdate:modelValue": _cache[4] || (_cache[4] = ($event) => dialogFormVisible.value = $event),
-              title: "颜色转换",
-              width: "95%",
-              "destroy-on-close": ""
-            }, {
-              default: withCtx(() => [
-                createVNode(_component_el_form, {
-                  model: form,
-                  "label-position": "top"
-                }, {
-                  default: withCtx(() => [
-                    createVNode(_component_el_form_item, {
-                      label: "RGB --> HEX",
-                      "label-width": formLabelWidth
-                    }, {
-                      default: withCtx(() => [
-                        createVNode(_component_el_input, {
-                          size: "large",
-                          modelValue: form.rgb,
-                          "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => form.rgb = $event),
-                          autocomplete: "off"
-                        }, null, 8, ["modelValue"])
-                      ]),
-                      _: 1
-                    }),
-                    createVNode(_component_el_form_item, {
-                      label: "",
-                      "label-width": formLabelWidth,
-                      style: { "padding-bottom": "10px", "border-bottom": "1px dashed var(--el-border-color)" }
-                    }, {
-                      default: withCtx(() => [
-                        createBaseVNode("div", _hoisted_1$b, [
-                          createBaseVNode("span", {
-                            class: "rgb2hex-color-highlight",
-                            style: normalizeStyle({ "background": rgbToHexResult.value })
-                          }, null, 4),
-                          createBaseVNode("span", _hoisted_2$a, toDisplayString(rgbToHexResult.value), 1),
-                          createVNode(_component_el_button, {
-                            onClick: _cache[1] || (_cache[1] = ($event) => copy(rgbToHexResult.value)),
-                            link: "",
-                            title: "复制转换结果"
-                          }, {
-                            default: withCtx(() => [
-                              createTextVNode("复制")
-                            ]),
-                            _: 1
-                          })
-                        ])
-                      ]),
-                      _: 1
-                    }),
-                    createVNode(_component_el_form_item, {
-                      label: "HEX --> RGB",
-                      "label-width": formLabelWidth
-                    }, {
-                      default: withCtx(() => [
-                        createVNode(_component_el_input, {
-                          size: "large",
-                          modelValue: form.hex,
-                          "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => form.hex = $event),
-                          autocomplete: "off"
-                        }, null, 8, ["modelValue"])
-                      ]),
-                      _: 1
-                    }),
-                    createVNode(_component_el_form_item, {
-                      label: "",
-                      "label-width": formLabelWidth
-                    }, {
-                      default: withCtx(() => [
-                        createBaseVNode("div", _hoisted_3$9, [
-                          createBaseVNode("span", {
-                            class: "rgb2hex-color-highlight",
-                            style: normalizeStyle([form.hex && { "background-color": form.hex }])
-                          }, null, 4),
-                          createBaseVNode("span", _hoisted_4$3, toDisplayString(hex2rgbResult.value), 1),
-                          createVNode(_component_el_button, {
-                            onClick: _cache[3] || (_cache[3] = ($event) => copy(hex2rgbResult.value)),
-                            link: "",
-                            title: "复制转换结果"
-                          }, {
-                            default: withCtx(() => [
-                              createTextVNode("复制")
-                            ]),
-                            _: 1
-                          })
-                        ])
-                      ]),
-                      _: 1
-                    })
-                  ]),
-                  _: 1
-                }, 8, ["model"])
-              ]),
-              _: 1
-            }, 8, ["modelValue"])
-          ], 64);
-        };
-      }
-    };
-    const ColorTransferTool = /* @__PURE__ */ _export_sfc$1(_sfc_main$d, [["__scopeId", "data-v-82fdb124"]]);
-    var browser = {};
-    var canPromise$1 = function() {
-      return typeof Promise === "function" && Promise.prototype && Promise.prototype.then;
-    };
-    var qrcode = {};
-    var utils$1 = {};
-    let toSJISFunction;
-    const CODEWORDS_COUNT = [
-      0,
-      // Not used
-      26,
-      44,
-      70,
-      100,
-      134,
-      172,
-      196,
-      242,
-      292,
-      346,
-      404,
-      466,
-      532,
-      581,
-      655,
-      733,
-      815,
-      901,
-      991,
-      1085,
-      1156,
-      1258,
-      1364,
-      1474,
-      1588,
-      1706,
-      1828,
-      1921,
-      2051,
-      2185,
-      2323,
-      2465,
-      2611,
-      2761,
-      2876,
-      3034,
-      3196,
-      3362,
-      3532,
-      3706
-    ];
-    utils$1.getSymbolSize = function getSymbolSize2(version2) {
-      if (!version2) throw new Error('"version" cannot be null or undefined');
-      if (version2 < 1 || version2 > 40) throw new Error('"version" should be in range from 1 to 40');
-      return version2 * 4 + 17;
-    };
-    utils$1.getSymbolTotalCodewords = function getSymbolTotalCodewords(version2) {
-      return CODEWORDS_COUNT[version2];
-    };
-    utils$1.getBCHDigit = function(data) {
-      let digit = 0;
-      while (data !== 0) {
-        digit++;
-        data >>>= 1;
-      }
-      return digit;
-    };
-    utils$1.setToSJISFunction = function setToSJISFunction(f) {
-      if (typeof f !== "function") {
-        throw new Error('"toSJISFunc" is not a valid function.');
-      }
-      toSJISFunction = f;
-    };
-    utils$1.isKanjiModeEnabled = function() {
-      return typeof toSJISFunction !== "undefined";
-    };
-    utils$1.toSJIS = function toSJIS(kanji2) {
-      return toSJISFunction(kanji2);
-    };
-    var errorCorrectionLevel = {};
-    (function(exports2) {
-      exports2.L = { bit: 1 };
-      exports2.M = { bit: 0 };
-      exports2.Q = { bit: 3 };
-      exports2.H = { bit: 2 };
-      function fromString(string2) {
-        if (typeof string2 !== "string") {
-          throw new Error("Param is not a string");
-        }
-        const lcStr = string2.toLowerCase();
-        switch (lcStr) {
-          case "l":
-          case "low":
-            return exports2.L;
-          case "m":
-          case "medium":
-            return exports2.M;
-          case "q":
-          case "quartile":
-            return exports2.Q;
-          case "h":
-          case "high":
-            return exports2.H;
-          default:
-            throw new Error("Unknown EC Level: " + string2);
-        }
-      }
-      exports2.isValid = function isValid(level) {
-        return level && typeof level.bit !== "undefined" && level.bit >= 0 && level.bit < 4;
-      };
-      exports2.from = function from(value, defaultValue) {
-        if (exports2.isValid(value)) {
-          return value;
-        }
-        try {
-          return fromString(value);
-        } catch (e) {
-          return defaultValue;
-        }
-      };
-    })(errorCorrectionLevel);
-    function BitBuffer$1() {
-      this.buffer = [];
-      this.length = 0;
-    }
-    BitBuffer$1.prototype = {
-      get: function(index) {
-        const bufIndex = Math.floor(index / 8);
-        return (this.buffer[bufIndex] >>> 7 - index % 8 & 1) === 1;
-      },
-      put: function(num, length) {
-        for (let i = 0; i < length; i++) {
-          this.putBit((num >>> length - i - 1 & 1) === 1);
-        }
-      },
-      getLengthInBits: function() {
-        return this.length;
-      },
-      putBit: function(bit) {
-        const bufIndex = Math.floor(this.length / 8);
-        if (this.buffer.length <= bufIndex) {
-          this.buffer.push(0);
-        }
-        if (bit) {
-          this.buffer[bufIndex] |= 128 >>> this.length % 8;
-        }
-        this.length++;
-      }
-    };
-    var bitBuffer = BitBuffer$1;
-    function BitMatrix$1(size2) {
-      if (!size2 || size2 < 1) {
-        throw new Error("BitMatrix size must be defined and greater than 0");
-      }
-      this.size = size2;
-      this.data = new Uint8Array(size2 * size2);
-      this.reservedBit = new Uint8Array(size2 * size2);
-    }
-    BitMatrix$1.prototype.set = function(row, col, value, reserved) {
-      const index = row * this.size + col;
-      this.data[index] = value;
-      if (reserved) this.reservedBit[index] = true;
-    };
-    BitMatrix$1.prototype.get = function(row, col) {
-      return this.data[row * this.size + col];
-    };
-    BitMatrix$1.prototype.xor = function(row, col, value) {
-      this.data[row * this.size + col] ^= value;
-    };
-    BitMatrix$1.prototype.isReserved = function(row, col) {
-      return this.reservedBit[row * this.size + col];
-    };
-    var bitMatrix = BitMatrix$1;
-    var alignmentPattern = {};
-    (function(exports2) {
-      const getSymbolSize2 = utils$1.getSymbolSize;
-      exports2.getRowColCoords = function getRowColCoords(version2) {
-        if (version2 === 1) return [];
-        const posCount = Math.floor(version2 / 7) + 2;
-        const size2 = getSymbolSize2(version2);
-        const intervals = size2 === 145 ? 26 : Math.ceil((size2 - 13) / (2 * posCount - 2)) * 2;
-        const positions = [size2 - 7];
-        for (let i = 1; i < posCount - 1; i++) {
-          positions[i] = positions[i - 1] - intervals;
-        }
-        positions.push(6);
-        return positions.reverse();
-      };
-      exports2.getPositions = function getPositions(version2) {
-        const coords = [];
-        const pos = exports2.getRowColCoords(version2);
-        const posLength = pos.length;
-        for (let i = 0; i < posLength; i++) {
-          for (let j = 0; j < posLength; j++) {
-            if (i === 0 && j === 0 || // top-left
-            i === 0 && j === posLength - 1 || // bottom-left
-            i === posLength - 1 && j === 0) {
-              continue;
-            }
-            coords.push([pos[i], pos[j]]);
-          }
-        }
-        return coords;
-      };
-    })(alignmentPattern);
-    var finderPattern = {};
-    const getSymbolSize = utils$1.getSymbolSize;
-    const FINDER_PATTERN_SIZE = 7;
-    finderPattern.getPositions = function getPositions(version2) {
-      const size2 = getSymbolSize(version2);
-      return [
-        // top-left
-        [0, 0],
-        // top-right
-        [size2 - FINDER_PATTERN_SIZE, 0],
-        // bottom-left
-        [0, size2 - FINDER_PATTERN_SIZE]
-      ];
-    };
-    var maskPattern = {};
-    (function(exports2) {
-      exports2.Patterns = {
-        PATTERN000: 0,
-        PATTERN001: 1,
-        PATTERN010: 2,
-        PATTERN011: 3,
-        PATTERN100: 4,
-        PATTERN101: 5,
-        PATTERN110: 6,
-        PATTERN111: 7
-      };
-      const PenaltyScores = {
-        N1: 3,
-        N2: 3,
-        N3: 40,
-        N4: 10
-      };
-      exports2.isValid = function isValid(mask) {
-        return mask != null && mask !== "" && !isNaN(mask) && mask >= 0 && mask <= 7;
-      };
-      exports2.from = function from(value) {
-        return exports2.isValid(value) ? parseInt(value, 10) : void 0;
-      };
-      exports2.getPenaltyN1 = function getPenaltyN1(data) {
-        const size2 = data.size;
-        let points = 0;
-        let sameCountCol = 0;
-        let sameCountRow = 0;
-        let lastCol = null;
-        let lastRow = null;
-        for (let row = 0; row < size2; row++) {
-          sameCountCol = sameCountRow = 0;
-          lastCol = lastRow = null;
-          for (let col = 0; col < size2; col++) {
-            let module2 = data.get(row, col);
-            if (module2 === lastCol) {
-              sameCountCol++;
-            } else {
-              if (sameCountCol >= 5) points += PenaltyScores.N1 + (sameCountCol - 5);
-              lastCol = module2;
-              sameCountCol = 1;
-            }
-            module2 = data.get(col, row);
-            if (module2 === lastRow) {
-              sameCountRow++;
-            } else {
-              if (sameCountRow >= 5) points += PenaltyScores.N1 + (sameCountRow - 5);
-              lastRow = module2;
-              sameCountRow = 1;
-            }
-          }
-          if (sameCountCol >= 5) points += PenaltyScores.N1 + (sameCountCol - 5);
-          if (sameCountRow >= 5) points += PenaltyScores.N1 + (sameCountRow - 5);
-        }
-        return points;
-      };
-      exports2.getPenaltyN2 = function getPenaltyN2(data) {
-        const size2 = data.size;
-        let points = 0;
-        for (let row = 0; row < size2 - 1; row++) {
-          for (let col = 0; col < size2 - 1; col++) {
-            const last = data.get(row, col) + data.get(row, col + 1) + data.get(row + 1, col) + data.get(row + 1, col + 1);
-            if (last === 4 || last === 0) points++;
-          }
-        }
-        return points * PenaltyScores.N2;
-      };
-      exports2.getPenaltyN3 = function getPenaltyN3(data) {
-        const size2 = data.size;
-        let points = 0;
-        let bitsCol = 0;
-        let bitsRow = 0;
-        for (let row = 0; row < size2; row++) {
-          bitsCol = bitsRow = 0;
-          for (let col = 0; col < size2; col++) {
-            bitsCol = bitsCol << 1 & 2047 | data.get(row, col);
-            if (col >= 10 && (bitsCol === 1488 || bitsCol === 93)) points++;
-            bitsRow = bitsRow << 1 & 2047 | data.get(col, row);
-            if (col >= 10 && (bitsRow === 1488 || bitsRow === 93)) points++;
-          }
-        }
-        return points * PenaltyScores.N3;
-      };
-      exports2.getPenaltyN4 = function getPenaltyN4(data) {
-        let darkCount = 0;
-        const modulesCount = data.data.length;
-        for (let i = 0; i < modulesCount; i++) darkCount += data.data[i];
-        const k = Math.abs(Math.ceil(darkCount * 100 / modulesCount / 5) - 10);
-        return k * PenaltyScores.N4;
-      };
-      function getMaskAt(maskPattern2, i, j) {
-        switch (maskPattern2) {
-          case exports2.Patterns.PATTERN000:
-            return (i + j) % 2 === 0;
-          case exports2.Patterns.PATTERN001:
-            return i % 2 === 0;
-          case exports2.Patterns.PATTERN010:
-            return j % 3 === 0;
-          case exports2.Patterns.PATTERN011:
-            return (i + j) % 3 === 0;
-          case exports2.Patterns.PATTERN100:
-            return (Math.floor(i / 2) + Math.floor(j / 3)) % 2 === 0;
-          case exports2.Patterns.PATTERN101:
-            return i * j % 2 + i * j % 3 === 0;
-          case exports2.Patterns.PATTERN110:
-            return (i * j % 2 + i * j % 3) % 2 === 0;
-          case exports2.Patterns.PATTERN111:
-            return (i * j % 3 + (i + j) % 2) % 2 === 0;
-          default:
-            throw new Error("bad maskPattern:" + maskPattern2);
-        }
-      }
-      exports2.applyMask = function applyMask(pattern, data) {
-        const size2 = data.size;
-        for (let col = 0; col < size2; col++) {
-          for (let row = 0; row < size2; row++) {
-            if (data.isReserved(row, col)) continue;
-            data.xor(row, col, getMaskAt(pattern, row, col));
-          }
-        }
-      };
-      exports2.getBestMask = function getBestMask(data, setupFormatFunc) {
-        const numPatterns = Object.keys(exports2.Patterns).length;
-        let bestPattern = 0;
-        let lowerPenalty = Infinity;
-        for (let p2 = 0; p2 < numPatterns; p2++) {
-          setupFormatFunc(p2);
-          exports2.applyMask(p2, data);
-          const penalty = exports2.getPenaltyN1(data) + exports2.getPenaltyN2(data) + exports2.getPenaltyN3(data) + exports2.getPenaltyN4(data);
-          exports2.applyMask(p2, data);
-          if (penalty < lowerPenalty) {
-            lowerPenalty = penalty;
-            bestPattern = p2;
-          }
-        }
-        return bestPattern;
-      };
-    })(maskPattern);
-    var errorCorrectionCode = {};
-    const ECLevel$1 = errorCorrectionLevel;
-    const EC_BLOCKS_TABLE = [
-      // L  M  Q  H
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      2,
-      2,
-      1,
-      2,
-      2,
-      4,
-      1,
-      2,
-      4,
-      4,
-      2,
-      4,
-      4,
-      4,
-      2,
-      4,
-      6,
-      5,
-      2,
-      4,
-      6,
-      6,
-      2,
-      5,
-      8,
-      8,
-      4,
-      5,
-      8,
-      8,
-      4,
-      5,
-      8,
-      11,
-      4,
-      8,
-      10,
-      11,
-      4,
-      9,
-      12,
-      16,
-      4,
-      9,
-      16,
-      16,
-      6,
-      10,
-      12,
-      18,
-      6,
-      10,
-      17,
-      16,
-      6,
-      11,
-      16,
-      19,
-      6,
-      13,
-      18,
-      21,
-      7,
-      14,
-      21,
-      25,
-      8,
-      16,
-      20,
-      25,
-      8,
-      17,
-      23,
-      25,
-      9,
-      17,
-      23,
-      34,
-      9,
-      18,
-      25,
-      30,
-      10,
-      20,
-      27,
-      32,
-      12,
-      21,
-      29,
-      35,
-      12,
-      23,
-      34,
-      37,
-      12,
-      25,
-      34,
-      40,
-      13,
-      26,
-      35,
-      42,
-      14,
-      28,
-      38,
-      45,
-      15,
-      29,
-      40,
-      48,
-      16,
-      31,
-      43,
-      51,
-      17,
-      33,
-      45,
-      54,
-      18,
-      35,
-      48,
-      57,
-      19,
-      37,
-      51,
-      60,
-      19,
-      38,
-      53,
-      63,
-      20,
-      40,
-      56,
-      66,
-      21,
-      43,
-      59,
-      70,
-      22,
-      45,
-      62,
-      74,
-      24,
-      47,
-      65,
-      77,
-      25,
-      49,
-      68,
-      81
-    ];
-    const EC_CODEWORDS_TABLE = [
-      // L  M  Q  H
-      7,
-      10,
-      13,
-      17,
-      10,
-      16,
-      22,
-      28,
-      15,
-      26,
-      36,
-      44,
-      20,
-      36,
-      52,
-      64,
-      26,
-      48,
-      72,
-      88,
-      36,
-      64,
-      96,
-      112,
-      40,
-      72,
-      108,
-      130,
-      48,
-      88,
-      132,
-      156,
-      60,
-      110,
-      160,
-      192,
-      72,
-      130,
-      192,
-      224,
-      80,
-      150,
-      224,
-      264,
-      96,
-      176,
-      260,
-      308,
-      104,
-      198,
-      288,
-      352,
-      120,
-      216,
-      320,
-      384,
-      132,
-      240,
-      360,
-      432,
-      144,
-      280,
-      408,
-      480,
-      168,
-      308,
-      448,
-      532,
-      180,
-      338,
-      504,
-      588,
-      196,
-      364,
-      546,
-      650,
-      224,
-      416,
-      600,
-      700,
-      224,
-      442,
-      644,
-      750,
-      252,
-      476,
-      690,
-      816,
-      270,
-      504,
-      750,
-      900,
-      300,
-      560,
-      810,
-      960,
-      312,
-      588,
-      870,
-      1050,
-      336,
-      644,
-      952,
-      1110,
-      360,
-      700,
-      1020,
-      1200,
-      390,
-      728,
-      1050,
-      1260,
-      420,
-      784,
-      1140,
-      1350,
-      450,
-      812,
-      1200,
-      1440,
-      480,
-      868,
-      1290,
-      1530,
-      510,
-      924,
-      1350,
-      1620,
-      540,
-      980,
-      1440,
-      1710,
-      570,
-      1036,
-      1530,
-      1800,
-      570,
-      1064,
-      1590,
-      1890,
-      600,
-      1120,
-      1680,
-      1980,
-      630,
-      1204,
-      1770,
-      2100,
-      660,
-      1260,
-      1860,
-      2220,
-      720,
-      1316,
-      1950,
-      2310,
-      750,
-      1372,
-      2040,
-      2430
-    ];
-    errorCorrectionCode.getBlocksCount = function getBlocksCount(version2, errorCorrectionLevel2) {
-      switch (errorCorrectionLevel2) {
-        case ECLevel$1.L:
-          return EC_BLOCKS_TABLE[(version2 - 1) * 4 + 0];
-        case ECLevel$1.M:
-          return EC_BLOCKS_TABLE[(version2 - 1) * 4 + 1];
-        case ECLevel$1.Q:
-          return EC_BLOCKS_TABLE[(version2 - 1) * 4 + 2];
-        case ECLevel$1.H:
-          return EC_BLOCKS_TABLE[(version2 - 1) * 4 + 3];
-        default:
-          return void 0;
-      }
-    };
-    errorCorrectionCode.getTotalCodewordsCount = function getTotalCodewordsCount(version2, errorCorrectionLevel2) {
-      switch (errorCorrectionLevel2) {
-        case ECLevel$1.L:
-          return EC_CODEWORDS_TABLE[(version2 - 1) * 4 + 0];
-        case ECLevel$1.M:
-          return EC_CODEWORDS_TABLE[(version2 - 1) * 4 + 1];
-        case ECLevel$1.Q:
-          return EC_CODEWORDS_TABLE[(version2 - 1) * 4 + 2];
-        case ECLevel$1.H:
-          return EC_CODEWORDS_TABLE[(version2 - 1) * 4 + 3];
-        default:
-          return void 0;
-      }
-    };
-    var polynomial = {};
-    var galoisField = {};
-    const EXP_TABLE = new Uint8Array(512);
-    const LOG_TABLE = new Uint8Array(256);
-    (function initTables() {
-      let x = 1;
-      for (let i = 0; i < 255; i++) {
-        EXP_TABLE[i] = x;
-        LOG_TABLE[x] = i;
-        x <<= 1;
-        if (x & 256) {
-          x ^= 285;
-        }
-      }
-      for (let i = 255; i < 512; i++) {
-        EXP_TABLE[i] = EXP_TABLE[i - 255];
-      }
-    })();
-    galoisField.log = function log(n) {
-      if (n < 1) throw new Error("log(" + n + ")");
-      return LOG_TABLE[n];
-    };
-    galoisField.exp = function exp(n) {
-      return EXP_TABLE[n];
-    };
-    galoisField.mul = function mul(x, y) {
-      if (x === 0 || y === 0) return 0;
-      return EXP_TABLE[LOG_TABLE[x] + LOG_TABLE[y]];
-    };
-    (function(exports2) {
-      const GF = galoisField;
-      exports2.mul = function mul(p1, p2) {
-        const coeff = new Uint8Array(p1.length + p2.length - 1);
-        for (let i = 0; i < p1.length; i++) {
-          for (let j = 0; j < p2.length; j++) {
-            coeff[i + j] ^= GF.mul(p1[i], p2[j]);
-          }
-        }
-        return coeff;
-      };
-      exports2.mod = function mod(divident, divisor) {
-        let result = new Uint8Array(divident);
-        while (result.length - divisor.length >= 0) {
-          const coeff = result[0];
-          for (let i = 0; i < divisor.length; i++) {
-            result[i] ^= GF.mul(divisor[i], coeff);
-          }
-          let offset = 0;
-          while (offset < result.length && result[offset] === 0) offset++;
-          result = result.slice(offset);
-        }
-        return result;
-      };
-      exports2.generateECPolynomial = function generateECPolynomial(degree) {
-        let poly = new Uint8Array([1]);
-        for (let i = 0; i < degree; i++) {
-          poly = exports2.mul(poly, new Uint8Array([1, GF.exp(i)]));
-        }
-        return poly;
-      };
-    })(polynomial);
-    const Polynomial = polynomial;
-    function ReedSolomonEncoder$1(degree) {
-      this.genPoly = void 0;
-      this.degree = degree;
-      if (this.degree) this.initialize(this.degree);
-    }
-    ReedSolomonEncoder$1.prototype.initialize = function initialize(degree) {
-      this.degree = degree;
-      this.genPoly = Polynomial.generateECPolynomial(this.degree);
-    };
-    ReedSolomonEncoder$1.prototype.encode = function encode(data) {
-      if (!this.genPoly) {
-        throw new Error("Encoder not initialized");
-      }
-      const paddedData = new Uint8Array(data.length + this.degree);
-      paddedData.set(data);
-      const remainder = Polynomial.mod(paddedData, this.genPoly);
-      const start = this.degree - remainder.length;
-      if (start > 0) {
-        const buff = new Uint8Array(this.degree);
-        buff.set(remainder, start);
-        return buff;
-      }
-      return remainder;
-    };
-    var reedSolomonEncoder = ReedSolomonEncoder$1;
-    var version$1 = {};
-    var mode = {};
-    var versionCheck = {};
-    versionCheck.isValid = function isValid(version2) {
-      return !isNaN(version2) && version2 >= 1 && version2 <= 40;
-    };
-    var regex = {};
-    const numeric = "[0-9]+";
-    const alphanumeric = "[A-Z $%*+\\-./:]+";
-    let kanji = "(?:[u3000-u303F]|[u3040-u309F]|[u30A0-u30FF]|[uFF00-uFFEF]|[u4E00-u9FAF]|[u2605-u2606]|[u2190-u2195]|u203B|[u2010u2015u2018u2019u2025u2026u201Cu201Du2225u2260]|[u0391-u0451]|[u00A7u00A8u00B1u00B4u00D7u00F7])+";
-    kanji = kanji.replace(/u/g, "\\u");
-    const byte = "(?:(?![A-Z0-9 $%*+\\-./:]|" + kanji + ")(?:.|[\r\n]))+";
-    regex.KANJI = new RegExp(kanji, "g");
-    regex.BYTE_KANJI = new RegExp("[^A-Z0-9 $%*+\\-./:]+", "g");
-    regex.BYTE = new RegExp(byte, "g");
-    regex.NUMERIC = new RegExp(numeric, "g");
-    regex.ALPHANUMERIC = new RegExp(alphanumeric, "g");
-    const TEST_KANJI = new RegExp("^" + kanji + "$");
-    const TEST_NUMERIC = new RegExp("^" + numeric + "$");
-    const TEST_ALPHANUMERIC = new RegExp("^[A-Z0-9 $%*+\\-./:]+$");
-    regex.testKanji = function testKanji(str) {
-      return TEST_KANJI.test(str);
-    };
-    regex.testNumeric = function testNumeric(str) {
-      return TEST_NUMERIC.test(str);
-    };
-    regex.testAlphanumeric = function testAlphanumeric(str) {
-      return TEST_ALPHANUMERIC.test(str);
-    };
-    (function(exports2) {
-      const VersionCheck = versionCheck;
-      const Regex = regex;
-      exports2.NUMERIC = {
-        id: "Numeric",
-        bit: 1 << 0,
-        ccBits: [10, 12, 14]
-      };
-      exports2.ALPHANUMERIC = {
-        id: "Alphanumeric",
-        bit: 1 << 1,
-        ccBits: [9, 11, 13]
-      };
-      exports2.BYTE = {
-        id: "Byte",
-        bit: 1 << 2,
-        ccBits: [8, 16, 16]
-      };
-      exports2.KANJI = {
-        id: "Kanji",
-        bit: 1 << 3,
-        ccBits: [8, 10, 12]
-      };
-      exports2.MIXED = {
-        bit: -1
-      };
-      exports2.getCharCountIndicator = function getCharCountIndicator(mode2, version2) {
-        if (!mode2.ccBits) throw new Error("Invalid mode: " + mode2);
-        if (!VersionCheck.isValid(version2)) {
-          throw new Error("Invalid version: " + version2);
-        }
-        if (version2 >= 1 && version2 < 10) return mode2.ccBits[0];
-        else if (version2 < 27) return mode2.ccBits[1];
-        return mode2.ccBits[2];
-      };
-      exports2.getBestModeForData = function getBestModeForData(dataStr) {
-        if (Regex.testNumeric(dataStr)) return exports2.NUMERIC;
-        else if (Regex.testAlphanumeric(dataStr)) return exports2.ALPHANUMERIC;
-        else if (Regex.testKanji(dataStr)) return exports2.KANJI;
-        else return exports2.BYTE;
-      };
-      exports2.toString = function toString2(mode2) {
-        if (mode2 && mode2.id) return mode2.id;
-        throw new Error("Invalid mode");
-      };
-      exports2.isValid = function isValid(mode2) {
-        return mode2 && mode2.bit && mode2.ccBits;
-      };
-      function fromString(string2) {
-        if (typeof string2 !== "string") {
-          throw new Error("Param is not a string");
-        }
-        const lcStr = string2.toLowerCase();
-        switch (lcStr) {
-          case "numeric":
-            return exports2.NUMERIC;
-          case "alphanumeric":
-            return exports2.ALPHANUMERIC;
-          case "kanji":
-            return exports2.KANJI;
-          case "byte":
-            return exports2.BYTE;
-          default:
-            throw new Error("Unknown mode: " + string2);
-        }
-      }
-      exports2.from = function from(value, defaultValue) {
-        if (exports2.isValid(value)) {
-          return value;
-        }
-        try {
-          return fromString(value);
-        } catch (e) {
-          return defaultValue;
-        }
-      };
-    })(mode);
-    (function(exports2) {
-      const Utils2 = utils$1;
-      const ECCode2 = errorCorrectionCode;
-      const ECLevel2 = errorCorrectionLevel;
-      const Mode2 = mode;
-      const VersionCheck = versionCheck;
-      const G18 = 1 << 12 | 1 << 11 | 1 << 10 | 1 << 9 | 1 << 8 | 1 << 5 | 1 << 2 | 1 << 0;
-      const G18_BCH = Utils2.getBCHDigit(G18);
-      function getBestVersionForDataLength(mode2, length, errorCorrectionLevel2) {
-        for (let currentVersion = 1; currentVersion <= 40; currentVersion++) {
-          if (length <= exports2.getCapacity(currentVersion, errorCorrectionLevel2, mode2)) {
-            return currentVersion;
-          }
-        }
-        return void 0;
-      }
-      function getReservedBitsCount(mode2, version2) {
-        return Mode2.getCharCountIndicator(mode2, version2) + 4;
-      }
-      function getTotalBitsFromDataArray(segments2, version2) {
-        let totalBits = 0;
-        segments2.forEach(function(data) {
-          const reservedBits = getReservedBitsCount(data.mode, version2);
-          totalBits += reservedBits + data.getBitsLength();
-        });
-        return totalBits;
-      }
-      function getBestVersionForMixedData(segments2, errorCorrectionLevel2) {
-        for (let currentVersion = 1; currentVersion <= 40; currentVersion++) {
-          const length = getTotalBitsFromDataArray(segments2, currentVersion);
-          if (length <= exports2.getCapacity(currentVersion, errorCorrectionLevel2, Mode2.MIXED)) {
-            return currentVersion;
-          }
-        }
-        return void 0;
-      }
-      exports2.from = function from(value, defaultValue) {
-        if (VersionCheck.isValid(value)) {
-          return parseInt(value, 10);
-        }
-        return defaultValue;
-      };
-      exports2.getCapacity = function getCapacity(version2, errorCorrectionLevel2, mode2) {
-        if (!VersionCheck.isValid(version2)) {
-          throw new Error("Invalid QR Code version");
-        }
-        if (typeof mode2 === "undefined") mode2 = Mode2.BYTE;
-        const totalCodewords = Utils2.getSymbolTotalCodewords(version2);
-        const ecTotalCodewords = ECCode2.getTotalCodewordsCount(version2, errorCorrectionLevel2);
-        const dataTotalCodewordsBits = (totalCodewords - ecTotalCodewords) * 8;
-        if (mode2 === Mode2.MIXED) return dataTotalCodewordsBits;
-        const usableBits = dataTotalCodewordsBits - getReservedBitsCount(mode2, version2);
-        switch (mode2) {
-          case Mode2.NUMERIC:
-            return Math.floor(usableBits / 10 * 3);
-          case Mode2.ALPHANUMERIC:
-            return Math.floor(usableBits / 11 * 2);
-          case Mode2.KANJI:
-            return Math.floor(usableBits / 13);
-          case Mode2.BYTE:
-          default:
-            return Math.floor(usableBits / 8);
-        }
-      };
-      exports2.getBestVersionForData = function getBestVersionForData(data, errorCorrectionLevel2) {
-        let seg;
-        const ecl = ECLevel2.from(errorCorrectionLevel2, ECLevel2.M);
-        if (Array.isArray(data)) {
-          if (data.length > 1) {
-            return getBestVersionForMixedData(data, ecl);
-          }
-          if (data.length === 0) {
-            return 1;
-          }
-          seg = data[0];
-        } else {
-          seg = data;
-        }
-        return getBestVersionForDataLength(seg.mode, seg.getLength(), ecl);
-      };
-      exports2.getEncodedBits = function getEncodedBits(version2) {
-        if (!VersionCheck.isValid(version2) || version2 < 7) {
-          throw new Error("Invalid QR Code version");
-        }
-        let d = version2 << 12;
-        while (Utils2.getBCHDigit(d) - G18_BCH >= 0) {
-          d ^= G18 << Utils2.getBCHDigit(d) - G18_BCH;
-        }
-        return version2 << 12 | d;
-      };
-    })(version$1);
-    var formatInfo = {};
-    const Utils$3 = utils$1;
-    const G15 = 1 << 10 | 1 << 8 | 1 << 5 | 1 << 4 | 1 << 2 | 1 << 1 | 1 << 0;
-    const G15_MASK = 1 << 14 | 1 << 12 | 1 << 10 | 1 << 4 | 1 << 1;
-    const G15_BCH = Utils$3.getBCHDigit(G15);
-    formatInfo.getEncodedBits = function getEncodedBits(errorCorrectionLevel2, mask) {
-      const data = errorCorrectionLevel2.bit << 3 | mask;
-      let d = data << 10;
-      while (Utils$3.getBCHDigit(d) - G15_BCH >= 0) {
-        d ^= G15 << Utils$3.getBCHDigit(d) - G15_BCH;
-      }
-      return (data << 10 | d) ^ G15_MASK;
-    };
-    var segments = {};
-    const Mode$4 = mode;
-    function NumericData(data) {
-      this.mode = Mode$4.NUMERIC;
-      this.data = data.toString();
-    }
-    NumericData.getBitsLength = function getBitsLength(length) {
-      return 10 * Math.floor(length / 3) + (length % 3 ? length % 3 * 3 + 1 : 0);
-    };
-    NumericData.prototype.getLength = function getLength() {
-      return this.data.length;
-    };
-    NumericData.prototype.getBitsLength = function getBitsLength() {
-      return NumericData.getBitsLength(this.data.length);
-    };
-    NumericData.prototype.write = function write(bitBuffer2) {
-      let i, group, value;
-      for (i = 0; i + 3 <= this.data.length; i += 3) {
-        group = this.data.substr(i, 3);
-        value = parseInt(group, 10);
-        bitBuffer2.put(value, 10);
-      }
-      const remainingNum = this.data.length - i;
-      if (remainingNum > 0) {
-        group = this.data.substr(i);
-        value = parseInt(group, 10);
-        bitBuffer2.put(value, remainingNum * 3 + 1);
-      }
-    };
-    var numericData = NumericData;
-    const Mode$3 = mode;
-    const ALPHA_NUM_CHARS = [
-      "0",
-      "1",
-      "2",
-      "3",
-      "4",
-      "5",
-      "6",
-      "7",
-      "8",
-      "9",
-      "A",
-      "B",
-      "C",
-      "D",
-      "E",
-      "F",
-      "G",
-      "H",
-      "I",
-      "J",
-      "K",
-      "L",
-      "M",
-      "N",
-      "O",
-      "P",
-      "Q",
-      "R",
-      "S",
-      "T",
-      "U",
-      "V",
-      "W",
-      "X",
-      "Y",
-      "Z",
-      " ",
-      "$",
-      "%",
-      "*",
-      "+",
-      "-",
-      ".",
-      "/",
-      ":"
-    ];
-    function AlphanumericData(data) {
-      this.mode = Mode$3.ALPHANUMERIC;
-      this.data = data;
-    }
-    AlphanumericData.getBitsLength = function getBitsLength(length) {
-      return 11 * Math.floor(length / 2) + 6 * (length % 2);
-    };
-    AlphanumericData.prototype.getLength = function getLength() {
-      return this.data.length;
-    };
-    AlphanumericData.prototype.getBitsLength = function getBitsLength() {
-      return AlphanumericData.getBitsLength(this.data.length);
-    };
-    AlphanumericData.prototype.write = function write(bitBuffer2) {
-      let i;
-      for (i = 0; i + 2 <= this.data.length; i += 2) {
-        let value = ALPHA_NUM_CHARS.indexOf(this.data[i]) * 45;
-        value += ALPHA_NUM_CHARS.indexOf(this.data[i + 1]);
-        bitBuffer2.put(value, 11);
-      }
-      if (this.data.length % 2) {
-        bitBuffer2.put(ALPHA_NUM_CHARS.indexOf(this.data[i]), 6);
-      }
-    };
-    var alphanumericData = AlphanumericData;
-    var encodeUtf8$1 = function encodeUtf82(input) {
-      var result = [];
-      var size2 = input.length;
-      for (var index = 0; index < size2; index++) {
-        var point = input.charCodeAt(index);
-        if (point >= 55296 && point <= 56319 && size2 > index + 1) {
-          var second = input.charCodeAt(index + 1);
-          if (second >= 56320 && second <= 57343) {
-            point = (point - 55296) * 1024 + second - 56320 + 65536;
-            index += 1;
-          }
-        }
-        if (point < 128) {
-          result.push(point);
-          continue;
-        }
-        if (point < 2048) {
-          result.push(point >> 6 | 192);
-          result.push(point & 63 | 128);
-          continue;
-        }
-        if (point < 55296 || point >= 57344 && point < 65536) {
-          result.push(point >> 12 | 224);
-          result.push(point >> 6 & 63 | 128);
-          result.push(point & 63 | 128);
-          continue;
-        }
-        if (point >= 65536 && point <= 1114111) {
-          result.push(point >> 18 | 240);
-          result.push(point >> 12 & 63 | 128);
-          result.push(point >> 6 & 63 | 128);
-          result.push(point & 63 | 128);
-          continue;
-        }
-        result.push(239, 191, 189);
-      }
-      return new Uint8Array(result).buffer;
-    };
-    const encodeUtf8 = encodeUtf8$1;
-    const Mode$2 = mode;
-    function ByteData(data) {
-      this.mode = Mode$2.BYTE;
-      if (typeof data === "string") {
-        data = encodeUtf8(data);
-      }
-      this.data = new Uint8Array(data);
-    }
-    ByteData.getBitsLength = function getBitsLength(length) {
-      return length * 8;
-    };
-    ByteData.prototype.getLength = function getLength() {
-      return this.data.length;
-    };
-    ByteData.prototype.getBitsLength = function getBitsLength() {
-      return ByteData.getBitsLength(this.data.length);
-    };
-    ByteData.prototype.write = function(bitBuffer2) {
-      for (let i = 0, l = this.data.length; i < l; i++) {
-        bitBuffer2.put(this.data[i], 8);
-      }
-    };
-    var byteData = ByteData;
-    const Mode$1 = mode;
-    const Utils$2 = utils$1;
-    function KanjiData(data) {
-      this.mode = Mode$1.KANJI;
-      this.data = data;
-    }
-    KanjiData.getBitsLength = function getBitsLength(length) {
-      return length * 13;
-    };
-    KanjiData.prototype.getLength = function getLength() {
-      return this.data.length;
-    };
-    KanjiData.prototype.getBitsLength = function getBitsLength() {
-      return KanjiData.getBitsLength(this.data.length);
-    };
-    KanjiData.prototype.write = function(bitBuffer2) {
-      let i;
-      for (i = 0; i < this.data.length; i++) {
-        let value = Utils$2.toSJIS(this.data[i]);
-        if (value >= 33088 && value <= 40956) {
-          value -= 33088;
-        } else if (value >= 57408 && value <= 60351) {
-          value -= 49472;
-        } else {
-          throw new Error(
-            "Invalid SJIS character: " + this.data[i] + "\nMake sure your charset is UTF-8"
-          );
-        }
-        value = (value >>> 8 & 255) * 192 + (value & 255);
-        bitBuffer2.put(value, 13);
-      }
-    };
-    var kanjiData = KanjiData;
-    var dijkstra = { exports: {} };
-    (function(module2) {
-      var dijkstra2 = {
-        single_source_shortest_paths: function(graph, s, d) {
-          var predecessors = {};
-          var costs = {};
-          costs[s] = 0;
-          var open2 = dijkstra2.PriorityQueue.make();
-          open2.push(s, 0);
-          var closest, u, v, cost_of_s_to_u, adjacent_nodes, cost_of_e, cost_of_s_to_u_plus_cost_of_e, cost_of_s_to_v, first_visit;
-          while (!open2.empty()) {
-            closest = open2.pop();
-            u = closest.value;
-            cost_of_s_to_u = closest.cost;
-            adjacent_nodes = graph[u] || {};
-            for (v in adjacent_nodes) {
-              if (adjacent_nodes.hasOwnProperty(v)) {
-                cost_of_e = adjacent_nodes[v];
-                cost_of_s_to_u_plus_cost_of_e = cost_of_s_to_u + cost_of_e;
-                cost_of_s_to_v = costs[v];
-                first_visit = typeof costs[v] === "undefined";
-                if (first_visit || cost_of_s_to_v > cost_of_s_to_u_plus_cost_of_e) {
-                  costs[v] = cost_of_s_to_u_plus_cost_of_e;
-                  open2.push(v, cost_of_s_to_u_plus_cost_of_e);
-                  predecessors[v] = u;
-                }
-              }
-            }
-          }
-          if (typeof d !== "undefined" && typeof costs[d] === "undefined") {
-            var msg = ["Could not find a path from ", s, " to ", d, "."].join("");
-            throw new Error(msg);
-          }
-          return predecessors;
-        },
-        extract_shortest_path_from_predecessor_list: function(predecessors, d) {
-          var nodes = [];
-          var u = d;
-          while (u) {
-            nodes.push(u);
-            predecessors[u];
-            u = predecessors[u];
-          }
-          nodes.reverse();
-          return nodes;
-        },
-        find_path: function(graph, s, d) {
-          var predecessors = dijkstra2.single_source_shortest_paths(graph, s, d);
-          return dijkstra2.extract_shortest_path_from_predecessor_list(
-            predecessors,
-            d
-          );
-        },
-        /**
-         * A very naive priority queue implementation.
-         */
-        PriorityQueue: {
-          make: function(opts) {
-            var T = dijkstra2.PriorityQueue, t = {}, key;
-            opts = opts || {};
-            for (key in T) {
-              if (T.hasOwnProperty(key)) {
-                t[key] = T[key];
-              }
-            }
-            t.queue = [];
-            t.sorter = opts.sorter || T.default_sorter;
-            return t;
-          },
-          default_sorter: function(a, b) {
-            return a.cost - b.cost;
-          },
-          /**
-           * Add a new item to the queue and ensure the highest priority element
-           * is at the front of the queue.
-           */
-          push: function(value, cost) {
-            var item = { value, cost };
-            this.queue.push(item);
-            this.queue.sort(this.sorter);
-          },
-          /**
-           * Return the highest priority element in the queue.
-           */
-          pop: function() {
-            return this.queue.shift();
-          },
-          empty: function() {
-            return this.queue.length === 0;
-          }
-        }
-      };
-      {
-        module2.exports = dijkstra2;
-      }
-    })(dijkstra);
-    var dijkstraExports = dijkstra.exports;
-    (function(exports2) {
-      const Mode2 = mode;
-      const NumericData2 = numericData;
-      const AlphanumericData2 = alphanumericData;
-      const ByteData2 = byteData;
-      const KanjiData2 = kanjiData;
-      const Regex = regex;
-      const Utils2 = utils$1;
-      const dijkstra2 = dijkstraExports;
-      function getStringByteLength(str) {
-        return unescape(encodeURIComponent(str)).length;
-      }
-      function getSegments(regex2, mode2, str) {
-        const segments2 = [];
-        let result;
-        while ((result = regex2.exec(str)) !== null) {
-          segments2.push({
-            data: result[0],
-            index: result.index,
-            mode: mode2,
-            length: result[0].length
-          });
-        }
-        return segments2;
-      }
-      function getSegmentsFromString(dataStr) {
-        const numSegs = getSegments(Regex.NUMERIC, Mode2.NUMERIC, dataStr);
-        const alphaNumSegs = getSegments(Regex.ALPHANUMERIC, Mode2.ALPHANUMERIC, dataStr);
-        let byteSegs;
-        let kanjiSegs;
-        if (Utils2.isKanjiModeEnabled()) {
-          byteSegs = getSegments(Regex.BYTE, Mode2.BYTE, dataStr);
-          kanjiSegs = getSegments(Regex.KANJI, Mode2.KANJI, dataStr);
-        } else {
-          byteSegs = getSegments(Regex.BYTE_KANJI, Mode2.BYTE, dataStr);
-          kanjiSegs = [];
-        }
-        const segs = numSegs.concat(alphaNumSegs, byteSegs, kanjiSegs);
-        return segs.sort(function(s1, s2) {
-          return s1.index - s2.index;
-        }).map(function(obj2) {
-          return {
-            data: obj2.data,
-            mode: obj2.mode,
-            length: obj2.length
-          };
-        });
-      }
-      function getSegmentBitsLength(length, mode2) {
-        switch (mode2) {
-          case Mode2.NUMERIC:
-            return NumericData2.getBitsLength(length);
-          case Mode2.ALPHANUMERIC:
-            return AlphanumericData2.getBitsLength(length);
-          case Mode2.KANJI:
-            return KanjiData2.getBitsLength(length);
-          case Mode2.BYTE:
-            return ByteData2.getBitsLength(length);
-        }
-      }
-      function mergeSegments(segs) {
-        return segs.reduce(function(acc, curr) {
-          const prevSeg = acc.length - 1 >= 0 ? acc[acc.length - 1] : null;
-          if (prevSeg && prevSeg.mode === curr.mode) {
-            acc[acc.length - 1].data += curr.data;
-            return acc;
-          }
-          acc.push(curr);
-          return acc;
-        }, []);
-      }
-      function buildNodes(segs) {
-        const nodes = [];
-        for (let i = 0; i < segs.length; i++) {
-          const seg = segs[i];
-          switch (seg.mode) {
-            case Mode2.NUMERIC:
-              nodes.push([
-                seg,
-                { data: seg.data, mode: Mode2.ALPHANUMERIC, length: seg.length },
-                { data: seg.data, mode: Mode2.BYTE, length: seg.length }
-              ]);
-              break;
-            case Mode2.ALPHANUMERIC:
-              nodes.push([
-                seg,
-                { data: seg.data, mode: Mode2.BYTE, length: seg.length }
-              ]);
-              break;
-            case Mode2.KANJI:
-              nodes.push([
-                seg,
-                { data: seg.data, mode: Mode2.BYTE, length: getStringByteLength(seg.data) }
-              ]);
-              break;
-            case Mode2.BYTE:
-              nodes.push([
-                { data: seg.data, mode: Mode2.BYTE, length: getStringByteLength(seg.data) }
-              ]);
-          }
-        }
-        return nodes;
-      }
-      function buildGraph(nodes, version2) {
-        const table = {};
-        const graph = { start: {} };
-        let prevNodeIds = ["start"];
-        for (let i = 0; i < nodes.length; i++) {
-          const nodeGroup = nodes[i];
-          const currentNodeIds = [];
-          for (let j = 0; j < nodeGroup.length; j++) {
-            const node = nodeGroup[j];
-            const key = "" + i + j;
-            currentNodeIds.push(key);
-            table[key] = { node, lastCount: 0 };
-            graph[key] = {};
-            for (let n = 0; n < prevNodeIds.length; n++) {
-              const prevNodeId = prevNodeIds[n];
-              if (table[prevNodeId] && table[prevNodeId].node.mode === node.mode) {
-                graph[prevNodeId][key] = getSegmentBitsLength(table[prevNodeId].lastCount + node.length, node.mode) - getSegmentBitsLength(table[prevNodeId].lastCount, node.mode);
-                table[prevNodeId].lastCount += node.length;
-              } else {
-                if (table[prevNodeId]) table[prevNodeId].lastCount = node.length;
-                graph[prevNodeId][key] = getSegmentBitsLength(node.length, node.mode) + 4 + Mode2.getCharCountIndicator(node.mode, version2);
-              }
-            }
-          }
-          prevNodeIds = currentNodeIds;
-        }
-        for (let n = 0; n < prevNodeIds.length; n++) {
-          graph[prevNodeIds[n]].end = 0;
-        }
-        return { map: graph, table };
-      }
-      function buildSingleSegment(data, modesHint) {
-        let mode2;
-        const bestMode = Mode2.getBestModeForData(data);
-        mode2 = Mode2.from(modesHint, bestMode);
-        if (mode2 !== Mode2.BYTE && mode2.bit < bestMode.bit) {
-          throw new Error('"' + data + '" cannot be encoded with mode ' + Mode2.toString(mode2) + ".\n Suggested mode is: " + Mode2.toString(bestMode));
-        }
-        if (mode2 === Mode2.KANJI && !Utils2.isKanjiModeEnabled()) {
-          mode2 = Mode2.BYTE;
-        }
-        switch (mode2) {
-          case Mode2.NUMERIC:
-            return new NumericData2(data);
-          case Mode2.ALPHANUMERIC:
-            return new AlphanumericData2(data);
-          case Mode2.KANJI:
-            return new KanjiData2(data);
-          case Mode2.BYTE:
-            return new ByteData2(data);
-        }
-      }
-      exports2.fromArray = function fromArray(array) {
-        return array.reduce(function(acc, seg) {
-          if (typeof seg === "string") {
-            acc.push(buildSingleSegment(seg, null));
-          } else if (seg.data) {
-            acc.push(buildSingleSegment(seg.data, seg.mode));
-          }
-          return acc;
-        }, []);
-      };
-      exports2.fromString = function fromString(data, version2) {
-        const segs = getSegmentsFromString(data, Utils2.isKanjiModeEnabled());
-        const nodes = buildNodes(segs);
-        const graph = buildGraph(nodes, version2);
-        const path = dijkstra2.find_path(graph.map, "start", "end");
-        const optimizedSegs = [];
-        for (let i = 1; i < path.length - 1; i++) {
-          optimizedSegs.push(graph.table[path[i]].node);
-        }
-        return exports2.fromArray(mergeSegments(optimizedSegs));
-      };
-      exports2.rawSplit = function rawSplit(data) {
-        return exports2.fromArray(
-          getSegmentsFromString(data, Utils2.isKanjiModeEnabled())
-        );
-      };
-    })(segments);
-    const Utils$1 = utils$1;
-    const ECLevel = errorCorrectionLevel;
-    const BitBuffer = bitBuffer;
-    const BitMatrix = bitMatrix;
-    const AlignmentPattern = alignmentPattern;
-    const FinderPattern = finderPattern;
-    const MaskPattern = maskPattern;
-    const ECCode = errorCorrectionCode;
-    const ReedSolomonEncoder = reedSolomonEncoder;
-    const Version = version$1;
-    const FormatInfo = formatInfo;
-    const Mode = mode;
-    const Segments = segments;
-    function setupFinderPattern(matrix, version2) {
-      const size2 = matrix.size;
-      const pos = FinderPattern.getPositions(version2);
-      for (let i = 0; i < pos.length; i++) {
-        const row = pos[i][0];
-        const col = pos[i][1];
-        for (let r = -1; r <= 7; r++) {
-          if (row + r <= -1 || size2 <= row + r) continue;
-          for (let c = -1; c <= 7; c++) {
-            if (col + c <= -1 || size2 <= col + c) continue;
-            if (r >= 0 && r <= 6 && (c === 0 || c === 6) || c >= 0 && c <= 6 && (r === 0 || r === 6) || r >= 2 && r <= 4 && c >= 2 && c <= 4) {
-              matrix.set(row + r, col + c, true, true);
-            } else {
-              matrix.set(row + r, col + c, false, true);
-            }
-          }
-        }
-      }
-    }
-    function setupTimingPattern(matrix) {
-      const size2 = matrix.size;
-      for (let r = 8; r < size2 - 8; r++) {
-        const value = r % 2 === 0;
-        matrix.set(r, 6, value, true);
-        matrix.set(6, r, value, true);
-      }
-    }
-    function setupAlignmentPattern(matrix, version2) {
-      const pos = AlignmentPattern.getPositions(version2);
-      for (let i = 0; i < pos.length; i++) {
-        const row = pos[i][0];
-        const col = pos[i][1];
-        for (let r = -2; r <= 2; r++) {
-          for (let c = -2; c <= 2; c++) {
-            if (r === -2 || r === 2 || c === -2 || c === 2 || r === 0 && c === 0) {
-              matrix.set(row + r, col + c, true, true);
-            } else {
-              matrix.set(row + r, col + c, false, true);
-            }
-          }
-        }
-      }
-    }
-    function setupVersionInfo(matrix, version2) {
-      const size2 = matrix.size;
-      const bits = Version.getEncodedBits(version2);
-      let row, col, mod;
-      for (let i = 0; i < 18; i++) {
-        row = Math.floor(i / 3);
-        col = i % 3 + size2 - 8 - 3;
-        mod = (bits >> i & 1) === 1;
-        matrix.set(row, col, mod, true);
-        matrix.set(col, row, mod, true);
-      }
-    }
-    function setupFormatInfo(matrix, errorCorrectionLevel2, maskPattern2) {
-      const size2 = matrix.size;
-      const bits = FormatInfo.getEncodedBits(errorCorrectionLevel2, maskPattern2);
-      let i, mod;
-      for (i = 0; i < 15; i++) {
-        mod = (bits >> i & 1) === 1;
-        if (i < 6) {
-          matrix.set(i, 8, mod, true);
-        } else if (i < 8) {
-          matrix.set(i + 1, 8, mod, true);
-        } else {
-          matrix.set(size2 - 15 + i, 8, mod, true);
-        }
-        if (i < 8) {
-          matrix.set(8, size2 - i - 1, mod, true);
-        } else if (i < 9) {
-          matrix.set(8, 15 - i - 1 + 1, mod, true);
-        } else {
-          matrix.set(8, 15 - i - 1, mod, true);
-        }
-      }
-      matrix.set(size2 - 8, 8, 1, true);
-    }
-    function setupData(matrix, data) {
-      const size2 = matrix.size;
-      let inc = -1;
-      let row = size2 - 1;
-      let bitIndex = 7;
-      let byteIndex = 0;
-      for (let col = size2 - 1; col > 0; col -= 2) {
-        if (col === 6) col--;
-        while (true) {
-          for (let c = 0; c < 2; c++) {
-            if (!matrix.isReserved(row, col - c)) {
-              let dark = false;
-              if (byteIndex < data.length) {
-                dark = (data[byteIndex] >>> bitIndex & 1) === 1;
-              }
-              matrix.set(row, col - c, dark);
-              bitIndex--;
-              if (bitIndex === -1) {
-                byteIndex++;
-                bitIndex = 7;
-              }
-            }
-          }
-          row += inc;
-          if (row < 0 || size2 <= row) {
-            row -= inc;
-            inc = -inc;
-            break;
-          }
-        }
-      }
-    }
-    function createData(version2, errorCorrectionLevel2, segments2) {
-      const buffer2 = new BitBuffer();
-      segments2.forEach(function(data) {
-        buffer2.put(data.mode.bit, 4);
-        buffer2.put(data.getLength(), Mode.getCharCountIndicator(data.mode, version2));
-        data.write(buffer2);
-      });
-      const totalCodewords = Utils$1.getSymbolTotalCodewords(version2);
-      const ecTotalCodewords = ECCode.getTotalCodewordsCount(version2, errorCorrectionLevel2);
-      const dataTotalCodewordsBits = (totalCodewords - ecTotalCodewords) * 8;
-      if (buffer2.getLengthInBits() + 4 <= dataTotalCodewordsBits) {
-        buffer2.put(0, 4);
-      }
-      while (buffer2.getLengthInBits() % 8 !== 0) {
-        buffer2.putBit(0);
-      }
-      const remainingByte = (dataTotalCodewordsBits - buffer2.getLengthInBits()) / 8;
-      for (let i = 0; i < remainingByte; i++) {
-        buffer2.put(i % 2 ? 17 : 236, 8);
-      }
-      return createCodewords(buffer2, version2, errorCorrectionLevel2);
-    }
-    function createCodewords(bitBuffer2, version2, errorCorrectionLevel2) {
-      const totalCodewords = Utils$1.getSymbolTotalCodewords(version2);
-      const ecTotalCodewords = ECCode.getTotalCodewordsCount(version2, errorCorrectionLevel2);
-      const dataTotalCodewords = totalCodewords - ecTotalCodewords;
-      const ecTotalBlocks = ECCode.getBlocksCount(version2, errorCorrectionLevel2);
-      const blocksInGroup2 = totalCodewords % ecTotalBlocks;
-      const blocksInGroup1 = ecTotalBlocks - blocksInGroup2;
-      const totalCodewordsInGroup1 = Math.floor(totalCodewords / ecTotalBlocks);
-      const dataCodewordsInGroup1 = Math.floor(dataTotalCodewords / ecTotalBlocks);
-      const dataCodewordsInGroup2 = dataCodewordsInGroup1 + 1;
-      const ecCount = totalCodewordsInGroup1 - dataCodewordsInGroup1;
-      const rs = new ReedSolomonEncoder(ecCount);
-      let offset = 0;
-      const dcData = new Array(ecTotalBlocks);
-      const ecData = new Array(ecTotalBlocks);
-      let maxDataSize = 0;
-      const buffer2 = new Uint8Array(bitBuffer2.buffer);
-      for (let b = 0; b < ecTotalBlocks; b++) {
-        const dataSize = b < blocksInGroup1 ? dataCodewordsInGroup1 : dataCodewordsInGroup2;
-        dcData[b] = buffer2.slice(offset, offset + dataSize);
-        ecData[b] = rs.encode(dcData[b]);
-        offset += dataSize;
-        maxDataSize = Math.max(maxDataSize, dataSize);
-      }
-      const data = new Uint8Array(totalCodewords);
-      let index = 0;
-      let i, r;
-      for (i = 0; i < maxDataSize; i++) {
-        for (r = 0; r < ecTotalBlocks; r++) {
-          if (i < dcData[r].length) {
-            data[index++] = dcData[r][i];
-          }
-        }
-      }
-      for (i = 0; i < ecCount; i++) {
-        for (r = 0; r < ecTotalBlocks; r++) {
-          data[index++] = ecData[r][i];
-        }
-      }
-      return data;
-    }
-    function createSymbol(data, version2, errorCorrectionLevel2, maskPattern2) {
-      let segments2;
-      if (Array.isArray(data)) {
-        segments2 = Segments.fromArray(data);
-      } else if (typeof data === "string") {
-        let estimatedVersion = version2;
-        if (!estimatedVersion) {
-          const rawSegments = Segments.rawSplit(data);
-          estimatedVersion = Version.getBestVersionForData(rawSegments, errorCorrectionLevel2);
-        }
-        segments2 = Segments.fromString(data, estimatedVersion || 40);
-      } else {
-        throw new Error("Invalid data");
-      }
-      const bestVersion = Version.getBestVersionForData(segments2, errorCorrectionLevel2);
-      if (!bestVersion) {
-        throw new Error("The amount of data is too big to be stored in a QR Code");
-      }
-      if (!version2) {
-        version2 = bestVersion;
-      } else if (version2 < bestVersion) {
-        throw new Error(
-          "\nThe chosen QR Code version cannot contain this amount of data.\nMinimum version required to store current data is: " + bestVersion + ".\n"
-        );
-      }
-      const dataBits = createData(version2, errorCorrectionLevel2, segments2);
-      const moduleCount = Utils$1.getSymbolSize(version2);
-      const modules = new BitMatrix(moduleCount);
-      setupFinderPattern(modules, version2);
-      setupTimingPattern(modules);
-      setupAlignmentPattern(modules, version2);
-      setupFormatInfo(modules, errorCorrectionLevel2, 0);
-      if (version2 >= 7) {
-        setupVersionInfo(modules, version2);
-      }
-      setupData(modules, dataBits);
-      if (isNaN(maskPattern2)) {
-        maskPattern2 = MaskPattern.getBestMask(
-          modules,
-          setupFormatInfo.bind(null, modules, errorCorrectionLevel2)
-        );
-      }
-      MaskPattern.applyMask(maskPattern2, modules);
-      setupFormatInfo(modules, errorCorrectionLevel2, maskPattern2);
-      return {
-        modules,
-        version: version2,
-        errorCorrectionLevel: errorCorrectionLevel2,
-        maskPattern: maskPattern2,
-        segments: segments2
-      };
-    }
-    qrcode.create = function create(data, options) {
-      if (typeof data === "undefined" || data === "") {
-        throw new Error("No input text");
-      }
-      let errorCorrectionLevel2 = ECLevel.M;
-      let version2;
-      let mask;
-      if (typeof options !== "undefined") {
-        errorCorrectionLevel2 = ECLevel.from(options.errorCorrectionLevel, ECLevel.M);
-        version2 = Version.from(options.version);
-        mask = MaskPattern.from(options.maskPattern);
-        if (options.toSJISFunc) {
-          Utils$1.setToSJISFunction(options.toSJISFunc);
-        }
-      }
-      return createSymbol(data, version2, errorCorrectionLevel2, mask);
-    };
-    var canvas = {};
-    var utils = {};
-    (function(exports2) {
-      function hex2rgba(hex) {
-        if (typeof hex === "number") {
-          hex = hex.toString();
-        }
-        if (typeof hex !== "string") {
-          throw new Error("Color should be defined as hex string");
-        }
-        let hexCode = hex.slice().replace("#", "").split("");
-        if (hexCode.length < 3 || hexCode.length === 5 || hexCode.length > 8) {
-          throw new Error("Invalid hex color: " + hex);
-        }
-        if (hexCode.length === 3 || hexCode.length === 4) {
-          hexCode = Array.prototype.concat.apply([], hexCode.map(function(c) {
-            return [c, c];
-          }));
-        }
-        if (hexCode.length === 6) hexCode.push("F", "F");
-        const hexValue = parseInt(hexCode.join(""), 16);
-        return {
-          r: hexValue >> 24 & 255,
-          g: hexValue >> 16 & 255,
-          b: hexValue >> 8 & 255,
-          a: hexValue & 255,
-          hex: "#" + hexCode.slice(0, 6).join("")
-        };
-      }
-      exports2.getOptions = function getOptions(options) {
-        if (!options) options = {};
-        if (!options.color) options.color = {};
-        const margin = typeof options.margin === "undefined" || options.margin === null || options.margin < 0 ? 4 : options.margin;
-        const width = options.width && options.width >= 21 ? options.width : void 0;
-        const scale = options.scale || 4;
-        return {
-          width,
-          scale: width ? 4 : scale,
-          margin,
-          color: {
-            dark: hex2rgba(options.color.dark || "#000000ff"),
-            light: hex2rgba(options.color.light || "#ffffffff")
-          },
-          type: options.type,
-          rendererOpts: options.rendererOpts || {}
-        };
-      };
-      exports2.getScale = function getScale(qrSize, opts) {
-        return opts.width && opts.width >= qrSize + opts.margin * 2 ? opts.width / (qrSize + opts.margin * 2) : opts.scale;
-      };
-      exports2.getImageWidth = function getImageWidth(qrSize, opts) {
-        const scale = exports2.getScale(qrSize, opts);
-        return Math.floor((qrSize + opts.margin * 2) * scale);
-      };
-      exports2.qrToImageData = function qrToImageData(imgData, qr, opts) {
-        const size2 = qr.modules.size;
-        const data = qr.modules.data;
-        const scale = exports2.getScale(size2, opts);
-        const symbolSize = Math.floor((size2 + opts.margin * 2) * scale);
-        const scaledMargin = opts.margin * scale;
-        const palette = [opts.color.light, opts.color.dark];
-        for (let i = 0; i < symbolSize; i++) {
-          for (let j = 0; j < symbolSize; j++) {
-            let posDst = (i * symbolSize + j) * 4;
-            let pxColor = opts.color.light;
-            if (i >= scaledMargin && j >= scaledMargin && i < symbolSize - scaledMargin && j < symbolSize - scaledMargin) {
-              const iSrc = Math.floor((i - scaledMargin) / scale);
-              const jSrc = Math.floor((j - scaledMargin) / scale);
-              pxColor = palette[data[iSrc * size2 + jSrc] ? 1 : 0];
-            }
-            imgData[posDst++] = pxColor.r;
-            imgData[posDst++] = pxColor.g;
-            imgData[posDst++] = pxColor.b;
-            imgData[posDst] = pxColor.a;
-          }
-        }
-      };
-    })(utils);
-    (function(exports2) {
-      const Utils2 = utils;
-      function clearCanvas(ctx, canvas2, size2) {
-        ctx.clearRect(0, 0, canvas2.width, canvas2.height);
-        if (!canvas2.style) canvas2.style = {};
-        canvas2.height = size2;
-        canvas2.width = size2;
-        canvas2.style.height = size2 + "px";
-        canvas2.style.width = size2 + "px";
-      }
-      function getCanvasElement() {
-        try {
-          return document.createElement("canvas");
-        } catch (e) {
-          throw new Error("You need to specify a canvas element");
-        }
-      }
-      exports2.render = function render2(qrData, canvas2, options) {
-        let opts = options;
-        let canvasEl = canvas2;
-        if (typeof opts === "undefined" && (!canvas2 || !canvas2.getContext)) {
-          opts = canvas2;
-          canvas2 = void 0;
-        }
-        if (!canvas2) {
-          canvasEl = getCanvasElement();
-        }
-        opts = Utils2.getOptions(opts);
-        const size2 = Utils2.getImageWidth(qrData.modules.size, opts);
-        const ctx = canvasEl.getContext("2d");
-        const image = ctx.createImageData(size2, size2);
-        Utils2.qrToImageData(image.data, qrData, opts);
-        clearCanvas(ctx, canvasEl, size2);
-        ctx.putImageData(image, 0, 0);
-        return canvasEl;
-      };
-      exports2.renderToDataURL = function renderToDataURL(qrData, canvas2, options) {
-        let opts = options;
-        if (typeof opts === "undefined" && (!canvas2 || !canvas2.getContext)) {
-          opts = canvas2;
-          canvas2 = void 0;
-        }
-        if (!opts) opts = {};
-        const canvasEl = exports2.render(qrData, canvas2, opts);
-        const type = opts.type || "image/png";
-        const rendererOpts = opts.rendererOpts || {};
-        return canvasEl.toDataURL(type, rendererOpts.quality);
-      };
-    })(canvas);
-    var svgTag = {};
-    const Utils = utils;
-    function getColorAttrib(color, attrib) {
-      const alpha = color.a / 255;
-      const str = attrib + '="' + color.hex + '"';
-      return alpha < 1 ? str + " " + attrib + '-opacity="' + alpha.toFixed(2).slice(1) + '"' : str;
-    }
-    function svgCmd(cmd, x, y) {
-      let str = cmd + x;
-      if (typeof y !== "undefined") str += " " + y;
-      return str;
-    }
-    function qrToPath(data, size2, margin) {
-      let path = "";
-      let moveBy = 0;
-      let newRow = false;
-      let lineLength = 0;
-      for (let i = 0; i < data.length; i++) {
-        const col = Math.floor(i % size2);
-        const row = Math.floor(i / size2);
-        if (!col && !newRow) newRow = true;
-        if (data[i]) {
-          lineLength++;
-          if (!(i > 0 && col > 0 && data[i - 1])) {
-            path += newRow ? svgCmd("M", col + margin, 0.5 + row + margin) : svgCmd("m", moveBy, 0);
-            moveBy = 0;
-            newRow = false;
-          }
-          if (!(col + 1 < size2 && data[i + 1])) {
-            path += svgCmd("h", lineLength);
-            lineLength = 0;
-          }
-        } else {
-          moveBy++;
-        }
-      }
-      return path;
-    }
-    svgTag.render = function render2(qrData, options, cb) {
-      const opts = Utils.getOptions(options);
-      const size2 = qrData.modules.size;
-      const data = qrData.modules.data;
-      const qrcodesize = size2 + opts.margin * 2;
-      const bg = !opts.color.light.a ? "" : "<path " + getColorAttrib(opts.color.light, "fill") + ' d="M0 0h' + qrcodesize + "v" + qrcodesize + 'H0z"/>';
-      const path = "<path " + getColorAttrib(opts.color.dark, "stroke") + ' d="' + qrToPath(data, size2, opts.margin) + '"/>';
-      const viewBox = 'viewBox="0 0 ' + qrcodesize + " " + qrcodesize + '"';
-      const width = !opts.width ? "" : 'width="' + opts.width + '" height="' + opts.width + '" ';
-      const svgTag2 = '<svg xmlns="http://www.w3.org/2000/svg" ' + width + viewBox + ' shape-rendering="crispEdges">' + bg + path + "</svg>\n";
-      if (typeof cb === "function") {
-        cb(null, svgTag2);
-      }
-      return svgTag2;
-    };
-    const canPromise = canPromise$1;
-    const QRCode = qrcode;
-    const CanvasRenderer = canvas;
-    const SvgRenderer = svgTag;
-    function renderCanvas(renderFunc, canvas2, text, opts, cb) {
-      const args = [].slice.call(arguments, 1);
-      const argsNum = args.length;
-      const isLastArgCb = typeof args[argsNum - 1] === "function";
-      if (!isLastArgCb && !canPromise()) {
-        throw new Error("Callback required as last argument");
-      }
-      if (isLastArgCb) {
-        if (argsNum < 2) {
-          throw new Error("Too few arguments provided");
-        }
-        if (argsNum === 2) {
-          cb = text;
-          text = canvas2;
-          canvas2 = opts = void 0;
-        } else if (argsNum === 3) {
-          if (canvas2.getContext && typeof cb === "undefined") {
-            cb = opts;
-            opts = void 0;
-          } else {
-            cb = opts;
-            opts = text;
-            text = canvas2;
-            canvas2 = void 0;
-          }
-        }
-      } else {
-        if (argsNum < 1) {
-          throw new Error("Too few arguments provided");
-        }
-        if (argsNum === 1) {
-          text = canvas2;
-          canvas2 = opts = void 0;
-        } else if (argsNum === 2 && !canvas2.getContext) {
-          opts = text;
-          text = canvas2;
-          canvas2 = void 0;
-        }
-        return new Promise(function(resolve2, reject) {
-          try {
-            const data = QRCode.create(text, opts);
-            resolve2(renderFunc(data, canvas2, opts));
-          } catch (e) {
-            reject(e);
-          }
-        });
-      }
-      try {
-        const data = QRCode.create(text, opts);
-        cb(null, renderFunc(data, canvas2, opts));
-      } catch (e) {
-        cb(e);
-      }
-    }
-    browser.create = QRCode.create;
-    browser.toCanvas = renderCanvas.bind(null, CanvasRenderer.render);
-    browser.toDataURL = renderCanvas.bind(null, CanvasRenderer.renderToDataURL);
-    browser.toString = renderCanvas.bind(null, function(data, _, opts) {
-      return SvgRenderer.render(data, opts);
-    });
     function extend(destination) {
       for (var i = 1; i < arguments.length; i++) {
         var source2 = arguments[i];
@@ -40831,7 +38096,7 @@ ${content}</tr>
       }
       return mode2;
     }
-    var version = "11.9.0";
+    var version$1 = "11.9.0";
     class HTMLInjectionError extends Error {
       constructor(reason, html2) {
         super(reason);
@@ -41456,7 +38721,7 @@ ${content}</tr>
       hljs2.safeMode = function() {
         SAFE_MODE = true;
       };
-      hljs2.versionString = version;
+      hljs2.versionString = version$1;
       hljs2.regex = {
         concat,
         lookahead,
@@ -90070,10 +87335,20 @@ ${content}</tr>
           value: markdown,
           language: "markdown"
         };
+        util.sendMsg2Ide(param);
+      },
+      openSetting() {
+        util.sendMsg2Ide({
+          type: "openSettings"
+        });
+      },
+      sendMsg2Ide(data) {
         if (util.getUseStore().isIdeaMode) {
-          util.postMessageToIdeaEditor(param);
+          util.postMessageToIdeaEditor(data);
         } else if (util.getUseStore().isVsCodeMode) {
-          util.postMessageToCodeEditor(param);
+          util.postMessageToCodeEditor(data);
+        } else {
+          console.log("没发出去：" + JSON.stringify(data ?? {}));
         }
       },
       throttle(fn2, delay = 300) {
@@ -90113,6 +87388,3052 @@ ${content}</tr>
         image.src = imgsrc;
       }
     };
+    let getRandomValues;
+    const rnds8 = new Uint8Array(16);
+    function rng() {
+      if (!getRandomValues) {
+        getRandomValues = typeof crypto !== "undefined" && crypto.getRandomValues && crypto.getRandomValues.bind(crypto);
+        if (!getRandomValues) {
+          throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");
+        }
+      }
+      return getRandomValues(rnds8);
+    }
+    const byteToHex = [];
+    for (let i = 0; i < 256; ++i) {
+      byteToHex.push((i + 256).toString(16).slice(1));
+    }
+    function unsafeStringify(arr, offset = 0) {
+      return byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]];
+    }
+    const randomUUID = typeof crypto !== "undefined" && crypto.randomUUID && crypto.randomUUID.bind(crypto);
+    const native = {
+      randomUUID
+    };
+    function v4(options, buf, offset) {
+      if (native.randomUUID && !buf && !options) {
+        return native.randomUUID();
+      }
+      options = options || {};
+      const rnds = options.random || (options.rng || rng)();
+      rnds[6] = rnds[6] & 15 | 64;
+      rnds[8] = rnds[8] & 63 | 128;
+      if (buf) {
+        offset = offset || 0;
+        for (let i = 0; i < 16; ++i) {
+          buf[offset + i] = rnds[i];
+        }
+        return buf;
+      }
+      return unsafeStringify(rnds);
+    }
+    const _export_sfc = (sfc, props) => {
+      const target = sfc.__vccOpts || sfc;
+      for (const [key, val] of props) {
+        target[key] = val;
+      }
+      return target;
+    };
+    const _hoisted_1$e = ["title"];
+    const _sfc_main$g = {
+      __name: "ToolView",
+      props: {
+        data: {
+          title: String,
+          subtitle: String,
+          icon: String,
+          color: String,
+          bgcolor: String,
+          click: Function,
+          disabled: Boolean,
+          tooltip: String
+        }
+      },
+      emits: ["click"],
+      setup(__props, { emit: __emit }) {
+        const props = __props;
+        const emit2 = __emit;
+        function handleClick(e) {
+          var _a7, _b2;
+          (_b2 = (_a7 = props.data).click) == null ? void 0 : _b2.call(_a7, props.data, e);
+          emit2("click", props.data, e);
+        }
+        return (_ctx, _cache) => {
+          return openBlock(), createElementBlock("div", {
+            class: normalizeClass(["prompt_block", { "prompt_block_disabled": props.data.disabled }]),
+            onClick: handleClick,
+            title: props.data.tooltip || props.data.title + "\n" + props.data.subtitle
+          }, [
+            createBaseVNode("div", {
+              class: normalizeClass(["toolbox_prompt_title", { "toolbox_prompt_title_disabled": props.data.disabled }])
+            }, toDisplayString(props.data.title), 3),
+            createBaseVNode("div", {
+              class: normalizeClass(["toolbox_prompt_subtitle", { "toolbox_prompt_title_disabled": props.data.disabled }])
+            }, toDisplayString(props.data.subtitle), 3),
+            renderSlot(_ctx.$slots, "default", {}, void 0, true)
+          ], 10, _hoisted_1$e);
+        };
+      }
+    };
+    const ToolView = /* @__PURE__ */ _export_sfc(_sfc_main$g, [["__scopeId", "data-v-435f239f"]]);
+    var FileSaver_min = { exports: {} };
+    (function(module2, exports2) {
+      (function(a, b) {
+        b();
+      })(commonjsGlobal, function() {
+        function b(a2, b2) {
+          return "undefined" == typeof b2 ? b2 = { autoBom: false } : "object" != typeof b2 && (console.warn("Deprecated: Expected third argument to be a object"), b2 = { autoBom: !b2 }), b2.autoBom && /^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(a2.type) ? new Blob(["\uFEFF", a2], { type: a2.type }) : a2;
+        }
+        function c(a2, b2, c2) {
+          var d2 = new XMLHttpRequest();
+          d2.open("GET", a2), d2.responseType = "blob", d2.onload = function() {
+            g(d2.response, b2, c2);
+          }, d2.onerror = function() {
+            console.error("could not download file");
+          }, d2.send();
+        }
+        function d(a2) {
+          var b2 = new XMLHttpRequest();
+          b2.open("HEAD", a2, false);
+          try {
+            b2.send();
+          } catch (a3) {
+          }
+          return 200 <= b2.status && 299 >= b2.status;
+        }
+        function e(a2) {
+          try {
+            a2.dispatchEvent(new MouseEvent("click"));
+          } catch (c2) {
+            var b2 = document.createEvent("MouseEvents");
+            b2.initMouseEvent("click", true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null), a2.dispatchEvent(b2);
+          }
+        }
+        var f = "object" == typeof window && window.window === window ? window : "object" == typeof self && self.self === self ? self : "object" == typeof commonjsGlobal && commonjsGlobal.global === commonjsGlobal ? commonjsGlobal : void 0, a = f.navigator && /Macintosh/.test(navigator.userAgent) && /AppleWebKit/.test(navigator.userAgent) && !/Safari/.test(navigator.userAgent), g = f.saveAs || ("object" != typeof window || window !== f ? function() {
+        } : "download" in HTMLAnchorElement.prototype && !a ? function(b2, g2, h2) {
+          var i = f.URL || f.webkitURL, j = document.createElement("a");
+          g2 = g2 || b2.name || "download", j.download = g2, j.rel = "noopener", "string" == typeof b2 ? (j.href = b2, j.origin === location.origin ? e(j) : d(j.href) ? c(b2, g2, h2) : e(j, j.target = "_blank")) : (j.href = i.createObjectURL(b2), setTimeout(function() {
+            i.revokeObjectURL(j.href);
+          }, 4e4), setTimeout(function() {
+            e(j);
+          }, 0));
+        } : "msSaveOrOpenBlob" in navigator ? function(f2, g2, h2) {
+          if (g2 = g2 || f2.name || "download", "string" != typeof f2) navigator.msSaveOrOpenBlob(b(f2, h2), g2);
+          else if (d(f2)) c(f2, g2, h2);
+          else {
+            var i = document.createElement("a");
+            i.href = f2, i.target = "_blank", setTimeout(function() {
+              e(i);
+            });
+          }
+        } : function(b2, d2, e2, g2) {
+          if (g2 = g2 || open("", "_blank"), g2 && (g2.document.title = g2.document.body.innerText = "downloading..."), "string" == typeof b2) return c(b2, d2, e2);
+          var h2 = "application/octet-stream" === b2.type, i = /constructor/i.test(f.HTMLElement) || f.safari, j = /CriOS\/[\d]+/.test(navigator.userAgent);
+          if ((j || h2 && i || a) && "undefined" != typeof FileReader) {
+            var k = new FileReader();
+            k.onloadend = function() {
+              var a2 = k.result;
+              a2 = j ? a2 : a2.replace(/^data:[^;]*;/, "data:attachment/file;"), g2 ? g2.location.href = a2 : location = a2, g2 = null;
+            }, k.readAsDataURL(b2);
+          } else {
+            var l = f.URL || f.webkitURL, m = l.createObjectURL(b2);
+            g2 ? g2.location = m : location.href = m, g2 = null, setTimeout(function() {
+              l.revokeObjectURL(m);
+            }, 4e4);
+          }
+        });
+        f.saveAs = g.saveAs = g, module2.exports = g;
+      });
+    })(FileSaver_min);
+    var FileSaver_minExports = FileSaver_min.exports;
+    class FileHandlerCore {
+      async uploadFile(url, file, options, dataType) {
+        if (!url) {
+          throw new Error(`url 不能空`);
+        }
+        if (!file) {
+          throw new Error(`file 不能空`);
+        }
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("options", JSON.stringify(options));
+        formData.append("dataType", dataType);
+        const response = await fetch(url, {
+          method: "POST",
+          body: formData
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.statusText}`);
+        }
+        const data = await response.json();
+        return data;
+      }
+      async saveFileByFileId(url, fileId, filePath) {
+        const response = await fetch(url, {
+          method: "POST",
+          body: JSON.stringify({ fileId })
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.statusText}`);
+        }
+        const blob = await response.blob();
+        FileSaver_minExports.saveAs(blob, filePath);
+      }
+      async saveAsFile(url, filePath) {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.statusText}`);
+        }
+        const blob = await response.blob();
+        FileSaver_minExports.saveAs(blob, filePath);
+      }
+    }
+    const defaltOption = {
+      "dataType": "sql",
+      "dbType": "mysql",
+      "authorName": "tooneCode",
+      "packageName": "com.toone.masterdata",
+      "returnUtilSuccess": "Return.success",
+      "returnUtilFailure": "Return.error",
+      "isPackageType": true,
+      "isSwagger": false,
+      "isAutoImport": true,
+      "isWithPackage": false,
+      "isComment": true,
+      "isLombok": true,
+      "ignorePrefix": "sys_",
+      "tinyintTransType": "Date",
+      "nameCaseType": "CamelCase"
+    };
+    class Translate2j {
+      async sql2j(sqlContent, options, fileName) {
+        const param = {
+          tableSql: sqlContent,
+          options: this.mergeOptions(options)
+        };
+        let url = "/code/generate4SQL";
+        {
+          url = "http://codegen.t.vtoone.com/generator" + url;
+        }
+        let abor = new AbortController();
+        const timerout = setTimeout(() => {
+          abor == null ? void 0 : abor.abort();
+        }, 1e3 * 10);
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: abor.signal,
+          body: JSON.stringify(param)
+        });
+        abor = null;
+        timerout && clearTimeout(timerout);
+        if (response.ok) {
+          let { code, msg } = await response.json();
+          if (code === 0) {
+            await new Promise((resolve2) => setTimeout(resolve2, 1e3));
+            await this.downloadByUrl(msg[0].fileUrl, fileName);
+            return;
+          }
+          throw new Error(msg);
+        }
+        throw new Error("服务异常");
+      }
+      async excelFile2J(file, options) {
+        let url = "/code/generate4file";
+        {
+          url = "http://codegen.t.vtoone.com/generator" + url;
+        }
+        const fileHandler = new FileHandlerCore();
+        let { code, msg } = await fileHandler.uploadFile(
+          url,
+          file,
+          this.mergeOptions(options)
+        );
+        if (code === 0) {
+          await this.downloadResult(msg[0].fileId, file.name, fileHandler);
+        } else {
+          throw new Error(msg);
+        }
+      }
+      async downloadResult(fileId, saveName, fileHandler) {
+        let url = "/code/download";
+        {
+          url = "http://codegen.t.vtoone.com/generator" + url;
+        }
+        url += `?fileId=${fileId}`;
+        await this.downloadByUrl(url, saveName, fileHandler);
+      }
+      async downloadByUrl(url, saveName, fileHandler) {
+        if (saveName) {
+          saveName = saveName.substring(0, saveName.lastIndexOf(".")) + ".zip";
+        }
+        await (fileHandler || new FileHandlerCore()).saveAsFile(url, saveName);
+      }
+      mergeOptions(options) {
+        return Object.assign(defaltOption, options || {});
+      }
+    }
+    const readFileText = (file) => {
+      return new Promise((resolve2, reject) => {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          resolve2(reader.result);
+        };
+        reader.onerror = (e) => {
+          reject(e || "文件读取失败");
+        };
+        reader.readAsText(file, "utf-8");
+      });
+    };
+    const _hoisted_1$d = ["accept"];
+    const _hoisted_2$b = { class: "button-container" };
+    const defaultSqlType = "mysql";
+    const _sfc_main$f = {
+      __name: "SQL2JavaTool",
+      setup(__props) {
+        const dialogFormVisible = ref(false);
+        const fileUploadInputRef = ref(null);
+        const acceptExt = ref(".sql");
+        const inputSqlRef = ref(null);
+        const doing = ref(false);
+        const sqlStr = ref("");
+        const fileName = ref("");
+        const sqlTypeOption = ref([defaultSqlType, "oracle", "postgresql", "sqlserver"]);
+        const sqlType = ref(defaultSqlType);
+        const data = ref({
+          title: "SQL转Java类",
+          subtitle: "根据SQL脚本生成Java类",
+          name: "sql2java",
+          //click: onToolClick,
+          disabled: false
+        });
+        const demo = ref(`CREATE TABLE md_template_table  (
+  id varchar(64) NOT NULL,
+  project_id varchar(64),
+  org_name varchar(255),
+  leader varchar(20),
+  duty varchar(20),
+  phone varchar(20) COMMENT '手机号码',
+  remark varchar(255) NULL DEFAULT NULL,
+  PRIMARY KEY (id) USING BTREE
+) COMMENT= '模板样例表';`);
+        const onToolClick = () => {
+          dialogFormVisible.value = true;
+          setTimeout(() => {
+            var _a7;
+            (_a7 = inputSqlRef.value) == null ? void 0 : _a7.focus();
+          }, 200);
+        };
+        const onUploadFileChange = async (e) => {
+          const file = e.target.files[0];
+          try {
+            fileName.value = file.name;
+            readFileText(file).then(async (result) => {
+              sqlStr.value = result == null ? void 0 : result.trim();
+            }).catch((e2) => {
+              ElMessage.error("文件读取失败");
+              console.error(e2);
+            });
+          } catch (e2) {
+            ElMessage.error("文件格式错误");
+            console.error(e2);
+          } finally {
+            fileUploadInputRef.value.value = "";
+          }
+        };
+        const doGenerate = async () => {
+          data.value.disabled = true;
+          doing.value = true;
+          const options = { dbType: sqlType.value || defaultSqlType, dataType: "sql" };
+          try {
+            await new Translate2j().sql2j(sqlStr.value, options, fileName.value || "sql2java.zip");
+            dialogFormVisible.value = false;
+          } catch (e) {
+            ElMessage.error("SQL转java失败");
+            console.error(e);
+          }
+          fileName.value = void 0;
+          data.value.disabled = false;
+          doing.value = false;
+        };
+        const beforeClose = (done) => {
+          if (doing.value === true) {
+            return;
+          }
+          done == null ? void 0 : done();
+          sqlStr.value = "";
+          doing.value = false;
+        };
+        const templateDownload = () => {
+          sqlStr.value = demo.value;
+          sqlType.value = defaultSqlType;
+        };
+        return (_ctx, _cache) => {
+          const _component_el_option = ElOption;
+          const _component_el_select = ElSelect;
+          const _component_el_form_item = ElFormItem;
+          const _component_el_input = ElInput;
+          const _component_el_form = ElForm;
+          const _component_el_button = ElButton;
+          const _component_el_col = ElCol;
+          const _component_el_row = ElRow;
+          const _component_el_dialog = ElDialog;
+          return openBlock(), createElementBlock(Fragment, null, [
+            createVNode(ToolView, {
+              data: data.value,
+              onClick: onToolClick
+            }, null, 8, ["data"]),
+            createBaseVNode("input", {
+              ref_key: "fileUploadInputRef",
+              ref: fileUploadInputRef,
+              type: "file",
+              class: "fileInput-hide",
+              onChange: onUploadFileChange,
+              accept: acceptExt.value,
+              required: ""
+            }, null, 40, _hoisted_1$d),
+            createVNode(_component_el_dialog, {
+              modelValue: dialogFormVisible.value,
+              "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => dialogFormVisible.value = $event),
+              title: "SQL转Java类",
+              width: "95%",
+              "destroy-on-close": "",
+              "close-on-click-modal": !doing.value,
+              "before-close": beforeClose
+            }, {
+              default: withCtx(() => [
+                createVNode(_component_el_form, null, {
+                  default: withCtx(() => [
+                    createVNode(_component_el_form_item, { label: "数据库" }, {
+                      default: withCtx(() => [
+                        createVNode(_component_el_select, {
+                          modelValue: sqlType.value,
+                          "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => sqlType.value = $event),
+                          placeholder: "Select"
+                        }, {
+                          default: withCtx(() => [
+                            (openBlock(true), createElementBlock(Fragment, null, renderList(sqlTypeOption.value, (item) => {
+                              return openBlock(), createBlock(_component_el_option, {
+                                key: item,
+                                label: item,
+                                value: item
+                              }, null, 8, ["label", "value"]);
+                            }), 128))
+                          ]),
+                          _: 1
+                        }, 8, ["modelValue"])
+                      ]),
+                      _: 1
+                    }),
+                    createVNode(_component_el_form_item, null, {
+                      default: withCtx(() => [
+                        createVNode(_component_el_input, {
+                          ref_key: "inputSqlRef",
+                          ref: inputSqlRef,
+                          type: "textarea",
+                          placeholder: "请键入SQL脚本或选择文件",
+                          rows: 10,
+                          modelValue: sqlStr.value,
+                          "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => sqlStr.value = $event),
+                          autosize: { minRows: 10, maxRows: 20 },
+                          disabled: doing.value
+                        }, null, 8, ["modelValue", "disabled"])
+                      ]),
+                      _: 1
+                    })
+                  ]),
+                  _: 1
+                }),
+                createVNode(_component_el_row, {
+                  gutter: 20,
+                  justify: "space-between",
+                  class: "row-button-container"
+                }, {
+                  default: withCtx(() => [
+                    createVNode(_component_el_col, { span: 18 }, {
+                      default: withCtx(() => [
+                        createVNode(_component_el_button, {
+                          onClick: _cache[2] || (_cache[2] = ($event) => fileUploadInputRef.value.click()),
+                          disabled: doing.value,
+                          title: "打开JSON文件",
+                          link: ""
+                        }, {
+                          default: withCtx(() => [
+                            createTextVNode("选择文件")
+                          ]),
+                          _: 1
+                        }, 8, ["disabled"]),
+                        createVNode(_component_el_button, {
+                          onClick: templateDownload,
+                          disabled: doing.value,
+                          link: "",
+                          title: "加载样例模板"
+                        }, {
+                          default: withCtx(() => [
+                            createTextVNode("模板")
+                          ]),
+                          _: 1
+                        }, 8, ["disabled"])
+                      ]),
+                      _: 1
+                    }),
+                    createVNode(_component_el_col, { span: 6 }, {
+                      default: withCtx(() => [
+                        createBaseVNode("div", _hoisted_2$b, [
+                          createVNode(_component_el_button, {
+                            onClick: doGenerate,
+                            loading: doing.value,
+                            disabled: doing.value || !sqlStr.value,
+                            plain: "",
+                            type: "primary"
+                          }, {
+                            default: withCtx(() => [
+                              createTextVNode("生成")
+                            ]),
+                            _: 1
+                          }, 8, ["loading", "disabled"])
+                        ])
+                      ]),
+                      _: 1
+                    })
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            }, 8, ["modelValue", "close-on-click-modal"])
+          ], 64);
+        };
+      }
+    };
+    const SQL2JavaTool = /* @__PURE__ */ _export_sfc(_sfc_main$f, [["__scopeId", "data-v-d9327924"]]);
+    const _hoisted_1$c = { class: "button-container" };
+    const _sfc_main$e = {
+      __name: "JSON2JavaTool",
+      setup(__props) {
+        const dialogFormVisible = ref(false);
+        const fileUploadInputRef = ref(null);
+        const inputJsonrRef = ref(null);
+        const doing = ref(false);
+        const jsonStr = ref("");
+        const fileName = ref("");
+        const data = ref({
+          title: "JSON转Java类",
+          subtitle: "根据JSON数据生成Java类",
+          name: "json2java",
+          disabled: false
+        });
+        const demo = ref(`[{
+        "table": {
+            "name": "md_project",
+            "comment": "项目"
+        },
+        "fields": [{
+                "name": "id",
+                "dataType": "varchar(64)",
+                "comment": ""
+            }, {
+                "name": "name",
+                "dataType": "varchar(255)",
+                "comment": "名称"
+            }, {
+                "name": "sex",
+                "dataType": "tinyint",
+                "comment": "性别"
+            }, {
+                "name": "birthday",
+                "dataType": "date",
+                "comment": "生日"
+            }
+        ]
+    }
+]`);
+        const onToolClick = () => {
+          dialogFormVisible.value = true;
+          setTimeout(() => {
+            var _a7;
+            (_a7 = inputJsonrRef.value) == null ? void 0 : _a7.focus();
+          }, 200);
+        };
+        const onUploadFileChange = async (e) => {
+          const file = e.target.files[0];
+          try {
+            fileName.value = file.name;
+            readFileText(file).then(async (result) => {
+              jsonStr.value = result;
+            }).catch((e2) => {
+              ElMessage.error("文件读取失败");
+              console.error(e2);
+            });
+          } catch (e2) {
+            ElMessage.error("文件格式错误");
+            console.error(e2);
+          } finally {
+            fileUploadInputRef.value.value = "";
+          }
+        };
+        const doChanged = async () => {
+          data.value.disabled = true;
+          doing.value = true;
+          try {
+            let option = { dataType: "json" };
+            await new Translate2j().sql2j(jsonStr.value, option, fileName.value || "json2java.zip");
+            dialogFormVisible.value = false;
+          } catch (e) {
+            ElMessage.error("JSON转java失败");
+            console.error(e);
+          }
+          fileName.value = void 0;
+          data.value.disabled = false;
+          doing.value = false;
+        };
+        const beforeClose = (done) => {
+          if (doing.value === true) {
+            return;
+          }
+          done == null ? void 0 : done();
+          jsonStr.value = "";
+          doing.value = false;
+        };
+        const templateDownload = () => {
+          jsonStr.value = demo.value;
+        };
+        return (_ctx, _cache) => {
+          const _component_el_input = ElInput;
+          const _component_el_button = ElButton;
+          const _component_el_col = ElCol;
+          const _component_el_row = ElRow;
+          const _component_el_dialog = ElDialog;
+          return openBlock(), createElementBlock(Fragment, null, [
+            createVNode(ToolView, {
+              data: data.value,
+              onClick: onToolClick
+            }, null, 8, ["data"]),
+            createBaseVNode("input", {
+              ref_key: "fileUploadInputRef",
+              ref: fileUploadInputRef,
+              type: "file",
+              class: "fileInput-hide",
+              onChange: onUploadFileChange,
+              accept: ".json",
+              required: ""
+            }, null, 544),
+            createVNode(_component_el_dialog, {
+              modelValue: dialogFormVisible.value,
+              "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => dialogFormVisible.value = $event),
+              title: "JSON转Java类",
+              width: "95%",
+              "destroy-on-close": "",
+              "close-on-click-modal": !doing.value,
+              "before-close": beforeClose
+            }, {
+              default: withCtx(() => [
+                createVNode(_component_el_input, {
+                  ref_key: "inputJsonrRef",
+                  ref: inputJsonrRef,
+                  type: "textarea",
+                  placeholder: "请键入JSON字符",
+                  rows: 10,
+                  modelValue: jsonStr.value,
+                  "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => jsonStr.value = $event),
+                  autosize: { minRows: 10, maxRows: 20 },
+                  disabled: doing.value
+                }, null, 8, ["modelValue", "disabled"]),
+                createVNode(_component_el_row, {
+                  gutter: 20,
+                  justify: "space-between",
+                  class: "row-button-container"
+                }, {
+                  default: withCtx(() => [
+                    createVNode(_component_el_col, { span: 18 }, {
+                      default: withCtx(() => [
+                        createVNode(_component_el_button, {
+                          onClick: _cache[1] || (_cache[1] = ($event) => fileUploadInputRef.value.click()),
+                          disabled: doing.value,
+                          title: "打开JSON文件",
+                          link: ""
+                        }, {
+                          default: withCtx(() => [
+                            createTextVNode("选择文件")
+                          ]),
+                          _: 1
+                        }, 8, ["disabled"]),
+                        createVNode(_component_el_button, {
+                          onClick: templateDownload,
+                          disabled: doing.value,
+                          link: "",
+                          title: "加载样例模板"
+                        }, {
+                          default: withCtx(() => [
+                            createTextVNode("模板")
+                          ]),
+                          _: 1
+                        }, 8, ["disabled"])
+                      ]),
+                      _: 1
+                    }),
+                    createVNode(_component_el_col, { span: 6 }, {
+                      default: withCtx(() => [
+                        createBaseVNode("div", _hoisted_1$c, [
+                          createVNode(_component_el_button, {
+                            onClick: doChanged,
+                            loading: doing.value,
+                            disabled: doing.value || !jsonStr.value
+                          }, {
+                            default: withCtx(() => [
+                              createTextVNode("生成")
+                            ]),
+                            _: 1
+                          }, 8, ["loading", "disabled"])
+                        ])
+                      ]),
+                      _: 1
+                    })
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            }, 8, ["modelValue", "close-on-click-modal"])
+          ], 64);
+        };
+      }
+    };
+    const JSON2JavaTool = /* @__PURE__ */ _export_sfc(_sfc_main$e, [["__scopeId", "data-v-16888faa"]]);
+    var TEXT_PLAIN = "text/plain";
+    function warnOrLog() {
+      (console.warn || console.log).apply(console, arguments);
+    }
+    warnOrLog.bind("[clipboard-polyfill]");
+    var originalWindow = typeof window === "undefined" ? void 0 : window;
+    var originalGlobalThis = typeof globalThis === "undefined" ? void 0 : globalThis;
+    var _a, _b, _c;
+    var promiseConstructorImpl = (_c = (_a = originalWindow) == null ? void 0 : _a.Promise) != null ? _c : (_b = originalGlobalThis) == null ? void 0 : _b.Promise;
+    function getPromiseConstructor() {
+      if (!promiseConstructorImpl) {
+        throw new Error(
+          "No `Promise` implementation available for `clipboard-polyfill`. Consider using: https://github.com/lgarron/clipboard-polyfill#flat-file-version-with-promise-included"
+        );
+      }
+      return promiseConstructorImpl;
+    }
+    var originalNavigator = typeof navigator === "undefined" ? void 0 : navigator;
+    var originalNavigatorClipboard = originalNavigator == null ? void 0 : originalNavigator.clipboard;
+    var _a2;
+    (_a2 = originalNavigatorClipboard == null ? void 0 : originalNavigatorClipboard.read) == null ? void 0 : _a2.bind(
+      originalNavigatorClipboard
+    );
+    var _a3;
+    (_a3 = originalNavigatorClipboard == null ? void 0 : originalNavigatorClipboard.readText) == null ? void 0 : _a3.bind(
+      originalNavigatorClipboard
+    );
+    var _a4;
+    (_a4 = originalNavigatorClipboard == null ? void 0 : originalNavigatorClipboard.write) == null ? void 0 : _a4.bind(
+      originalNavigatorClipboard
+    );
+    var _a5;
+    var originalNavigatorClipboardWriteText = (_a5 = originalNavigatorClipboard == null ? void 0 : originalNavigatorClipboard.writeText) == null ? void 0 : _a5.bind(
+      originalNavigatorClipboard
+    );
+    var _a6;
+    (_a6 = originalWindow) == null ? void 0 : _a6.ClipboardItem;
+    var promiseConstructor = getPromiseConstructor();
+    var ieWindow = originalWindow;
+    function seemToBeInIE() {
+      return typeof ClipboardEvent === "undefined" && typeof (ieWindow == null ? void 0 : ieWindow.clipboardData) !== "undefined" && typeof (ieWindow == null ? void 0 : ieWindow.clipboardData.setData) !== "undefined";
+    }
+    function writeTextIE(text) {
+      if (!ieWindow.clipboardData) {
+        return false;
+      }
+      var success = ieWindow.clipboardData.setData("Text", text);
+      return success;
+    }
+    function copyListener(tracker, data, e) {
+      tracker.success = true;
+      for (var type in data) {
+        var value = data[type];
+        var clipboardData = e.clipboardData;
+        clipboardData.setData(type, value);
+        if (type === TEXT_PLAIN && clipboardData.getData(type) !== value) {
+          tracker.success = false;
+        }
+      }
+      e.preventDefault();
+    }
+    function execCopy(data) {
+      var tracker = { success: false };
+      var listener = copyListener.bind(this, tracker, data);
+      document.addEventListener("copy", listener);
+      try {
+        document.execCommand("copy");
+      } finally {
+        document.removeEventListener("copy", listener);
+      }
+      return tracker.success;
+    }
+    function copyUsingTempSelection(e, data) {
+      selectionSet(e);
+      var success = execCopy(data);
+      selectionClear();
+      return success;
+    }
+    function copyUsingTempElem(data) {
+      var tempElem = document.createElement("div");
+      tempElem.setAttribute("style", "-webkit-user-select: text !important");
+      tempElem.textContent = "temporary element";
+      document.body.appendChild(tempElem);
+      var success = copyUsingTempSelection(tempElem, data);
+      document.body.removeChild(tempElem);
+      return success;
+    }
+    function copyTextUsingDOM(str) {
+      var tempElem = document.createElement("div");
+      tempElem.setAttribute("style", "-webkit-user-select: text !important");
+      var spanParent = tempElem;
+      if (tempElem.attachShadow) {
+        spanParent = tempElem.attachShadow({ mode: "open" });
+      }
+      var span = document.createElement("span");
+      span.innerText = str;
+      spanParent.appendChild(span);
+      document.body.appendChild(tempElem);
+      selectionSet(span);
+      var result = document.execCommand("copy");
+      selectionClear();
+      document.body.removeChild(tempElem);
+      return result;
+    }
+    function selectionSet(elem) {
+      var sel = document.getSelection();
+      if (sel) {
+        var range2 = document.createRange();
+        range2.selectNodeContents(elem);
+        sel.removeAllRanges();
+        sel.addRange(range2);
+      }
+    }
+    function selectionClear() {
+      var sel = document.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+      }
+    }
+    function writeFallback(stringItem) {
+      var hasTextPlain = TEXT_PLAIN in stringItem;
+      if (seemToBeInIE()) {
+        if (!hasTextPlain) {
+          throw new Error("No `text/plain` value was specified.");
+        }
+        if (writeTextIE(stringItem[TEXT_PLAIN])) {
+          return true;
+        } else {
+          throw new Error("Copying failed, possibly because the user rejected it.");
+        }
+      }
+      if (execCopy(stringItem)) {
+        return true;
+      }
+      if (navigator.userAgent.indexOf("Edge") > -1) {
+        return true;
+      }
+      if (copyUsingTempSelection(document.body, stringItem)) {
+        return true;
+      }
+      if (copyUsingTempElem(stringItem)) {
+        return true;
+      }
+      if (copyTextUsingDOM(stringItem[TEXT_PLAIN])) {
+        return true;
+      }
+      return false;
+    }
+    promiseConstructor.resolve();
+    promiseConstructor.resolve(false);
+    function rejectThrownErrors(executor) {
+      return new promiseConstructor((resolve2, reject) => {
+        try {
+          resolve2(executor());
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }
+    function stringToStringItem(s) {
+      var stringItem = {};
+      stringItem[TEXT_PLAIN] = s;
+      return stringItem;
+    }
+    function writeText(s) {
+      if (originalNavigatorClipboardWriteText) {
+        return originalNavigatorClipboardWriteText(s).catch((e) => {
+          writeTextStringFallbackPromise(s);
+        });
+      }
+      return writeTextStringFallbackPromise(s);
+    }
+    function writeTextStringFallbackPromise(s) {
+      return rejectThrownErrors(
+        () => promiseConstructor.resolve(writeTextStringFallback(s))
+      );
+    }
+    function writeTextStringFallback(s) {
+      if (!writeFallback(stringToStringItem(s))) {
+        throw new Error("writeText() failed");
+      }
+    }
+    const _hoisted_1$b = { class: "rgb2hex-result-show" };
+    const _hoisted_2$a = { class: "p-3 rgb2hex-color-result" };
+    const _hoisted_3$8 = { class: "rgb2hex-result-show" };
+    const _hoisted_4$3 = { class: "p-3 rgb2hex-color-result" };
+    const formLabelWidth = "100px";
+    const _sfc_main$d = {
+      __name: "ColorTransferTool",
+      setup(__props) {
+        const dialogFormVisible = ref(false);
+        const form = reactive({
+          rgb: "106,90,205",
+          hex: "#6a5acd"
+        });
+        const rgbToHexResult = ref("#6a5acd");
+        const hex2rgbResult = computed(() => {
+          return hexToRgb(form.hex);
+        });
+        let data = ref({ title: "RGB 转 HEX", subtitle: "颜色RGB<-->HEX互转", name: "rgb-hex", disabled: false });
+        watch(() => form.rgb, (n) => {
+          rgbToHexResult.value = rgbToHex2(n);
+        });
+        const onToolClick = () => {
+          dialogFormVisible.value = true;
+        };
+        const copy = (text) => {
+          writeText(text).then(() => {
+            ElMessage.success({
+              duration: 1500,
+              message: "已复制"
+            });
+          });
+        };
+        function rgbToHex2(rgb) {
+          let colors = rgb.toLowerCase().replace("rgb", "").replace("(", "").replace(")", "").split(",");
+          const r = parseInt(colors[0]).toString(16).length === 1 ? "0" + parseInt(colors[0]).toString(16) : parseInt(colors[0]).toString(16);
+          const g = parseInt(colors[1]).toString(16).length === 1 ? "0" + parseInt(colors[1]).toString(16) : parseInt(colors[1]).toString(16);
+          const b = parseInt(colors[2]).toString(16).length === 1 ? "0" + parseInt(colors[2]).toString(16) : parseInt(colors[2]).toString(16);
+          return `#${r}${g}${b}`;
+        }
+        function hexToRgb(hex) {
+          let str = hex.replace("#", "");
+          if (str.length % 3) {
+            return "格式有误";
+          }
+          let count = str.length / 3;
+          let power = 6 / str.length;
+          let r = parseInt("0x" + str.substring(0 * count, 1 * count)) ** power;
+          let g = parseInt("0x" + str.substring(1 * count, 2 * count)) ** power;
+          let b = parseInt("0x" + str.substring(2 * count)) ** power;
+          return `${r}, ${g}, ${b}`;
+        }
+        return (_ctx, _cache) => {
+          const _component_el_input = ElInput;
+          const _component_el_form_item = ElFormItem;
+          const _component_el_button = ElButton;
+          const _component_el_form = ElForm;
+          const _component_el_dialog = ElDialog;
+          return openBlock(), createElementBlock(Fragment, null, [
+            createVNode(ToolView, {
+              data: unref(data),
+              onClick: onToolClick
+            }, null, 8, ["data"]),
+            createVNode(_component_el_dialog, {
+              modelValue: dialogFormVisible.value,
+              "onUpdate:modelValue": _cache[4] || (_cache[4] = ($event) => dialogFormVisible.value = $event),
+              title: "颜色转换",
+              width: "95%",
+              "destroy-on-close": ""
+            }, {
+              default: withCtx(() => [
+                createVNode(_component_el_form, {
+                  model: form,
+                  "label-position": "top"
+                }, {
+                  default: withCtx(() => [
+                    createVNode(_component_el_form_item, {
+                      label: "RGB --> HEX",
+                      "label-width": formLabelWidth
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(_component_el_input, {
+                          size: "large",
+                          modelValue: form.rgb,
+                          "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => form.rgb = $event),
+                          autocomplete: "off"
+                        }, null, 8, ["modelValue"])
+                      ]),
+                      _: 1
+                    }),
+                    createVNode(_component_el_form_item, {
+                      label: "",
+                      "label-width": formLabelWidth,
+                      style: { "padding-bottom": "10px", "border-bottom": "1px dashed var(--el-border-color)" }
+                    }, {
+                      default: withCtx(() => [
+                        createBaseVNode("div", _hoisted_1$b, [
+                          createBaseVNode("span", {
+                            class: "rgb2hex-color-highlight",
+                            style: normalizeStyle({ "background": rgbToHexResult.value })
+                          }, null, 4),
+                          createBaseVNode("span", _hoisted_2$a, toDisplayString(rgbToHexResult.value), 1),
+                          createVNode(_component_el_button, {
+                            onClick: _cache[1] || (_cache[1] = ($event) => copy(rgbToHexResult.value)),
+                            link: "",
+                            title: "复制转换结果"
+                          }, {
+                            default: withCtx(() => [
+                              createTextVNode("复制")
+                            ]),
+                            _: 1
+                          })
+                        ])
+                      ]),
+                      _: 1
+                    }),
+                    createVNode(_component_el_form_item, {
+                      label: "HEX --> RGB",
+                      "label-width": formLabelWidth
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(_component_el_input, {
+                          size: "large",
+                          modelValue: form.hex,
+                          "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => form.hex = $event),
+                          autocomplete: "off"
+                        }, null, 8, ["modelValue"])
+                      ]),
+                      _: 1
+                    }),
+                    createVNode(_component_el_form_item, {
+                      label: "",
+                      "label-width": formLabelWidth
+                    }, {
+                      default: withCtx(() => [
+                        createBaseVNode("div", _hoisted_3$8, [
+                          createBaseVNode("span", {
+                            class: "rgb2hex-color-highlight",
+                            style: normalizeStyle([form.hex && { "background-color": form.hex }])
+                          }, null, 4),
+                          createBaseVNode("span", _hoisted_4$3, toDisplayString(hex2rgbResult.value), 1),
+                          createVNode(_component_el_button, {
+                            onClick: _cache[3] || (_cache[3] = ($event) => copy(hex2rgbResult.value)),
+                            link: "",
+                            title: "复制转换结果"
+                          }, {
+                            default: withCtx(() => [
+                              createTextVNode("复制")
+                            ]),
+                            _: 1
+                          })
+                        ])
+                      ]),
+                      _: 1
+                    })
+                  ]),
+                  _: 1
+                }, 8, ["model"])
+              ]),
+              _: 1
+            }, 8, ["modelValue"])
+          ], 64);
+        };
+      }
+    };
+    const ColorTransferTool = /* @__PURE__ */ _export_sfc(_sfc_main$d, [["__scopeId", "data-v-82fdb124"]]);
+    var browser = {};
+    var canPromise$1 = function() {
+      return typeof Promise === "function" && Promise.prototype && Promise.prototype.then;
+    };
+    var qrcode = {};
+    var utils$1 = {};
+    let toSJISFunction;
+    const CODEWORDS_COUNT = [
+      0,
+      // Not used
+      26,
+      44,
+      70,
+      100,
+      134,
+      172,
+      196,
+      242,
+      292,
+      346,
+      404,
+      466,
+      532,
+      581,
+      655,
+      733,
+      815,
+      901,
+      991,
+      1085,
+      1156,
+      1258,
+      1364,
+      1474,
+      1588,
+      1706,
+      1828,
+      1921,
+      2051,
+      2185,
+      2323,
+      2465,
+      2611,
+      2761,
+      2876,
+      3034,
+      3196,
+      3362,
+      3532,
+      3706
+    ];
+    utils$1.getSymbolSize = function getSymbolSize2(version2) {
+      if (!version2) throw new Error('"version" cannot be null or undefined');
+      if (version2 < 1 || version2 > 40) throw new Error('"version" should be in range from 1 to 40');
+      return version2 * 4 + 17;
+    };
+    utils$1.getSymbolTotalCodewords = function getSymbolTotalCodewords(version2) {
+      return CODEWORDS_COUNT[version2];
+    };
+    utils$1.getBCHDigit = function(data) {
+      let digit = 0;
+      while (data !== 0) {
+        digit++;
+        data >>>= 1;
+      }
+      return digit;
+    };
+    utils$1.setToSJISFunction = function setToSJISFunction(f) {
+      if (typeof f !== "function") {
+        throw new Error('"toSJISFunc" is not a valid function.');
+      }
+      toSJISFunction = f;
+    };
+    utils$1.isKanjiModeEnabled = function() {
+      return typeof toSJISFunction !== "undefined";
+    };
+    utils$1.toSJIS = function toSJIS(kanji2) {
+      return toSJISFunction(kanji2);
+    };
+    var errorCorrectionLevel = {};
+    (function(exports2) {
+      exports2.L = { bit: 1 };
+      exports2.M = { bit: 0 };
+      exports2.Q = { bit: 3 };
+      exports2.H = { bit: 2 };
+      function fromString(string2) {
+        if (typeof string2 !== "string") {
+          throw new Error("Param is not a string");
+        }
+        const lcStr = string2.toLowerCase();
+        switch (lcStr) {
+          case "l":
+          case "low":
+            return exports2.L;
+          case "m":
+          case "medium":
+            return exports2.M;
+          case "q":
+          case "quartile":
+            return exports2.Q;
+          case "h":
+          case "high":
+            return exports2.H;
+          default:
+            throw new Error("Unknown EC Level: " + string2);
+        }
+      }
+      exports2.isValid = function isValid(level) {
+        return level && typeof level.bit !== "undefined" && level.bit >= 0 && level.bit < 4;
+      };
+      exports2.from = function from(value, defaultValue) {
+        if (exports2.isValid(value)) {
+          return value;
+        }
+        try {
+          return fromString(value);
+        } catch (e) {
+          return defaultValue;
+        }
+      };
+    })(errorCorrectionLevel);
+    function BitBuffer$1() {
+      this.buffer = [];
+      this.length = 0;
+    }
+    BitBuffer$1.prototype = {
+      get: function(index) {
+        const bufIndex = Math.floor(index / 8);
+        return (this.buffer[bufIndex] >>> 7 - index % 8 & 1) === 1;
+      },
+      put: function(num, length) {
+        for (let i = 0; i < length; i++) {
+          this.putBit((num >>> length - i - 1 & 1) === 1);
+        }
+      },
+      getLengthInBits: function() {
+        return this.length;
+      },
+      putBit: function(bit) {
+        const bufIndex = Math.floor(this.length / 8);
+        if (this.buffer.length <= bufIndex) {
+          this.buffer.push(0);
+        }
+        if (bit) {
+          this.buffer[bufIndex] |= 128 >>> this.length % 8;
+        }
+        this.length++;
+      }
+    };
+    var bitBuffer = BitBuffer$1;
+    function BitMatrix$1(size2) {
+      if (!size2 || size2 < 1) {
+        throw new Error("BitMatrix size must be defined and greater than 0");
+      }
+      this.size = size2;
+      this.data = new Uint8Array(size2 * size2);
+      this.reservedBit = new Uint8Array(size2 * size2);
+    }
+    BitMatrix$1.prototype.set = function(row, col, value, reserved) {
+      const index = row * this.size + col;
+      this.data[index] = value;
+      if (reserved) this.reservedBit[index] = true;
+    };
+    BitMatrix$1.prototype.get = function(row, col) {
+      return this.data[row * this.size + col];
+    };
+    BitMatrix$1.prototype.xor = function(row, col, value) {
+      this.data[row * this.size + col] ^= value;
+    };
+    BitMatrix$1.prototype.isReserved = function(row, col) {
+      return this.reservedBit[row * this.size + col];
+    };
+    var bitMatrix = BitMatrix$1;
+    var alignmentPattern = {};
+    (function(exports2) {
+      const getSymbolSize2 = utils$1.getSymbolSize;
+      exports2.getRowColCoords = function getRowColCoords(version2) {
+        if (version2 === 1) return [];
+        const posCount = Math.floor(version2 / 7) + 2;
+        const size2 = getSymbolSize2(version2);
+        const intervals = size2 === 145 ? 26 : Math.ceil((size2 - 13) / (2 * posCount - 2)) * 2;
+        const positions = [size2 - 7];
+        for (let i = 1; i < posCount - 1; i++) {
+          positions[i] = positions[i - 1] - intervals;
+        }
+        positions.push(6);
+        return positions.reverse();
+      };
+      exports2.getPositions = function getPositions(version2) {
+        const coords = [];
+        const pos = exports2.getRowColCoords(version2);
+        const posLength = pos.length;
+        for (let i = 0; i < posLength; i++) {
+          for (let j = 0; j < posLength; j++) {
+            if (i === 0 && j === 0 || // top-left
+            i === 0 && j === posLength - 1 || // bottom-left
+            i === posLength - 1 && j === 0) {
+              continue;
+            }
+            coords.push([pos[i], pos[j]]);
+          }
+        }
+        return coords;
+      };
+    })(alignmentPattern);
+    var finderPattern = {};
+    const getSymbolSize = utils$1.getSymbolSize;
+    const FINDER_PATTERN_SIZE = 7;
+    finderPattern.getPositions = function getPositions(version2) {
+      const size2 = getSymbolSize(version2);
+      return [
+        // top-left
+        [0, 0],
+        // top-right
+        [size2 - FINDER_PATTERN_SIZE, 0],
+        // bottom-left
+        [0, size2 - FINDER_PATTERN_SIZE]
+      ];
+    };
+    var maskPattern = {};
+    (function(exports2) {
+      exports2.Patterns = {
+        PATTERN000: 0,
+        PATTERN001: 1,
+        PATTERN010: 2,
+        PATTERN011: 3,
+        PATTERN100: 4,
+        PATTERN101: 5,
+        PATTERN110: 6,
+        PATTERN111: 7
+      };
+      const PenaltyScores = {
+        N1: 3,
+        N2: 3,
+        N3: 40,
+        N4: 10
+      };
+      exports2.isValid = function isValid(mask) {
+        return mask != null && mask !== "" && !isNaN(mask) && mask >= 0 && mask <= 7;
+      };
+      exports2.from = function from(value) {
+        return exports2.isValid(value) ? parseInt(value, 10) : void 0;
+      };
+      exports2.getPenaltyN1 = function getPenaltyN1(data) {
+        const size2 = data.size;
+        let points = 0;
+        let sameCountCol = 0;
+        let sameCountRow = 0;
+        let lastCol = null;
+        let lastRow = null;
+        for (let row = 0; row < size2; row++) {
+          sameCountCol = sameCountRow = 0;
+          lastCol = lastRow = null;
+          for (let col = 0; col < size2; col++) {
+            let module2 = data.get(row, col);
+            if (module2 === lastCol) {
+              sameCountCol++;
+            } else {
+              if (sameCountCol >= 5) points += PenaltyScores.N1 + (sameCountCol - 5);
+              lastCol = module2;
+              sameCountCol = 1;
+            }
+            module2 = data.get(col, row);
+            if (module2 === lastRow) {
+              sameCountRow++;
+            } else {
+              if (sameCountRow >= 5) points += PenaltyScores.N1 + (sameCountRow - 5);
+              lastRow = module2;
+              sameCountRow = 1;
+            }
+          }
+          if (sameCountCol >= 5) points += PenaltyScores.N1 + (sameCountCol - 5);
+          if (sameCountRow >= 5) points += PenaltyScores.N1 + (sameCountRow - 5);
+        }
+        return points;
+      };
+      exports2.getPenaltyN2 = function getPenaltyN2(data) {
+        const size2 = data.size;
+        let points = 0;
+        for (let row = 0; row < size2 - 1; row++) {
+          for (let col = 0; col < size2 - 1; col++) {
+            const last = data.get(row, col) + data.get(row, col + 1) + data.get(row + 1, col) + data.get(row + 1, col + 1);
+            if (last === 4 || last === 0) points++;
+          }
+        }
+        return points * PenaltyScores.N2;
+      };
+      exports2.getPenaltyN3 = function getPenaltyN3(data) {
+        const size2 = data.size;
+        let points = 0;
+        let bitsCol = 0;
+        let bitsRow = 0;
+        for (let row = 0; row < size2; row++) {
+          bitsCol = bitsRow = 0;
+          for (let col = 0; col < size2; col++) {
+            bitsCol = bitsCol << 1 & 2047 | data.get(row, col);
+            if (col >= 10 && (bitsCol === 1488 || bitsCol === 93)) points++;
+            bitsRow = bitsRow << 1 & 2047 | data.get(col, row);
+            if (col >= 10 && (bitsRow === 1488 || bitsRow === 93)) points++;
+          }
+        }
+        return points * PenaltyScores.N3;
+      };
+      exports2.getPenaltyN4 = function getPenaltyN4(data) {
+        let darkCount = 0;
+        const modulesCount = data.data.length;
+        for (let i = 0; i < modulesCount; i++) darkCount += data.data[i];
+        const k = Math.abs(Math.ceil(darkCount * 100 / modulesCount / 5) - 10);
+        return k * PenaltyScores.N4;
+      };
+      function getMaskAt(maskPattern2, i, j) {
+        switch (maskPattern2) {
+          case exports2.Patterns.PATTERN000:
+            return (i + j) % 2 === 0;
+          case exports2.Patterns.PATTERN001:
+            return i % 2 === 0;
+          case exports2.Patterns.PATTERN010:
+            return j % 3 === 0;
+          case exports2.Patterns.PATTERN011:
+            return (i + j) % 3 === 0;
+          case exports2.Patterns.PATTERN100:
+            return (Math.floor(i / 2) + Math.floor(j / 3)) % 2 === 0;
+          case exports2.Patterns.PATTERN101:
+            return i * j % 2 + i * j % 3 === 0;
+          case exports2.Patterns.PATTERN110:
+            return (i * j % 2 + i * j % 3) % 2 === 0;
+          case exports2.Patterns.PATTERN111:
+            return (i * j % 3 + (i + j) % 2) % 2 === 0;
+          default:
+            throw new Error("bad maskPattern:" + maskPattern2);
+        }
+      }
+      exports2.applyMask = function applyMask(pattern, data) {
+        const size2 = data.size;
+        for (let col = 0; col < size2; col++) {
+          for (let row = 0; row < size2; row++) {
+            if (data.isReserved(row, col)) continue;
+            data.xor(row, col, getMaskAt(pattern, row, col));
+          }
+        }
+      };
+      exports2.getBestMask = function getBestMask(data, setupFormatFunc) {
+        const numPatterns = Object.keys(exports2.Patterns).length;
+        let bestPattern = 0;
+        let lowerPenalty = Infinity;
+        for (let p2 = 0; p2 < numPatterns; p2++) {
+          setupFormatFunc(p2);
+          exports2.applyMask(p2, data);
+          const penalty = exports2.getPenaltyN1(data) + exports2.getPenaltyN2(data) + exports2.getPenaltyN3(data) + exports2.getPenaltyN4(data);
+          exports2.applyMask(p2, data);
+          if (penalty < lowerPenalty) {
+            lowerPenalty = penalty;
+            bestPattern = p2;
+          }
+        }
+        return bestPattern;
+      };
+    })(maskPattern);
+    var errorCorrectionCode = {};
+    const ECLevel$1 = errorCorrectionLevel;
+    const EC_BLOCKS_TABLE = [
+      // L  M  Q  H
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      1,
+      2,
+      2,
+      4,
+      1,
+      2,
+      4,
+      4,
+      2,
+      4,
+      4,
+      4,
+      2,
+      4,
+      6,
+      5,
+      2,
+      4,
+      6,
+      6,
+      2,
+      5,
+      8,
+      8,
+      4,
+      5,
+      8,
+      8,
+      4,
+      5,
+      8,
+      11,
+      4,
+      8,
+      10,
+      11,
+      4,
+      9,
+      12,
+      16,
+      4,
+      9,
+      16,
+      16,
+      6,
+      10,
+      12,
+      18,
+      6,
+      10,
+      17,
+      16,
+      6,
+      11,
+      16,
+      19,
+      6,
+      13,
+      18,
+      21,
+      7,
+      14,
+      21,
+      25,
+      8,
+      16,
+      20,
+      25,
+      8,
+      17,
+      23,
+      25,
+      9,
+      17,
+      23,
+      34,
+      9,
+      18,
+      25,
+      30,
+      10,
+      20,
+      27,
+      32,
+      12,
+      21,
+      29,
+      35,
+      12,
+      23,
+      34,
+      37,
+      12,
+      25,
+      34,
+      40,
+      13,
+      26,
+      35,
+      42,
+      14,
+      28,
+      38,
+      45,
+      15,
+      29,
+      40,
+      48,
+      16,
+      31,
+      43,
+      51,
+      17,
+      33,
+      45,
+      54,
+      18,
+      35,
+      48,
+      57,
+      19,
+      37,
+      51,
+      60,
+      19,
+      38,
+      53,
+      63,
+      20,
+      40,
+      56,
+      66,
+      21,
+      43,
+      59,
+      70,
+      22,
+      45,
+      62,
+      74,
+      24,
+      47,
+      65,
+      77,
+      25,
+      49,
+      68,
+      81
+    ];
+    const EC_CODEWORDS_TABLE = [
+      // L  M  Q  H
+      7,
+      10,
+      13,
+      17,
+      10,
+      16,
+      22,
+      28,
+      15,
+      26,
+      36,
+      44,
+      20,
+      36,
+      52,
+      64,
+      26,
+      48,
+      72,
+      88,
+      36,
+      64,
+      96,
+      112,
+      40,
+      72,
+      108,
+      130,
+      48,
+      88,
+      132,
+      156,
+      60,
+      110,
+      160,
+      192,
+      72,
+      130,
+      192,
+      224,
+      80,
+      150,
+      224,
+      264,
+      96,
+      176,
+      260,
+      308,
+      104,
+      198,
+      288,
+      352,
+      120,
+      216,
+      320,
+      384,
+      132,
+      240,
+      360,
+      432,
+      144,
+      280,
+      408,
+      480,
+      168,
+      308,
+      448,
+      532,
+      180,
+      338,
+      504,
+      588,
+      196,
+      364,
+      546,
+      650,
+      224,
+      416,
+      600,
+      700,
+      224,
+      442,
+      644,
+      750,
+      252,
+      476,
+      690,
+      816,
+      270,
+      504,
+      750,
+      900,
+      300,
+      560,
+      810,
+      960,
+      312,
+      588,
+      870,
+      1050,
+      336,
+      644,
+      952,
+      1110,
+      360,
+      700,
+      1020,
+      1200,
+      390,
+      728,
+      1050,
+      1260,
+      420,
+      784,
+      1140,
+      1350,
+      450,
+      812,
+      1200,
+      1440,
+      480,
+      868,
+      1290,
+      1530,
+      510,
+      924,
+      1350,
+      1620,
+      540,
+      980,
+      1440,
+      1710,
+      570,
+      1036,
+      1530,
+      1800,
+      570,
+      1064,
+      1590,
+      1890,
+      600,
+      1120,
+      1680,
+      1980,
+      630,
+      1204,
+      1770,
+      2100,
+      660,
+      1260,
+      1860,
+      2220,
+      720,
+      1316,
+      1950,
+      2310,
+      750,
+      1372,
+      2040,
+      2430
+    ];
+    errorCorrectionCode.getBlocksCount = function getBlocksCount(version2, errorCorrectionLevel2) {
+      switch (errorCorrectionLevel2) {
+        case ECLevel$1.L:
+          return EC_BLOCKS_TABLE[(version2 - 1) * 4 + 0];
+        case ECLevel$1.M:
+          return EC_BLOCKS_TABLE[(version2 - 1) * 4 + 1];
+        case ECLevel$1.Q:
+          return EC_BLOCKS_TABLE[(version2 - 1) * 4 + 2];
+        case ECLevel$1.H:
+          return EC_BLOCKS_TABLE[(version2 - 1) * 4 + 3];
+        default:
+          return void 0;
+      }
+    };
+    errorCorrectionCode.getTotalCodewordsCount = function getTotalCodewordsCount(version2, errorCorrectionLevel2) {
+      switch (errorCorrectionLevel2) {
+        case ECLevel$1.L:
+          return EC_CODEWORDS_TABLE[(version2 - 1) * 4 + 0];
+        case ECLevel$1.M:
+          return EC_CODEWORDS_TABLE[(version2 - 1) * 4 + 1];
+        case ECLevel$1.Q:
+          return EC_CODEWORDS_TABLE[(version2 - 1) * 4 + 2];
+        case ECLevel$1.H:
+          return EC_CODEWORDS_TABLE[(version2 - 1) * 4 + 3];
+        default:
+          return void 0;
+      }
+    };
+    var polynomial = {};
+    var galoisField = {};
+    const EXP_TABLE = new Uint8Array(512);
+    const LOG_TABLE = new Uint8Array(256);
+    (function initTables() {
+      let x = 1;
+      for (let i = 0; i < 255; i++) {
+        EXP_TABLE[i] = x;
+        LOG_TABLE[x] = i;
+        x <<= 1;
+        if (x & 256) {
+          x ^= 285;
+        }
+      }
+      for (let i = 255; i < 512; i++) {
+        EXP_TABLE[i] = EXP_TABLE[i - 255];
+      }
+    })();
+    galoisField.log = function log(n) {
+      if (n < 1) throw new Error("log(" + n + ")");
+      return LOG_TABLE[n];
+    };
+    galoisField.exp = function exp(n) {
+      return EXP_TABLE[n];
+    };
+    galoisField.mul = function mul(x, y) {
+      if (x === 0 || y === 0) return 0;
+      return EXP_TABLE[LOG_TABLE[x] + LOG_TABLE[y]];
+    };
+    (function(exports2) {
+      const GF = galoisField;
+      exports2.mul = function mul(p1, p2) {
+        const coeff = new Uint8Array(p1.length + p2.length - 1);
+        for (let i = 0; i < p1.length; i++) {
+          for (let j = 0; j < p2.length; j++) {
+            coeff[i + j] ^= GF.mul(p1[i], p2[j]);
+          }
+        }
+        return coeff;
+      };
+      exports2.mod = function mod(divident, divisor) {
+        let result = new Uint8Array(divident);
+        while (result.length - divisor.length >= 0) {
+          const coeff = result[0];
+          for (let i = 0; i < divisor.length; i++) {
+            result[i] ^= GF.mul(divisor[i], coeff);
+          }
+          let offset = 0;
+          while (offset < result.length && result[offset] === 0) offset++;
+          result = result.slice(offset);
+        }
+        return result;
+      };
+      exports2.generateECPolynomial = function generateECPolynomial(degree) {
+        let poly = new Uint8Array([1]);
+        for (let i = 0; i < degree; i++) {
+          poly = exports2.mul(poly, new Uint8Array([1, GF.exp(i)]));
+        }
+        return poly;
+      };
+    })(polynomial);
+    const Polynomial = polynomial;
+    function ReedSolomonEncoder$1(degree) {
+      this.genPoly = void 0;
+      this.degree = degree;
+      if (this.degree) this.initialize(this.degree);
+    }
+    ReedSolomonEncoder$1.prototype.initialize = function initialize(degree) {
+      this.degree = degree;
+      this.genPoly = Polynomial.generateECPolynomial(this.degree);
+    };
+    ReedSolomonEncoder$1.prototype.encode = function encode(data) {
+      if (!this.genPoly) {
+        throw new Error("Encoder not initialized");
+      }
+      const paddedData = new Uint8Array(data.length + this.degree);
+      paddedData.set(data);
+      const remainder = Polynomial.mod(paddedData, this.genPoly);
+      const start = this.degree - remainder.length;
+      if (start > 0) {
+        const buff = new Uint8Array(this.degree);
+        buff.set(remainder, start);
+        return buff;
+      }
+      return remainder;
+    };
+    var reedSolomonEncoder = ReedSolomonEncoder$1;
+    var version = {};
+    var mode = {};
+    var versionCheck = {};
+    versionCheck.isValid = function isValid(version2) {
+      return !isNaN(version2) && version2 >= 1 && version2 <= 40;
+    };
+    var regex = {};
+    const numeric = "[0-9]+";
+    const alphanumeric = "[A-Z $%*+\\-./:]+";
+    let kanji = "(?:[u3000-u303F]|[u3040-u309F]|[u30A0-u30FF]|[uFF00-uFFEF]|[u4E00-u9FAF]|[u2605-u2606]|[u2190-u2195]|u203B|[u2010u2015u2018u2019u2025u2026u201Cu201Du2225u2260]|[u0391-u0451]|[u00A7u00A8u00B1u00B4u00D7u00F7])+";
+    kanji = kanji.replace(/u/g, "\\u");
+    const byte = "(?:(?![A-Z0-9 $%*+\\-./:]|" + kanji + ")(?:.|[\r\n]))+";
+    regex.KANJI = new RegExp(kanji, "g");
+    regex.BYTE_KANJI = new RegExp("[^A-Z0-9 $%*+\\-./:]+", "g");
+    regex.BYTE = new RegExp(byte, "g");
+    regex.NUMERIC = new RegExp(numeric, "g");
+    regex.ALPHANUMERIC = new RegExp(alphanumeric, "g");
+    const TEST_KANJI = new RegExp("^" + kanji + "$");
+    const TEST_NUMERIC = new RegExp("^" + numeric + "$");
+    const TEST_ALPHANUMERIC = new RegExp("^[A-Z0-9 $%*+\\-./:]+$");
+    regex.testKanji = function testKanji(str) {
+      return TEST_KANJI.test(str);
+    };
+    regex.testNumeric = function testNumeric(str) {
+      return TEST_NUMERIC.test(str);
+    };
+    regex.testAlphanumeric = function testAlphanumeric(str) {
+      return TEST_ALPHANUMERIC.test(str);
+    };
+    (function(exports2) {
+      const VersionCheck = versionCheck;
+      const Regex = regex;
+      exports2.NUMERIC = {
+        id: "Numeric",
+        bit: 1 << 0,
+        ccBits: [10, 12, 14]
+      };
+      exports2.ALPHANUMERIC = {
+        id: "Alphanumeric",
+        bit: 1 << 1,
+        ccBits: [9, 11, 13]
+      };
+      exports2.BYTE = {
+        id: "Byte",
+        bit: 1 << 2,
+        ccBits: [8, 16, 16]
+      };
+      exports2.KANJI = {
+        id: "Kanji",
+        bit: 1 << 3,
+        ccBits: [8, 10, 12]
+      };
+      exports2.MIXED = {
+        bit: -1
+      };
+      exports2.getCharCountIndicator = function getCharCountIndicator(mode2, version2) {
+        if (!mode2.ccBits) throw new Error("Invalid mode: " + mode2);
+        if (!VersionCheck.isValid(version2)) {
+          throw new Error("Invalid version: " + version2);
+        }
+        if (version2 >= 1 && version2 < 10) return mode2.ccBits[0];
+        else if (version2 < 27) return mode2.ccBits[1];
+        return mode2.ccBits[2];
+      };
+      exports2.getBestModeForData = function getBestModeForData(dataStr) {
+        if (Regex.testNumeric(dataStr)) return exports2.NUMERIC;
+        else if (Regex.testAlphanumeric(dataStr)) return exports2.ALPHANUMERIC;
+        else if (Regex.testKanji(dataStr)) return exports2.KANJI;
+        else return exports2.BYTE;
+      };
+      exports2.toString = function toString2(mode2) {
+        if (mode2 && mode2.id) return mode2.id;
+        throw new Error("Invalid mode");
+      };
+      exports2.isValid = function isValid(mode2) {
+        return mode2 && mode2.bit && mode2.ccBits;
+      };
+      function fromString(string2) {
+        if (typeof string2 !== "string") {
+          throw new Error("Param is not a string");
+        }
+        const lcStr = string2.toLowerCase();
+        switch (lcStr) {
+          case "numeric":
+            return exports2.NUMERIC;
+          case "alphanumeric":
+            return exports2.ALPHANUMERIC;
+          case "kanji":
+            return exports2.KANJI;
+          case "byte":
+            return exports2.BYTE;
+          default:
+            throw new Error("Unknown mode: " + string2);
+        }
+      }
+      exports2.from = function from(value, defaultValue) {
+        if (exports2.isValid(value)) {
+          return value;
+        }
+        try {
+          return fromString(value);
+        } catch (e) {
+          return defaultValue;
+        }
+      };
+    })(mode);
+    (function(exports2) {
+      const Utils2 = utils$1;
+      const ECCode2 = errorCorrectionCode;
+      const ECLevel2 = errorCorrectionLevel;
+      const Mode2 = mode;
+      const VersionCheck = versionCheck;
+      const G18 = 1 << 12 | 1 << 11 | 1 << 10 | 1 << 9 | 1 << 8 | 1 << 5 | 1 << 2 | 1 << 0;
+      const G18_BCH = Utils2.getBCHDigit(G18);
+      function getBestVersionForDataLength(mode2, length, errorCorrectionLevel2) {
+        for (let currentVersion = 1; currentVersion <= 40; currentVersion++) {
+          if (length <= exports2.getCapacity(currentVersion, errorCorrectionLevel2, mode2)) {
+            return currentVersion;
+          }
+        }
+        return void 0;
+      }
+      function getReservedBitsCount(mode2, version2) {
+        return Mode2.getCharCountIndicator(mode2, version2) + 4;
+      }
+      function getTotalBitsFromDataArray(segments2, version2) {
+        let totalBits = 0;
+        segments2.forEach(function(data) {
+          const reservedBits = getReservedBitsCount(data.mode, version2);
+          totalBits += reservedBits + data.getBitsLength();
+        });
+        return totalBits;
+      }
+      function getBestVersionForMixedData(segments2, errorCorrectionLevel2) {
+        for (let currentVersion = 1; currentVersion <= 40; currentVersion++) {
+          const length = getTotalBitsFromDataArray(segments2, currentVersion);
+          if (length <= exports2.getCapacity(currentVersion, errorCorrectionLevel2, Mode2.MIXED)) {
+            return currentVersion;
+          }
+        }
+        return void 0;
+      }
+      exports2.from = function from(value, defaultValue) {
+        if (VersionCheck.isValid(value)) {
+          return parseInt(value, 10);
+        }
+        return defaultValue;
+      };
+      exports2.getCapacity = function getCapacity(version2, errorCorrectionLevel2, mode2) {
+        if (!VersionCheck.isValid(version2)) {
+          throw new Error("Invalid QR Code version");
+        }
+        if (typeof mode2 === "undefined") mode2 = Mode2.BYTE;
+        const totalCodewords = Utils2.getSymbolTotalCodewords(version2);
+        const ecTotalCodewords = ECCode2.getTotalCodewordsCount(version2, errorCorrectionLevel2);
+        const dataTotalCodewordsBits = (totalCodewords - ecTotalCodewords) * 8;
+        if (mode2 === Mode2.MIXED) return dataTotalCodewordsBits;
+        const usableBits = dataTotalCodewordsBits - getReservedBitsCount(mode2, version2);
+        switch (mode2) {
+          case Mode2.NUMERIC:
+            return Math.floor(usableBits / 10 * 3);
+          case Mode2.ALPHANUMERIC:
+            return Math.floor(usableBits / 11 * 2);
+          case Mode2.KANJI:
+            return Math.floor(usableBits / 13);
+          case Mode2.BYTE:
+          default:
+            return Math.floor(usableBits / 8);
+        }
+      };
+      exports2.getBestVersionForData = function getBestVersionForData(data, errorCorrectionLevel2) {
+        let seg;
+        const ecl = ECLevel2.from(errorCorrectionLevel2, ECLevel2.M);
+        if (Array.isArray(data)) {
+          if (data.length > 1) {
+            return getBestVersionForMixedData(data, ecl);
+          }
+          if (data.length === 0) {
+            return 1;
+          }
+          seg = data[0];
+        } else {
+          seg = data;
+        }
+        return getBestVersionForDataLength(seg.mode, seg.getLength(), ecl);
+      };
+      exports2.getEncodedBits = function getEncodedBits(version2) {
+        if (!VersionCheck.isValid(version2) || version2 < 7) {
+          throw new Error("Invalid QR Code version");
+        }
+        let d = version2 << 12;
+        while (Utils2.getBCHDigit(d) - G18_BCH >= 0) {
+          d ^= G18 << Utils2.getBCHDigit(d) - G18_BCH;
+        }
+        return version2 << 12 | d;
+      };
+    })(version);
+    var formatInfo = {};
+    const Utils$3 = utils$1;
+    const G15 = 1 << 10 | 1 << 8 | 1 << 5 | 1 << 4 | 1 << 2 | 1 << 1 | 1 << 0;
+    const G15_MASK = 1 << 14 | 1 << 12 | 1 << 10 | 1 << 4 | 1 << 1;
+    const G15_BCH = Utils$3.getBCHDigit(G15);
+    formatInfo.getEncodedBits = function getEncodedBits(errorCorrectionLevel2, mask) {
+      const data = errorCorrectionLevel2.bit << 3 | mask;
+      let d = data << 10;
+      while (Utils$3.getBCHDigit(d) - G15_BCH >= 0) {
+        d ^= G15 << Utils$3.getBCHDigit(d) - G15_BCH;
+      }
+      return (data << 10 | d) ^ G15_MASK;
+    };
+    var segments = {};
+    const Mode$4 = mode;
+    function NumericData(data) {
+      this.mode = Mode$4.NUMERIC;
+      this.data = data.toString();
+    }
+    NumericData.getBitsLength = function getBitsLength(length) {
+      return 10 * Math.floor(length / 3) + (length % 3 ? length % 3 * 3 + 1 : 0);
+    };
+    NumericData.prototype.getLength = function getLength() {
+      return this.data.length;
+    };
+    NumericData.prototype.getBitsLength = function getBitsLength() {
+      return NumericData.getBitsLength(this.data.length);
+    };
+    NumericData.prototype.write = function write(bitBuffer2) {
+      let i, group, value;
+      for (i = 0; i + 3 <= this.data.length; i += 3) {
+        group = this.data.substr(i, 3);
+        value = parseInt(group, 10);
+        bitBuffer2.put(value, 10);
+      }
+      const remainingNum = this.data.length - i;
+      if (remainingNum > 0) {
+        group = this.data.substr(i);
+        value = parseInt(group, 10);
+        bitBuffer2.put(value, remainingNum * 3 + 1);
+      }
+    };
+    var numericData = NumericData;
+    const Mode$3 = mode;
+    const ALPHA_NUM_CHARS = [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+      "P",
+      "Q",
+      "R",
+      "S",
+      "T",
+      "U",
+      "V",
+      "W",
+      "X",
+      "Y",
+      "Z",
+      " ",
+      "$",
+      "%",
+      "*",
+      "+",
+      "-",
+      ".",
+      "/",
+      ":"
+    ];
+    function AlphanumericData(data) {
+      this.mode = Mode$3.ALPHANUMERIC;
+      this.data = data;
+    }
+    AlphanumericData.getBitsLength = function getBitsLength(length) {
+      return 11 * Math.floor(length / 2) + 6 * (length % 2);
+    };
+    AlphanumericData.prototype.getLength = function getLength() {
+      return this.data.length;
+    };
+    AlphanumericData.prototype.getBitsLength = function getBitsLength() {
+      return AlphanumericData.getBitsLength(this.data.length);
+    };
+    AlphanumericData.prototype.write = function write(bitBuffer2) {
+      let i;
+      for (i = 0; i + 2 <= this.data.length; i += 2) {
+        let value = ALPHA_NUM_CHARS.indexOf(this.data[i]) * 45;
+        value += ALPHA_NUM_CHARS.indexOf(this.data[i + 1]);
+        bitBuffer2.put(value, 11);
+      }
+      if (this.data.length % 2) {
+        bitBuffer2.put(ALPHA_NUM_CHARS.indexOf(this.data[i]), 6);
+      }
+    };
+    var alphanumericData = AlphanumericData;
+    var encodeUtf8$1 = function encodeUtf82(input) {
+      var result = [];
+      var size2 = input.length;
+      for (var index = 0; index < size2; index++) {
+        var point = input.charCodeAt(index);
+        if (point >= 55296 && point <= 56319 && size2 > index + 1) {
+          var second = input.charCodeAt(index + 1);
+          if (second >= 56320 && second <= 57343) {
+            point = (point - 55296) * 1024 + second - 56320 + 65536;
+            index += 1;
+          }
+        }
+        if (point < 128) {
+          result.push(point);
+          continue;
+        }
+        if (point < 2048) {
+          result.push(point >> 6 | 192);
+          result.push(point & 63 | 128);
+          continue;
+        }
+        if (point < 55296 || point >= 57344 && point < 65536) {
+          result.push(point >> 12 | 224);
+          result.push(point >> 6 & 63 | 128);
+          result.push(point & 63 | 128);
+          continue;
+        }
+        if (point >= 65536 && point <= 1114111) {
+          result.push(point >> 18 | 240);
+          result.push(point >> 12 & 63 | 128);
+          result.push(point >> 6 & 63 | 128);
+          result.push(point & 63 | 128);
+          continue;
+        }
+        result.push(239, 191, 189);
+      }
+      return new Uint8Array(result).buffer;
+    };
+    const encodeUtf8 = encodeUtf8$1;
+    const Mode$2 = mode;
+    function ByteData(data) {
+      this.mode = Mode$2.BYTE;
+      if (typeof data === "string") {
+        data = encodeUtf8(data);
+      }
+      this.data = new Uint8Array(data);
+    }
+    ByteData.getBitsLength = function getBitsLength(length) {
+      return length * 8;
+    };
+    ByteData.prototype.getLength = function getLength() {
+      return this.data.length;
+    };
+    ByteData.prototype.getBitsLength = function getBitsLength() {
+      return ByteData.getBitsLength(this.data.length);
+    };
+    ByteData.prototype.write = function(bitBuffer2) {
+      for (let i = 0, l = this.data.length; i < l; i++) {
+        bitBuffer2.put(this.data[i], 8);
+      }
+    };
+    var byteData = ByteData;
+    const Mode$1 = mode;
+    const Utils$2 = utils$1;
+    function KanjiData(data) {
+      this.mode = Mode$1.KANJI;
+      this.data = data;
+    }
+    KanjiData.getBitsLength = function getBitsLength(length) {
+      return length * 13;
+    };
+    KanjiData.prototype.getLength = function getLength() {
+      return this.data.length;
+    };
+    KanjiData.prototype.getBitsLength = function getBitsLength() {
+      return KanjiData.getBitsLength(this.data.length);
+    };
+    KanjiData.prototype.write = function(bitBuffer2) {
+      let i;
+      for (i = 0; i < this.data.length; i++) {
+        let value = Utils$2.toSJIS(this.data[i]);
+        if (value >= 33088 && value <= 40956) {
+          value -= 33088;
+        } else if (value >= 57408 && value <= 60351) {
+          value -= 49472;
+        } else {
+          throw new Error(
+            "Invalid SJIS character: " + this.data[i] + "\nMake sure your charset is UTF-8"
+          );
+        }
+        value = (value >>> 8 & 255) * 192 + (value & 255);
+        bitBuffer2.put(value, 13);
+      }
+    };
+    var kanjiData = KanjiData;
+    var dijkstra = { exports: {} };
+    (function(module2) {
+      var dijkstra2 = {
+        single_source_shortest_paths: function(graph, s, d) {
+          var predecessors = {};
+          var costs = {};
+          costs[s] = 0;
+          var open2 = dijkstra2.PriorityQueue.make();
+          open2.push(s, 0);
+          var closest, u, v, cost_of_s_to_u, adjacent_nodes, cost_of_e, cost_of_s_to_u_plus_cost_of_e, cost_of_s_to_v, first_visit;
+          while (!open2.empty()) {
+            closest = open2.pop();
+            u = closest.value;
+            cost_of_s_to_u = closest.cost;
+            adjacent_nodes = graph[u] || {};
+            for (v in adjacent_nodes) {
+              if (adjacent_nodes.hasOwnProperty(v)) {
+                cost_of_e = adjacent_nodes[v];
+                cost_of_s_to_u_plus_cost_of_e = cost_of_s_to_u + cost_of_e;
+                cost_of_s_to_v = costs[v];
+                first_visit = typeof costs[v] === "undefined";
+                if (first_visit || cost_of_s_to_v > cost_of_s_to_u_plus_cost_of_e) {
+                  costs[v] = cost_of_s_to_u_plus_cost_of_e;
+                  open2.push(v, cost_of_s_to_u_plus_cost_of_e);
+                  predecessors[v] = u;
+                }
+              }
+            }
+          }
+          if (typeof d !== "undefined" && typeof costs[d] === "undefined") {
+            var msg = ["Could not find a path from ", s, " to ", d, "."].join("");
+            throw new Error(msg);
+          }
+          return predecessors;
+        },
+        extract_shortest_path_from_predecessor_list: function(predecessors, d) {
+          var nodes = [];
+          var u = d;
+          while (u) {
+            nodes.push(u);
+            predecessors[u];
+            u = predecessors[u];
+          }
+          nodes.reverse();
+          return nodes;
+        },
+        find_path: function(graph, s, d) {
+          var predecessors = dijkstra2.single_source_shortest_paths(graph, s, d);
+          return dijkstra2.extract_shortest_path_from_predecessor_list(
+            predecessors,
+            d
+          );
+        },
+        /**
+         * A very naive priority queue implementation.
+         */
+        PriorityQueue: {
+          make: function(opts) {
+            var T = dijkstra2.PriorityQueue, t = {}, key;
+            opts = opts || {};
+            for (key in T) {
+              if (T.hasOwnProperty(key)) {
+                t[key] = T[key];
+              }
+            }
+            t.queue = [];
+            t.sorter = opts.sorter || T.default_sorter;
+            return t;
+          },
+          default_sorter: function(a, b) {
+            return a.cost - b.cost;
+          },
+          /**
+           * Add a new item to the queue and ensure the highest priority element
+           * is at the front of the queue.
+           */
+          push: function(value, cost) {
+            var item = { value, cost };
+            this.queue.push(item);
+            this.queue.sort(this.sorter);
+          },
+          /**
+           * Return the highest priority element in the queue.
+           */
+          pop: function() {
+            return this.queue.shift();
+          },
+          empty: function() {
+            return this.queue.length === 0;
+          }
+        }
+      };
+      {
+        module2.exports = dijkstra2;
+      }
+    })(dijkstra);
+    var dijkstraExports = dijkstra.exports;
+    (function(exports2) {
+      const Mode2 = mode;
+      const NumericData2 = numericData;
+      const AlphanumericData2 = alphanumericData;
+      const ByteData2 = byteData;
+      const KanjiData2 = kanjiData;
+      const Regex = regex;
+      const Utils2 = utils$1;
+      const dijkstra2 = dijkstraExports;
+      function getStringByteLength(str) {
+        return unescape(encodeURIComponent(str)).length;
+      }
+      function getSegments(regex2, mode2, str) {
+        const segments2 = [];
+        let result;
+        while ((result = regex2.exec(str)) !== null) {
+          segments2.push({
+            data: result[0],
+            index: result.index,
+            mode: mode2,
+            length: result[0].length
+          });
+        }
+        return segments2;
+      }
+      function getSegmentsFromString(dataStr) {
+        const numSegs = getSegments(Regex.NUMERIC, Mode2.NUMERIC, dataStr);
+        const alphaNumSegs = getSegments(Regex.ALPHANUMERIC, Mode2.ALPHANUMERIC, dataStr);
+        let byteSegs;
+        let kanjiSegs;
+        if (Utils2.isKanjiModeEnabled()) {
+          byteSegs = getSegments(Regex.BYTE, Mode2.BYTE, dataStr);
+          kanjiSegs = getSegments(Regex.KANJI, Mode2.KANJI, dataStr);
+        } else {
+          byteSegs = getSegments(Regex.BYTE_KANJI, Mode2.BYTE, dataStr);
+          kanjiSegs = [];
+        }
+        const segs = numSegs.concat(alphaNumSegs, byteSegs, kanjiSegs);
+        return segs.sort(function(s1, s2) {
+          return s1.index - s2.index;
+        }).map(function(obj2) {
+          return {
+            data: obj2.data,
+            mode: obj2.mode,
+            length: obj2.length
+          };
+        });
+      }
+      function getSegmentBitsLength(length, mode2) {
+        switch (mode2) {
+          case Mode2.NUMERIC:
+            return NumericData2.getBitsLength(length);
+          case Mode2.ALPHANUMERIC:
+            return AlphanumericData2.getBitsLength(length);
+          case Mode2.KANJI:
+            return KanjiData2.getBitsLength(length);
+          case Mode2.BYTE:
+            return ByteData2.getBitsLength(length);
+        }
+      }
+      function mergeSegments(segs) {
+        return segs.reduce(function(acc, curr) {
+          const prevSeg = acc.length - 1 >= 0 ? acc[acc.length - 1] : null;
+          if (prevSeg && prevSeg.mode === curr.mode) {
+            acc[acc.length - 1].data += curr.data;
+            return acc;
+          }
+          acc.push(curr);
+          return acc;
+        }, []);
+      }
+      function buildNodes(segs) {
+        const nodes = [];
+        for (let i = 0; i < segs.length; i++) {
+          const seg = segs[i];
+          switch (seg.mode) {
+            case Mode2.NUMERIC:
+              nodes.push([
+                seg,
+                { data: seg.data, mode: Mode2.ALPHANUMERIC, length: seg.length },
+                { data: seg.data, mode: Mode2.BYTE, length: seg.length }
+              ]);
+              break;
+            case Mode2.ALPHANUMERIC:
+              nodes.push([
+                seg,
+                { data: seg.data, mode: Mode2.BYTE, length: seg.length }
+              ]);
+              break;
+            case Mode2.KANJI:
+              nodes.push([
+                seg,
+                { data: seg.data, mode: Mode2.BYTE, length: getStringByteLength(seg.data) }
+              ]);
+              break;
+            case Mode2.BYTE:
+              nodes.push([
+                { data: seg.data, mode: Mode2.BYTE, length: getStringByteLength(seg.data) }
+              ]);
+          }
+        }
+        return nodes;
+      }
+      function buildGraph(nodes, version2) {
+        const table = {};
+        const graph = { start: {} };
+        let prevNodeIds = ["start"];
+        for (let i = 0; i < nodes.length; i++) {
+          const nodeGroup = nodes[i];
+          const currentNodeIds = [];
+          for (let j = 0; j < nodeGroup.length; j++) {
+            const node = nodeGroup[j];
+            const key = "" + i + j;
+            currentNodeIds.push(key);
+            table[key] = { node, lastCount: 0 };
+            graph[key] = {};
+            for (let n = 0; n < prevNodeIds.length; n++) {
+              const prevNodeId = prevNodeIds[n];
+              if (table[prevNodeId] && table[prevNodeId].node.mode === node.mode) {
+                graph[prevNodeId][key] = getSegmentBitsLength(table[prevNodeId].lastCount + node.length, node.mode) - getSegmentBitsLength(table[prevNodeId].lastCount, node.mode);
+                table[prevNodeId].lastCount += node.length;
+              } else {
+                if (table[prevNodeId]) table[prevNodeId].lastCount = node.length;
+                graph[prevNodeId][key] = getSegmentBitsLength(node.length, node.mode) + 4 + Mode2.getCharCountIndicator(node.mode, version2);
+              }
+            }
+          }
+          prevNodeIds = currentNodeIds;
+        }
+        for (let n = 0; n < prevNodeIds.length; n++) {
+          graph[prevNodeIds[n]].end = 0;
+        }
+        return { map: graph, table };
+      }
+      function buildSingleSegment(data, modesHint) {
+        let mode2;
+        const bestMode = Mode2.getBestModeForData(data);
+        mode2 = Mode2.from(modesHint, bestMode);
+        if (mode2 !== Mode2.BYTE && mode2.bit < bestMode.bit) {
+          throw new Error('"' + data + '" cannot be encoded with mode ' + Mode2.toString(mode2) + ".\n Suggested mode is: " + Mode2.toString(bestMode));
+        }
+        if (mode2 === Mode2.KANJI && !Utils2.isKanjiModeEnabled()) {
+          mode2 = Mode2.BYTE;
+        }
+        switch (mode2) {
+          case Mode2.NUMERIC:
+            return new NumericData2(data);
+          case Mode2.ALPHANUMERIC:
+            return new AlphanumericData2(data);
+          case Mode2.KANJI:
+            return new KanjiData2(data);
+          case Mode2.BYTE:
+            return new ByteData2(data);
+        }
+      }
+      exports2.fromArray = function fromArray(array) {
+        return array.reduce(function(acc, seg) {
+          if (typeof seg === "string") {
+            acc.push(buildSingleSegment(seg, null));
+          } else if (seg.data) {
+            acc.push(buildSingleSegment(seg.data, seg.mode));
+          }
+          return acc;
+        }, []);
+      };
+      exports2.fromString = function fromString(data, version2) {
+        const segs = getSegmentsFromString(data, Utils2.isKanjiModeEnabled());
+        const nodes = buildNodes(segs);
+        const graph = buildGraph(nodes, version2);
+        const path = dijkstra2.find_path(graph.map, "start", "end");
+        const optimizedSegs = [];
+        for (let i = 1; i < path.length - 1; i++) {
+          optimizedSegs.push(graph.table[path[i]].node);
+        }
+        return exports2.fromArray(mergeSegments(optimizedSegs));
+      };
+      exports2.rawSplit = function rawSplit(data) {
+        return exports2.fromArray(
+          getSegmentsFromString(data, Utils2.isKanjiModeEnabled())
+        );
+      };
+    })(segments);
+    const Utils$1 = utils$1;
+    const ECLevel = errorCorrectionLevel;
+    const BitBuffer = bitBuffer;
+    const BitMatrix = bitMatrix;
+    const AlignmentPattern = alignmentPattern;
+    const FinderPattern = finderPattern;
+    const MaskPattern = maskPattern;
+    const ECCode = errorCorrectionCode;
+    const ReedSolomonEncoder = reedSolomonEncoder;
+    const Version = version;
+    const FormatInfo = formatInfo;
+    const Mode = mode;
+    const Segments = segments;
+    function setupFinderPattern(matrix, version2) {
+      const size2 = matrix.size;
+      const pos = FinderPattern.getPositions(version2);
+      for (let i = 0; i < pos.length; i++) {
+        const row = pos[i][0];
+        const col = pos[i][1];
+        for (let r = -1; r <= 7; r++) {
+          if (row + r <= -1 || size2 <= row + r) continue;
+          for (let c = -1; c <= 7; c++) {
+            if (col + c <= -1 || size2 <= col + c) continue;
+            if (r >= 0 && r <= 6 && (c === 0 || c === 6) || c >= 0 && c <= 6 && (r === 0 || r === 6) || r >= 2 && r <= 4 && c >= 2 && c <= 4) {
+              matrix.set(row + r, col + c, true, true);
+            } else {
+              matrix.set(row + r, col + c, false, true);
+            }
+          }
+        }
+      }
+    }
+    function setupTimingPattern(matrix) {
+      const size2 = matrix.size;
+      for (let r = 8; r < size2 - 8; r++) {
+        const value = r % 2 === 0;
+        matrix.set(r, 6, value, true);
+        matrix.set(6, r, value, true);
+      }
+    }
+    function setupAlignmentPattern(matrix, version2) {
+      const pos = AlignmentPattern.getPositions(version2);
+      for (let i = 0; i < pos.length; i++) {
+        const row = pos[i][0];
+        const col = pos[i][1];
+        for (let r = -2; r <= 2; r++) {
+          for (let c = -2; c <= 2; c++) {
+            if (r === -2 || r === 2 || c === -2 || c === 2 || r === 0 && c === 0) {
+              matrix.set(row + r, col + c, true, true);
+            } else {
+              matrix.set(row + r, col + c, false, true);
+            }
+          }
+        }
+      }
+    }
+    function setupVersionInfo(matrix, version2) {
+      const size2 = matrix.size;
+      const bits = Version.getEncodedBits(version2);
+      let row, col, mod;
+      for (let i = 0; i < 18; i++) {
+        row = Math.floor(i / 3);
+        col = i % 3 + size2 - 8 - 3;
+        mod = (bits >> i & 1) === 1;
+        matrix.set(row, col, mod, true);
+        matrix.set(col, row, mod, true);
+      }
+    }
+    function setupFormatInfo(matrix, errorCorrectionLevel2, maskPattern2) {
+      const size2 = matrix.size;
+      const bits = FormatInfo.getEncodedBits(errorCorrectionLevel2, maskPattern2);
+      let i, mod;
+      for (i = 0; i < 15; i++) {
+        mod = (bits >> i & 1) === 1;
+        if (i < 6) {
+          matrix.set(i, 8, mod, true);
+        } else if (i < 8) {
+          matrix.set(i + 1, 8, mod, true);
+        } else {
+          matrix.set(size2 - 15 + i, 8, mod, true);
+        }
+        if (i < 8) {
+          matrix.set(8, size2 - i - 1, mod, true);
+        } else if (i < 9) {
+          matrix.set(8, 15 - i - 1 + 1, mod, true);
+        } else {
+          matrix.set(8, 15 - i - 1, mod, true);
+        }
+      }
+      matrix.set(size2 - 8, 8, 1, true);
+    }
+    function setupData(matrix, data) {
+      const size2 = matrix.size;
+      let inc = -1;
+      let row = size2 - 1;
+      let bitIndex = 7;
+      let byteIndex = 0;
+      for (let col = size2 - 1; col > 0; col -= 2) {
+        if (col === 6) col--;
+        while (true) {
+          for (let c = 0; c < 2; c++) {
+            if (!matrix.isReserved(row, col - c)) {
+              let dark = false;
+              if (byteIndex < data.length) {
+                dark = (data[byteIndex] >>> bitIndex & 1) === 1;
+              }
+              matrix.set(row, col - c, dark);
+              bitIndex--;
+              if (bitIndex === -1) {
+                byteIndex++;
+                bitIndex = 7;
+              }
+            }
+          }
+          row += inc;
+          if (row < 0 || size2 <= row) {
+            row -= inc;
+            inc = -inc;
+            break;
+          }
+        }
+      }
+    }
+    function createData(version2, errorCorrectionLevel2, segments2) {
+      const buffer2 = new BitBuffer();
+      segments2.forEach(function(data) {
+        buffer2.put(data.mode.bit, 4);
+        buffer2.put(data.getLength(), Mode.getCharCountIndicator(data.mode, version2));
+        data.write(buffer2);
+      });
+      const totalCodewords = Utils$1.getSymbolTotalCodewords(version2);
+      const ecTotalCodewords = ECCode.getTotalCodewordsCount(version2, errorCorrectionLevel2);
+      const dataTotalCodewordsBits = (totalCodewords - ecTotalCodewords) * 8;
+      if (buffer2.getLengthInBits() + 4 <= dataTotalCodewordsBits) {
+        buffer2.put(0, 4);
+      }
+      while (buffer2.getLengthInBits() % 8 !== 0) {
+        buffer2.putBit(0);
+      }
+      const remainingByte = (dataTotalCodewordsBits - buffer2.getLengthInBits()) / 8;
+      for (let i = 0; i < remainingByte; i++) {
+        buffer2.put(i % 2 ? 17 : 236, 8);
+      }
+      return createCodewords(buffer2, version2, errorCorrectionLevel2);
+    }
+    function createCodewords(bitBuffer2, version2, errorCorrectionLevel2) {
+      const totalCodewords = Utils$1.getSymbolTotalCodewords(version2);
+      const ecTotalCodewords = ECCode.getTotalCodewordsCount(version2, errorCorrectionLevel2);
+      const dataTotalCodewords = totalCodewords - ecTotalCodewords;
+      const ecTotalBlocks = ECCode.getBlocksCount(version2, errorCorrectionLevel2);
+      const blocksInGroup2 = totalCodewords % ecTotalBlocks;
+      const blocksInGroup1 = ecTotalBlocks - blocksInGroup2;
+      const totalCodewordsInGroup1 = Math.floor(totalCodewords / ecTotalBlocks);
+      const dataCodewordsInGroup1 = Math.floor(dataTotalCodewords / ecTotalBlocks);
+      const dataCodewordsInGroup2 = dataCodewordsInGroup1 + 1;
+      const ecCount = totalCodewordsInGroup1 - dataCodewordsInGroup1;
+      const rs = new ReedSolomonEncoder(ecCount);
+      let offset = 0;
+      const dcData = new Array(ecTotalBlocks);
+      const ecData = new Array(ecTotalBlocks);
+      let maxDataSize = 0;
+      const buffer2 = new Uint8Array(bitBuffer2.buffer);
+      for (let b = 0; b < ecTotalBlocks; b++) {
+        const dataSize = b < blocksInGroup1 ? dataCodewordsInGroup1 : dataCodewordsInGroup2;
+        dcData[b] = buffer2.slice(offset, offset + dataSize);
+        ecData[b] = rs.encode(dcData[b]);
+        offset += dataSize;
+        maxDataSize = Math.max(maxDataSize, dataSize);
+      }
+      const data = new Uint8Array(totalCodewords);
+      let index = 0;
+      let i, r;
+      for (i = 0; i < maxDataSize; i++) {
+        for (r = 0; r < ecTotalBlocks; r++) {
+          if (i < dcData[r].length) {
+            data[index++] = dcData[r][i];
+          }
+        }
+      }
+      for (i = 0; i < ecCount; i++) {
+        for (r = 0; r < ecTotalBlocks; r++) {
+          data[index++] = ecData[r][i];
+        }
+      }
+      return data;
+    }
+    function createSymbol(data, version2, errorCorrectionLevel2, maskPattern2) {
+      let segments2;
+      if (Array.isArray(data)) {
+        segments2 = Segments.fromArray(data);
+      } else if (typeof data === "string") {
+        let estimatedVersion = version2;
+        if (!estimatedVersion) {
+          const rawSegments = Segments.rawSplit(data);
+          estimatedVersion = Version.getBestVersionForData(rawSegments, errorCorrectionLevel2);
+        }
+        segments2 = Segments.fromString(data, estimatedVersion || 40);
+      } else {
+        throw new Error("Invalid data");
+      }
+      const bestVersion = Version.getBestVersionForData(segments2, errorCorrectionLevel2);
+      if (!bestVersion) {
+        throw new Error("The amount of data is too big to be stored in a QR Code");
+      }
+      if (!version2) {
+        version2 = bestVersion;
+      } else if (version2 < bestVersion) {
+        throw new Error(
+          "\nThe chosen QR Code version cannot contain this amount of data.\nMinimum version required to store current data is: " + bestVersion + ".\n"
+        );
+      }
+      const dataBits = createData(version2, errorCorrectionLevel2, segments2);
+      const moduleCount = Utils$1.getSymbolSize(version2);
+      const modules = new BitMatrix(moduleCount);
+      setupFinderPattern(modules, version2);
+      setupTimingPattern(modules);
+      setupAlignmentPattern(modules, version2);
+      setupFormatInfo(modules, errorCorrectionLevel2, 0);
+      if (version2 >= 7) {
+        setupVersionInfo(modules, version2);
+      }
+      setupData(modules, dataBits);
+      if (isNaN(maskPattern2)) {
+        maskPattern2 = MaskPattern.getBestMask(
+          modules,
+          setupFormatInfo.bind(null, modules, errorCorrectionLevel2)
+        );
+      }
+      MaskPattern.applyMask(maskPattern2, modules);
+      setupFormatInfo(modules, errorCorrectionLevel2, maskPattern2);
+      return {
+        modules,
+        version: version2,
+        errorCorrectionLevel: errorCorrectionLevel2,
+        maskPattern: maskPattern2,
+        segments: segments2
+      };
+    }
+    qrcode.create = function create(data, options) {
+      if (typeof data === "undefined" || data === "") {
+        throw new Error("No input text");
+      }
+      let errorCorrectionLevel2 = ECLevel.M;
+      let version2;
+      let mask;
+      if (typeof options !== "undefined") {
+        errorCorrectionLevel2 = ECLevel.from(options.errorCorrectionLevel, ECLevel.M);
+        version2 = Version.from(options.version);
+        mask = MaskPattern.from(options.maskPattern);
+        if (options.toSJISFunc) {
+          Utils$1.setToSJISFunction(options.toSJISFunc);
+        }
+      }
+      return createSymbol(data, version2, errorCorrectionLevel2, mask);
+    };
+    var canvas = {};
+    var utils = {};
+    (function(exports2) {
+      function hex2rgba(hex) {
+        if (typeof hex === "number") {
+          hex = hex.toString();
+        }
+        if (typeof hex !== "string") {
+          throw new Error("Color should be defined as hex string");
+        }
+        let hexCode = hex.slice().replace("#", "").split("");
+        if (hexCode.length < 3 || hexCode.length === 5 || hexCode.length > 8) {
+          throw new Error("Invalid hex color: " + hex);
+        }
+        if (hexCode.length === 3 || hexCode.length === 4) {
+          hexCode = Array.prototype.concat.apply([], hexCode.map(function(c) {
+            return [c, c];
+          }));
+        }
+        if (hexCode.length === 6) hexCode.push("F", "F");
+        const hexValue = parseInt(hexCode.join(""), 16);
+        return {
+          r: hexValue >> 24 & 255,
+          g: hexValue >> 16 & 255,
+          b: hexValue >> 8 & 255,
+          a: hexValue & 255,
+          hex: "#" + hexCode.slice(0, 6).join("")
+        };
+      }
+      exports2.getOptions = function getOptions(options) {
+        if (!options) options = {};
+        if (!options.color) options.color = {};
+        const margin = typeof options.margin === "undefined" || options.margin === null || options.margin < 0 ? 4 : options.margin;
+        const width = options.width && options.width >= 21 ? options.width : void 0;
+        const scale = options.scale || 4;
+        return {
+          width,
+          scale: width ? 4 : scale,
+          margin,
+          color: {
+            dark: hex2rgba(options.color.dark || "#000000ff"),
+            light: hex2rgba(options.color.light || "#ffffffff")
+          },
+          type: options.type,
+          rendererOpts: options.rendererOpts || {}
+        };
+      };
+      exports2.getScale = function getScale(qrSize, opts) {
+        return opts.width && opts.width >= qrSize + opts.margin * 2 ? opts.width / (qrSize + opts.margin * 2) : opts.scale;
+      };
+      exports2.getImageWidth = function getImageWidth(qrSize, opts) {
+        const scale = exports2.getScale(qrSize, opts);
+        return Math.floor((qrSize + opts.margin * 2) * scale);
+      };
+      exports2.qrToImageData = function qrToImageData(imgData, qr, opts) {
+        const size2 = qr.modules.size;
+        const data = qr.modules.data;
+        const scale = exports2.getScale(size2, opts);
+        const symbolSize = Math.floor((size2 + opts.margin * 2) * scale);
+        const scaledMargin = opts.margin * scale;
+        const palette = [opts.color.light, opts.color.dark];
+        for (let i = 0; i < symbolSize; i++) {
+          for (let j = 0; j < symbolSize; j++) {
+            let posDst = (i * symbolSize + j) * 4;
+            let pxColor = opts.color.light;
+            if (i >= scaledMargin && j >= scaledMargin && i < symbolSize - scaledMargin && j < symbolSize - scaledMargin) {
+              const iSrc = Math.floor((i - scaledMargin) / scale);
+              const jSrc = Math.floor((j - scaledMargin) / scale);
+              pxColor = palette[data[iSrc * size2 + jSrc] ? 1 : 0];
+            }
+            imgData[posDst++] = pxColor.r;
+            imgData[posDst++] = pxColor.g;
+            imgData[posDst++] = pxColor.b;
+            imgData[posDst] = pxColor.a;
+          }
+        }
+      };
+    })(utils);
+    (function(exports2) {
+      const Utils2 = utils;
+      function clearCanvas(ctx, canvas2, size2) {
+        ctx.clearRect(0, 0, canvas2.width, canvas2.height);
+        if (!canvas2.style) canvas2.style = {};
+        canvas2.height = size2;
+        canvas2.width = size2;
+        canvas2.style.height = size2 + "px";
+        canvas2.style.width = size2 + "px";
+      }
+      function getCanvasElement() {
+        try {
+          return document.createElement("canvas");
+        } catch (e) {
+          throw new Error("You need to specify a canvas element");
+        }
+      }
+      exports2.render = function render2(qrData, canvas2, options) {
+        let opts = options;
+        let canvasEl = canvas2;
+        if (typeof opts === "undefined" && (!canvas2 || !canvas2.getContext)) {
+          opts = canvas2;
+          canvas2 = void 0;
+        }
+        if (!canvas2) {
+          canvasEl = getCanvasElement();
+        }
+        opts = Utils2.getOptions(opts);
+        const size2 = Utils2.getImageWidth(qrData.modules.size, opts);
+        const ctx = canvasEl.getContext("2d");
+        const image = ctx.createImageData(size2, size2);
+        Utils2.qrToImageData(image.data, qrData, opts);
+        clearCanvas(ctx, canvasEl, size2);
+        ctx.putImageData(image, 0, 0);
+        return canvasEl;
+      };
+      exports2.renderToDataURL = function renderToDataURL(qrData, canvas2, options) {
+        let opts = options;
+        if (typeof opts === "undefined" && (!canvas2 || !canvas2.getContext)) {
+          opts = canvas2;
+          canvas2 = void 0;
+        }
+        if (!opts) opts = {};
+        const canvasEl = exports2.render(qrData, canvas2, opts);
+        const type = opts.type || "image/png";
+        const rendererOpts = opts.rendererOpts || {};
+        return canvasEl.toDataURL(type, rendererOpts.quality);
+      };
+    })(canvas);
+    var svgTag = {};
+    const Utils = utils;
+    function getColorAttrib(color, attrib) {
+      const alpha = color.a / 255;
+      const str = attrib + '="' + color.hex + '"';
+      return alpha < 1 ? str + " " + attrib + '-opacity="' + alpha.toFixed(2).slice(1) + '"' : str;
+    }
+    function svgCmd(cmd, x, y) {
+      let str = cmd + x;
+      if (typeof y !== "undefined") str += " " + y;
+      return str;
+    }
+    function qrToPath(data, size2, margin) {
+      let path = "";
+      let moveBy = 0;
+      let newRow = false;
+      let lineLength = 0;
+      for (let i = 0; i < data.length; i++) {
+        const col = Math.floor(i % size2);
+        const row = Math.floor(i / size2);
+        if (!col && !newRow) newRow = true;
+        if (data[i]) {
+          lineLength++;
+          if (!(i > 0 && col > 0 && data[i - 1])) {
+            path += newRow ? svgCmd("M", col + margin, 0.5 + row + margin) : svgCmd("m", moveBy, 0);
+            moveBy = 0;
+            newRow = false;
+          }
+          if (!(col + 1 < size2 && data[i + 1])) {
+            path += svgCmd("h", lineLength);
+            lineLength = 0;
+          }
+        } else {
+          moveBy++;
+        }
+      }
+      return path;
+    }
+    svgTag.render = function render2(qrData, options, cb) {
+      const opts = Utils.getOptions(options);
+      const size2 = qrData.modules.size;
+      const data = qrData.modules.data;
+      const qrcodesize = size2 + opts.margin * 2;
+      const bg = !opts.color.light.a ? "" : "<path " + getColorAttrib(opts.color.light, "fill") + ' d="M0 0h' + qrcodesize + "v" + qrcodesize + 'H0z"/>';
+      const path = "<path " + getColorAttrib(opts.color.dark, "stroke") + ' d="' + qrToPath(data, size2, opts.margin) + '"/>';
+      const viewBox = 'viewBox="0 0 ' + qrcodesize + " " + qrcodesize + '"';
+      const width = !opts.width ? "" : 'width="' + opts.width + '" height="' + opts.width + '" ';
+      const svgTag2 = '<svg xmlns="http://www.w3.org/2000/svg" ' + width + viewBox + ' shape-rendering="crispEdges">' + bg + path + "</svg>\n";
+      if (typeof cb === "function") {
+        cb(null, svgTag2);
+      }
+      return svgTag2;
+    };
+    const canPromise = canPromise$1;
+    const QRCode = qrcode;
+    const CanvasRenderer = canvas;
+    const SvgRenderer = svgTag;
+    function renderCanvas(renderFunc, canvas2, text, opts, cb) {
+      const args = [].slice.call(arguments, 1);
+      const argsNum = args.length;
+      const isLastArgCb = typeof args[argsNum - 1] === "function";
+      if (!isLastArgCb && !canPromise()) {
+        throw new Error("Callback required as last argument");
+      }
+      if (isLastArgCb) {
+        if (argsNum < 2) {
+          throw new Error("Too few arguments provided");
+        }
+        if (argsNum === 2) {
+          cb = text;
+          text = canvas2;
+          canvas2 = opts = void 0;
+        } else if (argsNum === 3) {
+          if (canvas2.getContext && typeof cb === "undefined") {
+            cb = opts;
+            opts = void 0;
+          } else {
+            cb = opts;
+            opts = text;
+            text = canvas2;
+            canvas2 = void 0;
+          }
+        }
+      } else {
+        if (argsNum < 1) {
+          throw new Error("Too few arguments provided");
+        }
+        if (argsNum === 1) {
+          text = canvas2;
+          canvas2 = opts = void 0;
+        } else if (argsNum === 2 && !canvas2.getContext) {
+          opts = text;
+          text = canvas2;
+          canvas2 = void 0;
+        }
+        return new Promise(function(resolve2, reject) {
+          try {
+            const data = QRCode.create(text, opts);
+            resolve2(renderFunc(data, canvas2, opts));
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+      try {
+        const data = QRCode.create(text, opts);
+        cb(null, renderFunc(data, canvas2, opts));
+      } catch (e) {
+        cb(e);
+      }
+    }
+    browser.create = QRCode.create;
+    browser.toCanvas = renderCanvas.bind(null, CanvasRenderer.render);
+    browser.toDataURL = renderCanvas.bind(null, CanvasRenderer.renderToDataURL);
+    browser.toString = renderCanvas.bind(null, function(data, _, opts) {
+      return SvgRenderer.render(data, opts);
+    });
     const _hoisted_1$a = { class: "qrcode-image" };
     const _hoisted_2$9 = { class: "no-img" };
     const simple = "https://www.toone.com.cn";
@@ -90226,10 +90547,10 @@ ${content}</tr>
         };
       }
     };
-    const QRCodeTool = /* @__PURE__ */ _export_sfc$1(_sfc_main$c, [["__scopeId", "data-v-484b7b5f"]]);
+    const QRCodeTool = /* @__PURE__ */ _export_sfc(_sfc_main$c, [["__scopeId", "data-v-484b7b5f"]]);
     const _hoisted_1$9 = { class: "toolbox-container" };
     const _hoisted_2$8 = { calss: "chatbox" };
-    const _hoisted_3$8 = { class: "toolbox_prompt_box" };
+    const _hoisted_3$7 = { class: "toolbox_prompt_box" };
     const _sfc_main$b = {
       __name: "ToolsView",
       setup(__props) {
@@ -90248,7 +90569,7 @@ ${content}</tr>
         return (_ctx, _cache) => {
           return openBlock(), createElementBlock("div", _hoisted_1$9, [
             createBaseVNode("div", _hoisted_2$8, [
-              createBaseVNode("div", _hoisted_3$8, [
+              createBaseVNode("div", _hoisted_3$7, [
                 createVNode(unref(SQL2JavaTool)),
                 createVNode(unref(JSON2JavaTool)),
                 createVNode(unref(ColorTransferTool)),
@@ -90266,10 +90587,10 @@ ${content}</tr>
         };
       }
     };
-    const ToolsView = /* @__PURE__ */ _export_sfc$1(_sfc_main$b, [["__scopeId", "data-v-6f77dd98"]]);
+    const ToolsView = /* @__PURE__ */ _export_sfc(_sfc_main$b, [["__scopeId", "data-v-6f77dd98"]]);
     const _hoisted_1$8 = { class: "u-header" };
     const _hoisted_2$7 = { class: "u-viewsHd" };
-    const _hoisted_3$7 = { class: "u-tab-extends" };
+    const _hoisted_3$6 = { class: "u-tab-extends" };
     const _hoisted_4$2 = { class: "u-tab-extends-items" };
     const _hoisted_5$2 = { class: "u-tab-extends-items" };
     const _hoisted_6$1 = { class: "u-viewsBd" };
@@ -90297,7 +90618,7 @@ ${content}</tr>
                   class: normalizeClass({ "s-selected": isToolsMode.value })
                 }, "工具箱", 2)
               ]),
-              createBaseVNode("div", _hoisted_3$7, [
+              createBaseVNode("div", _hoisted_3$6, [
                 createBaseVNode("div", _hoisted_4$2, [
                   isAiMode.value ? renderSlot(_ctx.$slots, "aiExt", { key: 0 }) : createCommentVNode("", true)
                 ]),
@@ -90316,57 +90637,57 @@ ${content}</tr>
                 createVNode(ToolsView)
               ], 512), [
                 [vShow, isToolsMode.value]
-              ])
+              ]),
+              renderSlot(_ctx.$slots, "default")
             ])
           ], 64);
         };
       }
     };
-    const _sfc_main$9 = {};
     const _hoisted_1$7 = {
-      xmlns: "http://www.w3.org/2000/svg",
-      fill: "none",
-      viewBox: "0 0 24 24",
-      "stroke-width": "1.5",
-      stroke: "currentColor",
-      class: "w-4 h-4"
+      class: "pl-4 pt-2 flex items-center",
+      "data-license": "isc-gnc"
     };
-    const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode("path", {
-      "stroke-linecap": "round",
-      "stroke-linejoin": "round",
-      d: "M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-    }, null, -1);
-    const _hoisted_3$6 = [
-      _hoisted_2$6
-    ];
-    function _sfc_render$6(_ctx, _cache) {
-      return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_3$6);
-    }
-    const __unplugin_components_3 = /* @__PURE__ */ _export_sfc$1(_sfc_main$9, [["render", _sfc_render$6]]);
+    const _hoisted_2$6 = /* @__PURE__ */ createStaticVNode('<div class="typing">正在思考</div><div class="spinner"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>', 2);
+    const _sfc_main$9 = {
+      __name: "ChatViewSpinner",
+      props: { "showStopButton": Boolean },
+      emits: ["stopClick"],
+      setup(__props, { emit: __emit }) {
+        const emit2 = __emit;
+        const onStopClick = () => {
+          emit2("stopClick");
+        };
+        const props = __props;
+        return (_ctx, _cache) => {
+          const _component_el_icon = ElIcon;
+          return openBlock(), createElementBlock("div", _hoisted_1$7, [
+            _hoisted_2$6,
+            withDirectives(createBaseVNode("button", {
+              id: "stop-button",
+              type: "button",
+              class: "btn btn-primary flex items-end p-1 pr-2 rounded-md ml-5",
+              onClick: onStopClick
+            }, [
+              createVNode(_component_el_icon, {
+                size: 14,
+                style: { "vertical-align": "middle", "margin-right": "8px" }
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(circle_close_default))
+                ]),
+                _: 1
+              }),
+              createTextVNode(" 停止")
+            ], 512), [
+              [vShow, props.showStopButton]
+            ])
+          ]);
+        };
+      }
+    };
     const _sfc_main$8 = {};
     const _hoisted_1$6 = {
-      xmlns: "http://www.w3.org/2000/svg",
-      fill: "none",
-      viewBox: "0 0 24 24",
-      "data-license": "isc-gnc",
-      "stroke-width": "1.5",
-      stroke: "currentColor",
-      class: "w-4 h-4"
-    };
-    const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode("path", {
-      "stroke-linecap": "round",
-      "stroke-linejoin": "round",
-      d: "M12 4.5v15m7.5-7.5h-15"
-    }, null, -1);
-    const _hoisted_3$5 = [
-      _hoisted_2$5
-    ];
-    function _sfc_render$5(_ctx, _cache) {
-      return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_3$5);
-    }
-    const IconPlusSvg = /* @__PURE__ */ _export_sfc$1(_sfc_main$8, [["render", _sfc_render$5]]);
-    const _sfc_main$7 = {};
-    const _hoisted_1$5 = {
       t: "1714113113132",
       class: "icon",
       viewBox: "0 0 1024 1024",
@@ -90377,12 +90698,12 @@ ${content}</tr>
       width: "20",
       height: "20"
     };
-    const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode("path", {
+    const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode("path", {
       d: "M755.022595 722.911167a390.129159 390.129159 0 0 1-123.92338 285.023773 442.911339 442.911339 0 0 1-119.104137 16.064142A452.779312 452.779312 0 0 1 59.904229 571.908234a436.026707 436.026707 0 0 1 13.080802-107.400263 388.293257 388.293257 0 0 1 291.908405-131.725963 390.129159 390.129159 0 0 1 390.129159 390.129159z",
       fill: "#FFD000",
       "p-id": "41068"
     }, null, -1);
-    const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode("path", {
+    const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode("path", {
       d: "M511.995078 1023.769594a452.090848 452.090848 0 1 1 452.090848-451.86136 452.549824 452.549824 0 0 1-452.090848 451.86136z m0-835.105887a383.244526 383.244526 0 1 0 383.244526 383.244527 383.703502 383.703502 0 0 0-383.244526-383.244527z",
       fill: "#000000",
       "p-id": "41069"
@@ -90393,28 +90714,41 @@ ${content}</tr>
       "p-id": "41070"
     }, null, -1);
     const _hoisted_5$1 = [
-      _hoisted_2$4,
-      _hoisted_3$4,
+      _hoisted_2$5,
+      _hoisted_3$5,
       _hoisted_4$1
     ];
-    function _sfc_render$4(_ctx, _cache) {
-      return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_5$1);
+    function _sfc_render$5(_ctx, _cache) {
+      return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_5$1);
     }
-    const __unplugin_components_1 = /* @__PURE__ */ _export_sfc$1(_sfc_main$7, [["render", _sfc_render$4]]);
+    const __unplugin_components_2 = /* @__PURE__ */ _export_sfc(_sfc_main$8, [["render", _sfc_render$5]]);
+    const _sfc_main$7 = {};
+    const _hoisted_1$5 = {
+      id: "introduction",
+      class: "flex flex-col justify-between h-full justify-center px-6 w-full relative login-screen overflow-auto"
+    };
+    const _hoisted_2$4 = /* @__PURE__ */ createStaticVNode('<div data-license="isc-gnc-hi-there" class="flex items-start text-center features-block my-5"><div class="flex flex-col gap-3.5 flex-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" class="w-6 h-6 m-auto"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"></path></svg><h2>特性</h2><ul class="flex flex-col gap-3.5 text-xs"><li class="features-li w-full border border-zinc-700 p-3 rounded-md">改进你的代码，生成测试</li><li class="features-li w-full border border-zinc-700 p-3 rounded-md">解析和注释代码</li><li class="features-li w-full border border-zinc-700 p-3 rounded-md">自动复制或创建新文件</li></ul></div></div>', 1);
+    const _hoisted_3$4 = [
+      _hoisted_2$4
+    ];
+    function _sfc_render$4(_ctx, _cache) {
+      return openBlock(), createElementBlock("div", _hoisted_1$5, _hoisted_3$4);
+    }
+    const __unplugin_components_0 = /* @__PURE__ */ _export_sfc(_sfc_main$7, [["render", _sfc_render$4]]);
     const _sfc_main$6 = {};
     const _hoisted_1$4 = {
       xmlns: "http://www.w3.org/2000/svg",
       fill: "none",
       viewBox: "0 0 24 24",
       "data-license": "isc-gnc",
-      "stroke-width": "1.5",
+      "stroke-width": "2",
       stroke: "currentColor",
-      class: "w-5 mr-2"
+      class: "w-3 h-3"
     };
     const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode("path", {
       "stroke-linecap": "round",
       "stroke-linejoin": "round",
-      d: "M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"
+      d: "M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
     }, null, -1);
     const _hoisted_3$3 = [
       _hoisted_2$3
@@ -90422,45 +90756,100 @@ ${content}</tr>
     function _sfc_render$3(_ctx, _cache) {
       return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_3$3);
     }
-    const __unplugin_components_0 = /* @__PURE__ */ _export_sfc$1(_sfc_main$6, [["render", _sfc_render$3]]);
-    let getRandomValues;
-    const rnds8 = new Uint8Array(16);
-    function rng() {
-      if (!getRandomValues) {
-        getRandomValues = typeof crypto !== "undefined" && crypto.getRandomValues && crypto.getRandomValues.bind(crypto);
-        if (!getRandomValues) {
-          throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");
-        }
-      }
-      return getRandomValues(rnds8);
-    }
-    const byteToHex = [];
-    for (let i = 0; i < 256; ++i) {
-      byteToHex.push((i + 256).toString(16).slice(1));
-    }
-    function unsafeStringify(arr, offset = 0) {
-      return byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]];
-    }
-    const randomUUID = typeof crypto !== "undefined" && crypto.randomUUID && crypto.randomUUID.bind(crypto);
-    const native = {
-      randomUUID
+    const IconPencilSvg = /* @__PURE__ */ _export_sfc(_sfc_main$6, [["render", _sfc_render$3]]);
+    const _sfc_main$5 = {};
+    const _hoisted_1$3 = {
+      xmlns: "http://www.w3.org/2000/svg",
+      fill: "none",
+      viewBox: "0 0 24 24",
+      "data-license": "isc-gnc",
+      "stroke-width": "1.5",
+      stroke: "currentColor",
+      class: "w-4 h-4"
     };
-    function v4(options, buf, offset) {
-      if (native.randomUUID && !buf && !options) {
-        return native.randomUUID();
+    const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("path", {
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      d: "M12 4.5v15m7.5-7.5h-15"
+    }, null, -1);
+    const _hoisted_3$2 = [
+      _hoisted_2$2
+    ];
+    function _sfc_render$2(_ctx, _cache) {
+      return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_3$2);
+    }
+    const IconPlusSvg = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["render", _sfc_render$2]]);
+    const _hoisted_1$2 = ["innerHTML"];
+    const _sfc_main$4 = {
+      __name: "IconClipboardSvg",
+      setup(__props) {
+        return (_ctx, _cache) => {
+          return openBlock(), createElementBlock("div", { innerHTML: unref(clipboardSvg) }, null, 8, _hoisted_1$2);
+        };
       }
-      options = options || {};
-      const rnds = options.random || (options.rng || rng)();
-      rnds[6] = rnds[6] & 15 | 64;
-      rnds[8] = rnds[8] & 63 | 128;
-      if (buf) {
-        offset = offset || 0;
-        for (let i = 0; i < 16; ++i) {
-          buf[offset + i] = rnds[i];
-        }
-        return buf;
+    };
+    const _sfc_main$3 = {};
+    const _hoisted_1$1 = {
+      xmlns: "http://www.w3.org/2000/svg",
+      fill: "none",
+      viewBox: "0 0 24 24",
+      "data-license": "isc-gnc",
+      "stroke-width": "1.5",
+      stroke: "currentColor",
+      class: "w-4 h-4"
+    };
+    const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode("path", {
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      d: "M11.25 4.5l7.5 7.5-7.5 7.5m-6-15l7.5 7.5-7.5 7.5"
+    }, null, -1);
+    const _hoisted_3$1 = [
+      _hoisted_2$1
+    ];
+    function _sfc_render$1(_ctx, _cache) {
+      return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_3$1);
+    }
+    const IconInsertSvg = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["render", _sfc_render$1]]);
+    function renderCodeAndToolBar(pre_el, code_el, isInCodeIDE, props) {
+      isInCodeIDE = true;
+      code_el.classList.add(
+        "input-background",
+        "p-4",
+        "pb-2",
+        "block",
+        /*"whitespace-pre",*/
+        "overflow-x-scroll"
+      );
+      code_el.parentElement.classList.add("pre-code-element", "relative");
+      let click = (target) => {
+        var _a7;
+        return (_a7 = props == null ? void 0 : props.onclick) == null ? void 0 : _a7.call(props, target.currentTarget, code_el);
+      };
+      let inserCode = createVNode("button", {
+        "id": "insert-code",
+        "title": "将以上内容插入到当前文件",
+        "class": "edit-element-ext p-1 pr-2 flex items-center rounded-lg",
+        "onClick": click
+      }, [createVNode(IconInsertSvg, null, null), createTextVNode("插入")]);
+      let newFile = createVNode("button", {
+        "id": "new-file",
+        "title": "新建文件并将以上代码置入",
+        "class": "new-code-element-ext p-1 pr-2 flex items-center rounded-lg",
+        "onClick": click
+      }, [createVNode(IconPlusSvg, null, null), createTextVNode(" 新建")]);
+      let wapper = createVNode("div", {
+        "class": "code-actions-wrapper flex  pr-2 pt-1 pb-1 flex-wrap items-center justify-end input-background"
+      }, [createVNode("button", {
+        "id": "copy-code",
+        "title": "复制到剪切板",
+        "class": "code-element-ext p-1 pr-2 flex items-center rounded-lg",
+        "onClick": click
+      }, [createVNode(_sfc_main$4, null, null), createTextVNode(" 复制")])]);
+      if (isInCodeIDE) {
+        wapper.children.push(inserCode);
+        wapper.children.push(newFile);
       }
-      return unsafeStringify(rnds);
+      render(wapper, pre_el);
     }
     function createParser(onParse) {
       let isFirstChunk;
@@ -90981,28 +91370,6 @@ ${content}</tr>
         return new LikeApi(options).like();
       }
     };
-    const _sfc_main$5 = {};
-    const _hoisted_1$3 = {
-      xmlns: "http://www.w3.org/2000/svg",
-      fill: "none",
-      viewBox: "0 0 24 24",
-      "data-license": "isc-gnc",
-      "stroke-width": "2",
-      stroke: "currentColor",
-      class: "w-3 h-3"
-    };
-    const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("path", {
-      "stroke-linecap": "round",
-      "stroke-linejoin": "round",
-      d: "M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
-    }, null, -1);
-    const _hoisted_3$2 = [
-      _hoisted_2$2
-    ];
-    function _sfc_render$2(_ctx, _cache) {
-      return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_3$2);
-    }
-    const IconPencilSvg = /* @__PURE__ */ _export_sfc$1(_sfc_main$5, [["render", _sfc_render$2]]);
     const getLanguageExtByFilePath = (filePath) => {
       if (!filePath)
         return "";
@@ -91881,82 +92248,123 @@ ${content}</tr>
       ".prg": "xbase",
       ".prw": "xbase"
     };
-    const _hoisted_1$2 = ["innerHTML"];
-    const _sfc_main$4 = {
-      __name: "IconClipboardSvg",
-      setup(__props) {
-        return (_ctx, _cache) => {
-          return openBlock(), createElementBlock("div", { innerHTML: unref(clipboardSvg) }, null, 8, _hoisted_1$2);
-        };
-      }
-    };
-    const _sfc_main$3 = {};
-    const _hoisted_1$1 = {
-      xmlns: "http://www.w3.org/2000/svg",
-      fill: "none",
-      viewBox: "0 0 24 24",
-      "data-license": "isc-gnc",
-      "stroke-width": "1.5",
-      stroke: "currentColor",
-      class: "w-4 h-4"
-    };
-    const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode("path", {
-      "stroke-linecap": "round",
-      "stroke-linejoin": "round",
-      d: "M11.25 4.5l7.5 7.5-7.5 7.5m-6-15l7.5 7.5-7.5 7.5"
-    }, null, -1);
-    const _hoisted_3$1 = [
-      _hoisted_2$1
+    let hiddenTextarea = void 0;
+    const HIDDEN_STYLE = `
+  height:0 !important;
+  visibility:hidden !important;
+  overflow:hidden !important;
+  position:absolute !important;
+  z-index:-1000 !important;
+  top:0 !important;
+  right:0 !important;
+`;
+    const CONTEXT_STYLE = [
+      "letter-spacing",
+      "line-height",
+      "padding-top",
+      "padding-bottom",
+      "font-family",
+      "font-weight",
+      "font-size",
+      "text-rendering",
+      "text-transform",
+      "width",
+      "text-indent",
+      "padding-left",
+      "padding-right",
+      "border-width",
+      "box-sizing"
     ];
-    function _sfc_render$1(_ctx, _cache) {
-      return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_3$1);
+    function calculateNodeStyling(targetElement) {
+      const style = window.getComputedStyle(targetElement);
+      const boxSizing = style.getPropertyValue("box-sizing");
+      const paddingSize = Number.parseFloat(style.getPropertyValue("padding-bottom")) + Number.parseFloat(style.getPropertyValue("padding-top"));
+      const borderSize = Number.parseFloat(style.getPropertyValue("border-bottom-width")) + Number.parseFloat(style.getPropertyValue("border-top-width"));
+      const contextStyle = CONTEXT_STYLE.map(
+        (name) => `${name}:${style.getPropertyValue(name)}`
+      ).join(";");
+      return { contextStyle, paddingSize, borderSize, boxSizing };
     }
-    const IconInsertSvg = /* @__PURE__ */ _export_sfc$1(_sfc_main$3, [["render", _sfc_render$1]]);
-    function renderCodeAndToolBar(pre_el, code_el, isInCodeIDE, props) {
-      isInCodeIDE = true;
-      code_el.classList.add(
-        "input-background",
-        "p-4",
-        "pb-2",
-        "block",
-        /*"whitespace-pre",*/
-        "overflow-x-scroll"
-      );
-      code_el.parentElement.classList.add("pre-code-element", "relative");
-      let click = (target) => {
-        var _a7;
-        return (_a7 = props == null ? void 0 : props.onclick) == null ? void 0 : _a7.call(props, target.currentTarget, code_el);
-      };
-      let inserCode = createVNode("button", {
-        "id": "insert-code",
-        "title": "将以上内容插入到当前文件",
-        "class": "edit-element-ext p-1 pr-2 flex items-center rounded-lg",
-        "onClick": click
-      }, [createVNode(IconInsertSvg, null, null), createTextVNode("插入")]);
-      let newFile = createVNode("button", {
-        "id": "new-file",
-        "title": "新建文件并将以上代码置入",
-        "class": "new-code-element-ext p-1 pr-2 flex items-center rounded-lg",
-        "onClick": click
-      }, [createVNode(IconPlusSvg, null, null), createTextVNode(" 新建")]);
-      let wapper = createVNode("div", {
-        "class": "code-actions-wrapper flex  pr-2 pt-1 pb-1 flex-wrap items-center justify-end input-background"
-      }, [createVNode("button", {
-        "id": "copy-code",
-        "title": "复制到剪切板",
-        "class": "code-element-ext p-1 pr-2 flex items-center rounded-lg",
-        "onClick": click
-      }, [createVNode(_sfc_main$4, null, null), createTextVNode(" 复制")])]);
-      if (isInCodeIDE) {
-        wapper.children.push(inserCode);
-        wapper.children.push(newFile);
+    function calcTextareaHeight(targetElement, minRows = 1, maxRows) {
+      var _a7;
+      if (!hiddenTextarea) {
+        hiddenTextarea = document.createElement("textarea");
+        document.body.appendChild(hiddenTextarea);
       }
-      render(wapper, pre_el);
+      const { paddingSize, borderSize, boxSizing, contextStyle } = calculateNodeStyling(targetElement);
+      hiddenTextarea.setAttribute("style", `${contextStyle};${HIDDEN_STYLE}`);
+      hiddenTextarea.value = targetElement.value || targetElement.placeholder || "";
+      let height = hiddenTextarea.scrollHeight;
+      const result = {};
+      if (boxSizing === "border-box") {
+        height = height + borderSize;
+      } else if (boxSizing === "content-box") {
+        height = height - paddingSize;
+      }
+      hiddenTextarea.value = "";
+      const singleRowHeight = hiddenTextarea.scrollHeight - paddingSize;
+      if (minRows) {
+        let minHeight = singleRowHeight * minRows;
+        if (boxSizing === "border-box") {
+          minHeight = minHeight + paddingSize + borderSize;
+        }
+        height = Math.max(minHeight, height);
+        result.minHeight = `${minHeight}px`;
+      }
+      if (maxRows) {
+        let maxHeight = singleRowHeight * maxRows;
+        if (boxSizing === "border-box") {
+          maxHeight = maxHeight + paddingSize + borderSize;
+        }
+        height = Math.min(maxHeight, height);
+      }
+      result.height = height;
+      result.height_px = `${height}px`;
+      result.singleRowHeight = singleRowHeight;
+      (_a7 = hiddenTextarea.parentNode) == null ? void 0 : _a7.removeChild(hiddenTextarea);
+      hiddenTextarea = void 0;
+      return result;
     }
+    const TelemetryService = {
+      pluginStatistics: () => {
+        return new Promise(async (resolve2, reject) => {
+          const use = useStore();
+          let url = "/statistics/plugin";
+          {
+            url = "http://codegen.t.vtoone.com/generator" + url;
+          }
+          try {
+            const param = Object.assign(use.appInfo || {}, {
+              appId: use.appId,
+              ide: use.IdeType,
+              ideVersion: "",
+              pluginVersion: "1.0.0"
+            });
+            await fetch(url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(param)
+            });
+          } catch (e) {
+            console.log(e);
+            reject(e);
+          }
+          resolve2();
+        });
+      }
+    };
     const viewType = { introduction: "introduction", qa: "qa" };
     const ChatView$1 = /* @__PURE__ */ defineComponent({
       name: "ChatView",
-      components: { IconUserSvg: __unplugin_components_0, IconPencilSvg, IconAiSvg: __unplugin_components_1, IconPlusSvg, IconDownloadSvg: __unplugin_components_3 },
+      components: {
+        ChatViewWelcome: __unplugin_components_0,
+        ChatViewSpinner: _sfc_main$9,
+        IconPencilSvg,
+        IconAiSvg: __unplugin_components_2,
+        Plus: plus_default,
+        User: user_default,
+        Download: download_default
+      },
       data() {
         return {
           currentViewType: viewType.introduction,
@@ -91982,6 +92390,9 @@ ${content}</tr>
       watch: {
         isInProgress(n) {
           useStore().setChatInProgress(n);
+        },
+        questionInput() {
+          nextTick(this.onQuestionInputChnaged);
         }
       },
       computed: {
@@ -92004,7 +92415,7 @@ ${content}</tr>
         return { qaElementList, questionInputRef, questionInputButtonsMore };
       },
       methods: {
-        // ...mapActions(useStore, [setChatInProgress]),
+        // ...mapActions(useStore, ['setChatInProgress']),
         onLikeClick(messageData) {
           this.saveLike(messageData, "like", "dislike");
         },
@@ -92072,8 +92483,52 @@ ${content}</tr>
           (_a7 = this.questionInputRef) == null ? void 0 : _a7.focus();
         },
         onQuestionKeyEnter(e) {
+          if (e.keyCode === 13 && (e.ctrlKey || e.metaKey)) {
+            this.questionInput += "\n";
+            nextTick(() => {
+              this.questionInputRef.blur();
+              this.questionInputRef.focus();
+            });
+            return;
+          }
           e.preventDefault();
-          this.addFreeTextQuestion();
+          if (this.questionInput !== "/")
+            this.addFreeTextQuestion();
+        },
+        commandMenuItemClick(handler) {
+          this.questionInput = "";
+          handler == null ? void 0 : handler();
+        },
+        onQuestionInputChnaged() {
+          if (this.questionInput !== "/") {
+            this.adjustTextareaSize();
+            if (this.commandMenu && !this.commandMenu.isClosed()) {
+              this.commandMenu.closeMenu();
+              this.commandMenu = void 0;
+            }
+            return;
+          }
+          let items = [
+            { label: "/ 新的对话", onClick: () => this.commandMenuItemClick(this.onClearClick) }
+            // { label: "/ 新的对话2", onClick: () => this.commandMenuItemClick(this.onClearClick) }
+          ];
+          let rect = this.questionInputRef.getBoundingClientRect();
+          this.commandMenu = this.$contextmenu({
+            x: rect.x,
+            y: rect.y - (items.length * 29 + 16),
+            preserveIconWidth: false,
+            minWidth: this.questionInputRef.offsetWidth,
+            items,
+            customClass: "mx-context-menu-express",
+            onClose: () => {
+              this.commandMenu = void 0;
+            }
+          });
+        },
+        adjustTextareaSize() {
+          let textarea = this.questionInputRef;
+          const textareaStyle = calcTextareaHeight(textarea, 1, 8);
+          textarea.style.height = textareaStyle.height_px;
         },
         onExportConversation() {
           util.exportConversation(this.qaElementList);
@@ -92214,7 +92669,7 @@ ${content}</tr>
           }
           if (message2.autoScroll && !this.userWheeled) {
             nextTick(() => {
-              util.autoScrollToBottom(list2);
+              util.autoScrollToBottom(this.qaMainElement);
             });
           }
         },
@@ -92330,6 +92785,11 @@ ${content}</tr>
             case "newChat":
               this.onClearClick();
               break;
+            case "appInfo":
+              useStore().setAppInfo(value);
+              console.log("appInfo:" + JSON.stringify(value));
+              TelemetryService.pluginStatistics();
+              break;
           }
         },
         colorChangedHandler(colorValue) {
@@ -92349,8 +92809,9 @@ ${content}</tr>
       mounted() {
         this.$bus.off("executeCmd", this.busEventHandler);
         this.$bus.on("executeCmd", this.busEventHandler);
-        if (this.qaElementList) {
-          this.qaElementList.addEventListener("wheel", (e) => {
+        this.qaMainElement = document.getElementById("qaMainId");
+        if (this.qaMainElement) {
+          this.qaMainElement.addEventListener("wheel", (e) => {
             this.userWheeled = true;
           });
         }
@@ -92361,42 +92822,28 @@ ${content}</tr>
     });
     const _sfc_main$2 = ChatView$1;
     const _hoisted_1 = {
-      key: 0,
-      id: "introduction",
-      class: "flex flex-col justify-between h-full justify-center px-6 w-full relative login-screen overflow-auto"
-    };
-    const _hoisted_2 = /* @__PURE__ */ createStaticVNode('<div data-license="isc-gnc-hi-there" class="flex items-start text-center features-block my-5"><div class="flex flex-col gap-3.5 flex-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" class="w-6 h-6 m-auto"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"></path></svg><h2>特性</h2><ul class="flex flex-col gap-3.5 text-xs"><li class="features-li w-full border border-zinc-700 p-3 rounded-md">改进你的代码，生成测试</li><li class="features-li w-full border border-zinc-700 p-3 rounded-md">解析和注释代码</li><li class="features-li w-full border border-zinc-700 p-3 rounded-md">自动复制或创建新文件</li></ul></div></div>', 1);
-    const _hoisted_3 = [
-      _hoisted_2
-    ];
-    const _hoisted_4 = {
       class: "flex-1 overflow-y-auto",
       ref: "qaElementList",
-      id: "qa-list",
-      "data-license": "isc-gnc"
+      id: "qa-list"
     };
-    const _hoisted_5 = { class: "chat-card-bg" };
-    const _hoisted_6 = { class: "p-2 self-end question-element-ext relative chat-card-content-bg" };
+    const _hoisted_2 = { class: "chat-card-bg" };
+    const _hoisted_3 = { class: "p-2 self-end question-element-ext relative chat-card-content-bg" };
+    const _hoisted_4 = { class: "mb-5 flex" };
+    const _hoisted_5 = ["innerHTML"];
+    const _hoisted_6 = { class: "chat-card-bg" };
     const _hoisted_7 = {
-      class: "mb-5 flex",
-      "data-license": "isc-gnc"
-    };
-    const _hoisted_8 = ["innerHTML"];
-    const _hoisted_9 = { class: "chat-card-bg" };
-    const _hoisted_10 = {
       key: 0,
-      "data-license": "isc-gnc",
       class: "p-2 self-end answer-element-ext chat-card-content-bg"
     };
-    const _hoisted_11 = { class: "mb-5 flex" };
-    const _hoisted_12 = ["id", "innerHTML"];
-    const _hoisted_13 = {
+    const _hoisted_8 = { class: "mb-5 flex" };
+    const _hoisted_9 = ["id", "innerHTML"];
+    const _hoisted_10 = {
       key: 0,
       class: "code-chat-box-like-wrapper"
     };
-    const _hoisted_14 = { class: "rating-panel" };
-    const _hoisted_15 = ["onClick"];
-    const _hoisted_16 = /* @__PURE__ */ createBaseVNode("svg", {
+    const _hoisted_11 = { class: "rating-panel" };
+    const _hoisted_12 = ["onClick"];
+    const _hoisted_13 = /* @__PURE__ */ createBaseVNode("svg", {
       viewBox: "64 64 896 896",
       focusable: "false",
       "data-icon": "like",
@@ -92407,11 +92854,11 @@ ${content}</tr>
     }, [
       /* @__PURE__ */ createBaseVNode("path", { d: "M885.9 533.7c16.8-22.2 26.1-49.4 26.1-77.7 0-44.9-25.1-87.4-65.5-111.1a67.67 67.67 0 00-34.3-9.3H572.4l6-122.9c1.4-29.7-9.1-57.9-29.5-79.4A106.62 106.62 0 00471 99.9c-52 0-98 35-111.8 85.1l-85.9 311H144c-17.7 0-32 14.3-32 32v364c0 17.7 14.3 32 32 32h601.3c9.2 0 18.2-1.8 26.5-5.4 47.6-20.3 78.3-66.8 78.3-118.4 0-12.6-1.8-25-5.4-37 16.8-22.2 26.1-49.4 26.1-77.7 0-12.6-1.8-25-5.4-37 16.8-22.2 26.1-49.4 26.1-77.7-.2-12.6-2-25.1-5.6-37.1zM184 852V568h81v284h-81zm636.4-353l-21.9 19 13.9 25.4a56.2 56.2 0 016.9 27.3c0 16.5-7.2 32.2-19.6 43l-21.9 19 13.9 25.4a56.2 56.2 0 016.9 27.3c0 16.5-7.2 32.2-19.6 43l-21.9 19 13.9 25.4a56.2 56.2 0 016.9 27.3c0 22.4-13.2 42.6-33.6 51.8H329V564.8l99.5-360.5a44.1 44.1 0 0142.2-32.3c7.6 0 15.1 2.2 21.1 6.7 9.9 7.4 15.2 18.6 14.6 30.5l-9.6 198.4h314.4C829 418.5 840 436.9 840 456c0 16.5-7.2 32.1-19.6 43z" })
     ], -1);
-    const _hoisted_17 = [
-      _hoisted_16
+    const _hoisted_14 = [
+      _hoisted_13
     ];
-    const _hoisted_18 = ["onClick"];
-    const _hoisted_19 = /* @__PURE__ */ createBaseVNode("svg", {
+    const _hoisted_15 = ["onClick"];
+    const _hoisted_16 = /* @__PURE__ */ createBaseVNode("svg", {
       viewBox: "64 64 896 896",
       focusable: "false",
       "data-icon": "dislike",
@@ -92422,41 +92869,17 @@ ${content}</tr>
     }, [
       /* @__PURE__ */ createBaseVNode("path", { d: "M885.9 490.3c3.6-12 5.4-24.4 5.4-37 0-28.3-9.3-55.5-26.1-77.7 3.6-12 5.4-24.4 5.4-37 0-28.3-9.3-55.5-26.1-77.7 3.6-12 5.4-24.4 5.4-37 0-51.6-30.7-98.1-78.3-118.4a66.1 66.1 0 00-26.5-5.4H144c-17.7 0-32 14.3-32 32v364c0 17.7 14.3 32 32 32h129.3l85.8 310.8C372.9 889 418.9 924 470.9 924c29.7 0 57.4-11.8 77.9-33.4 20.5-21.5 31-49.7 29.5-79.4l-6-122.9h239.9c12.1 0 23.9-3.2 34.3-9.3 40.4-23.5 65.5-66.1 65.5-111 0-28.3-9.3-55.5-26.1-77.7zM184 456V172h81v284h-81zm627.2 160.4H496.8l9.6 198.4c.6 11.9-4.7 23.1-14.6 30.5-6.1 4.5-13.6 6.8-21.1 6.7a44.28 44.28 0 01-42.2-32.3L329 459.2V172h415.4a56.85 56.85 0 0133.6 51.8c0 9.7-2.3 18.9-6.9 27.3l-13.9 25.4 21.9 19a56.76 56.76 0 0119.6 43c0 9.7-2.3 18.9-6.9 27.3l-13.9 25.4 21.9 19a56.76 56.76 0 0119.6 43c0 9.7-2.3 18.9-6.9 27.3l-14 25.5 21.9 19a56.76 56.76 0 0119.6 43c0 19.1-11 37.5-28.8 48.4z" })
     ], -1);
-    const _hoisted_20 = [
-      _hoisted_19
+    const _hoisted_17 = [
+      _hoisted_16
     ];
+    const _hoisted_18 = { class: "p-3 flex items-center pt-2" };
+    const _hoisted_19 = { class: "flex-1 textarea-wrapper" };
+    const _hoisted_20 = ["disabled"];
     const _hoisted_21 = {
-      key: 1,
-      id: "in-progress",
-      class: "pl-4 pt-2 flex items-center",
-      "data-license": "isc-gnc"
-    };
-    const _hoisted_22 = /* @__PURE__ */ createStaticVNode('<div class="typing">正在思考</div><div class="spinner"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>', 2);
-    const _hoisted_24 = /* @__PURE__ */ createBaseVNode("svg", {
-      xmlns: "http://www.w3.org/2000/svg",
-      fill: "none",
-      viewBox: "0 0 24 24",
-      "stroke-width": "1.5",
-      stroke: "currentColor",
-      class: "w-5 h-5 mr-2"
-    }, [
-      /* @__PURE__ */ createBaseVNode("path", {
-        "stroke-linecap": "round",
-        "stroke-linejoin": "round",
-        d: "M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-      })
-    ], -1);
-    const _hoisted_25 = {
-      class: "p-3 flex items-center pt-2",
-      "data-license": "isc-gnc"
-    };
-    const _hoisted_26 = { class: "flex-1 textarea-wrapper" };
-    const _hoisted_27 = ["disabled"];
-    const _hoisted_28 = {
       id: "question-input-buttons",
       class: "p-0.5 flex gap-2 send-erea-items-center"
     };
-    const _hoisted_29 = /* @__PURE__ */ createBaseVNode("svg", {
+    const _hoisted_22 = /* @__PURE__ */ createBaseVNode("svg", {
       xmlns: "http://www.w3.org/2000/svg",
       fill: "none",
       viewBox: "0 0 24 24",
@@ -92470,11 +92893,11 @@ ${content}</tr>
         d: "M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
       })
     ], -1);
-    const _hoisted_30 = [
-      _hoisted_29
+    const _hoisted_23 = [
+      _hoisted_22
     ];
-    const _hoisted_31 = ["disabled"];
-    const _hoisted_32 = /* @__PURE__ */ createBaseVNode("svg", {
+    const _hoisted_24 = ["disabled"];
+    const _hoisted_25 = /* @__PURE__ */ createBaseVNode("svg", {
       xmlns: "http://www.w3.org/2000/svg",
       fill: "none",
       viewBox: "0 0 24 24",
@@ -92488,151 +92911,172 @@ ${content}</tr>
         d: "M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
       })
     ], -1);
-    const _hoisted_33 = [
-      _hoisted_32
+    const _hoisted_26 = [
+      _hoisted_25
     ];
     function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
-      const _component_IconUserSvg = __unplugin_components_0;
-      const _component_IconAiSvg = __unplugin_components_1;
-      const _component_IconPlusSvg = IconPlusSvg;
+      const _component_ChatViewWelcome = __unplugin_components_0;
+      const _component_User = resolveComponent("User");
+      const _component_el_icon = ElIcon;
+      const _component_IconAiSvg = __unplugin_components_2;
+      const _component_el_main = ElMain;
+      const _component_ChatViewSpinner = _sfc_main$9;
+      const _component_el_footer = ElFooter;
+      const _component_el_container = ElContainer;
+      const _component_Plus = resolveComponent("Plus");
       const _component_context_menu_item = resolveComponent("context-menu-item");
-      const _component_IconDownloadSvg = __unplugin_components_3;
+      const _component_Download = resolveComponent("Download");
       const _component_context_menu = resolveComponent("context-menu");
-      return openBlock(), createElementBlock("div", {
-        class: normalizeClass(["flex flex-col", { "chat-box-600": !_ctx.isIdeaMode && !_ctx.isVsCodeMode }]),
-        style: { "flex-grow": "1" }
-      }, [
-        _ctx.isIntroduction ? (openBlock(), createElementBlock("div", _hoisted_1, _hoisted_3)) : createCommentVNode("", true),
-        withDirectives(createBaseVNode("div", _hoisted_4, [
-          (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.qaData.list, (message2, index) => {
-            return openBlock(), createElementBlock(Fragment, { key: index }, [
-              createBaseVNode("div", _hoisted_5, [
-                createBaseVNode("div", _hoisted_6, [
-                  createBaseVNode("h2", _hoisted_7, [
-                    createVNode(_component_IconUserSvg),
-                    createTextVNode("你 ")
-                  ]),
-                  createBaseVNode("div", {
-                    class: "overflow-y-auto",
-                    innerHTML: message2.question
-                  }, null, 8, _hoisted_8)
+      return openBlock(), createElementBlock(Fragment, null, [
+        createVNode(_component_el_container, { direction: "vertical" }, {
+          default: withCtx(() => [
+            createVNode(_component_el_main, { id: "qaMainId" }, {
+              default: withCtx(() => [
+                _ctx.isIntroduction ? (openBlock(), createBlock(_component_ChatViewWelcome, { key: 0 })) : createCommentVNode("", true),
+                withDirectives(createBaseVNode("div", _hoisted_1, [
+                  (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.qaData.list, (message2, index) => {
+                    return openBlock(), createElementBlock(Fragment, { key: index }, [
+                      createBaseVNode("div", _hoisted_2, [
+                        createBaseVNode("div", _hoisted_3, [
+                          createBaseVNode("h2", _hoisted_4, [
+                            createVNode(_component_el_icon, {
+                              size: 20,
+                              class: "mr-2"
+                            }, {
+                              default: withCtx(() => [
+                                createVNode(_component_User)
+                              ]),
+                              _: 1
+                            }),
+                            createTextVNode("你 ")
+                          ]),
+                          createBaseVNode("div", {
+                            class: "overflow-y-auto",
+                            innerHTML: message2.question
+                          }, null, 8, _hoisted_5)
+                        ])
+                      ]),
+                      createBaseVNode("div", _hoisted_6, [
+                        message2.answer ? (openBlock(), createElementBlock("div", _hoisted_7, [
+                          createBaseVNode("h2", _hoisted_8, [
+                            createVNode(_component_IconAiSvg, { style: { "margin-right": "0.5rem" } }),
+                            createTextVNode("TooneCode ")
+                          ]),
+                          createBaseVNode("div", {
+                            class: normalizeClass({ "result-streaming": message2.done !== true }),
+                            id: message2.qaId,
+                            innerHTML: message2.answer
+                          }, null, 10, _hoisted_9),
+                          message2.done ? (openBlock(), createElementBlock("div", _hoisted_10, [
+                            createBaseVNode("div", _hoisted_11, [
+                              createBaseVNode("button", {
+                                type: "button",
+                                class: "btn-like",
+                                title: "赞",
+                                onClick: ($event) => _ctx.onLikeClick(message2)
+                              }, [
+                                createBaseVNode("span", {
+                                  role: "img",
+                                  "aria-label": "like",
+                                  size: "12",
+                                  class: normalizeClass(["anticon", { "anticon_checked": message2.like }])
+                                }, _hoisted_14, 2)
+                              ], 8, _hoisted_12),
+                              createBaseVNode("button", {
+                                type: "button",
+                                class: "btn-dislike",
+                                title: "踩",
+                                onClick: ($event) => _ctx.onDislikeClick(message2)
+                              }, [
+                                createBaseVNode("span", {
+                                  role: "img",
+                                  "aria-label": "dislike",
+                                  size: "12",
+                                  class: normalizeClass(["anticon", { "anticon_checked": message2.dislike }])
+                                }, _hoisted_17, 2)
+                              ], 8, _hoisted_15)
+                            ])
+                          ])) : createCommentVNode("", true)
+                        ])) : createCommentVNode("", true)
+                      ])
+                    ], 64);
+                  }), 128))
+                ], 512), [
+                  [vShow, _ctx.isQAMode]
                 ])
               ]),
-              createBaseVNode("div", _hoisted_9, [
-                message2.answer ? (openBlock(), createElementBlock("div", _hoisted_10, [
-                  createBaseVNode("h2", _hoisted_11, [
-                    createVNode(_component_IconAiSvg, { style: { "margin-right": "0.5rem" } }),
-                    createTextVNode("TooneCode ")
-                  ]),
-                  createBaseVNode("div", {
-                    class: normalizeClass({ "result-streaming": message2.done !== true }),
-                    id: message2.qaId,
-                    innerHTML: message2.answer
-                  }, null, 10, _hoisted_12),
-                  message2.done ? (openBlock(), createElementBlock("div", _hoisted_13, [
-                    createBaseVNode("div", _hoisted_14, [
-                      createBaseVNode("button", {
-                        type: "button",
-                        class: "btn-like",
-                        title: "赞",
-                        onClick: ($event) => _ctx.onLikeClick(message2)
-                      }, [
-                        createBaseVNode("span", {
-                          role: "img",
-                          "aria-label": "like",
-                          size: "12",
-                          class: normalizeClass(["anticon", { "anticon_checked": message2.like }])
-                        }, _hoisted_17, 2)
-                      ], 8, _hoisted_15),
-                      createBaseVNode("button", {
-                        type: "button",
-                        class: "btn-dislike",
-                        title: "踩",
-                        onClick: ($event) => _ctx.onDislikeClick(message2)
-                      }, [
-                        createBaseVNode("span", {
-                          role: "img",
-                          "aria-label": "dislike",
-                          size: "12",
-                          class: normalizeClass(["anticon", { "anticon_checked": message2.dislike }])
-                        }, _hoisted_20, 2)
-                      ], 8, _hoisted_18)
+              _: 1
+            }),
+            createVNode(_component_el_footer, { height: "auto" }, {
+              default: withCtx(() => [
+                _ctx.isInProgress ? (openBlock(), createBlock(_component_ChatViewSpinner, {
+                  key: 0,
+                  showStopButton: _ctx.showStopButton,
+                  onStopClick: _ctx.onStopClick
+                }, null, 8, ["showStopButton", "onStopClick"])) : createCommentVNode("", true),
+                createBaseVNode("div", _hoisted_18, [
+                  createBaseVNode("div", _hoisted_19, [
+                    withDirectives(createBaseVNode("textarea", {
+                      ref: "questionInputRef",
+                      class: "common-textarea",
+                      type: "text",
+                      rows: "1",
+                      id: "question-input",
+                      placeholder: "输入你的问题",
+                      onKeydown: _cache[0] || (_cache[0] = withKeys(withModifiers((...args) => _ctx.onQuestionKeyEnter && _ctx.onQuestionKeyEnter(...args), ["prevent"]), ["enter"])),
+                      "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => _ctx.questionInput = $event),
+                      disabled: _ctx.questionInputDisabled,
+                      autocomplete: "on"
+                    }, null, 40, _hoisted_20), [
+                      [vModelText, _ctx.questionInput]
                     ])
-                  ])) : createCommentVNode("", true)
-                ])) : createCommentVNode("", true)
-              ])
-            ], 64);
-          }), 128))
-        ], 512), [
-          [vShow, _ctx.isQAMode]
-        ]),
-        _ctx.isInProgress ? (openBlock(), createElementBlock("div", _hoisted_21, [
-          _hoisted_22,
-          withDirectives(createBaseVNode("button", {
-            id: "stop-button",
-            type: "button",
-            class: "btn btn-primary flex items-end p-1 pr-2 rounded-md ml-5",
-            onClick: _cache[0] || (_cache[0] = (...args) => _ctx.onStopClick && _ctx.onStopClick(...args))
-          }, [
-            _hoisted_24,
-            createTextVNode("停止")
-          ], 512), [
-            [vShow, _ctx.showStopButton]
-          ])
-        ])) : createCommentVNode("", true),
-        createBaseVNode("div", _hoisted_25, [
-          createBaseVNode("div", _hoisted_26, [
-            withDirectives(createBaseVNode("textarea", {
-              ref: "questionInputRef",
-              class: "common-textarea",
-              type: "text",
-              rows: "1",
-              "data-license": "isc-gnc",
-              id: "question-input",
-              placeholder: "输入一个问题...",
-              onKeydown: _cache[1] || (_cache[1] = withKeys(withModifiers((...args) => _ctx.onQuestionKeyEnter && _ctx.onQuestionKeyEnter(...args), ["prevent"]), ["enter"])),
-              "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => _ctx.questionInput = $event),
-              disabled: _ctx.questionInputDisabled
-            }, null, 40, _hoisted_27), [
-              [vModelText, _ctx.questionInput]
-            ])
+                  ]),
+                  withDirectives(createBaseVNode("div", _hoisted_21, [
+                    createBaseVNode("button", {
+                      text: "",
+                      type: "button",
+                      id: "more-button",
+                      title: "更多",
+                      class: "common-button rounded-lg p-0.5",
+                      onClick: _cache[2] || (_cache[2] = (...args) => _ctx.onMoreButtonClick && _ctx.onMoreButtonClick(...args)),
+                      ref: "questionInputButtonsMore"
+                    }, _hoisted_23, 512),
+                    createBaseVNode("button", {
+                      text: "",
+                      type: "button",
+                      id: "ask-button",
+                      title: "提交",
+                      class: "common-button ask-button rounded-lg p-0.5",
+                      onClick: _cache[3] || (_cache[3] = (...args) => _ctx.onAskButtonClick && _ctx.onAskButtonClick(...args)),
+                      disabled: !_ctx.questionInput || _ctx.questionInput.length === 0
+                    }, _hoisted_26, 8, _hoisted_24)
+                  ], 512), [
+                    [vShow, _ctx.questionInputButtonsVisible]
+                  ])
+                ])
+              ]),
+              _: 1
+            })
           ]),
-          withDirectives(createBaseVNode("div", _hoisted_28, [
-            createBaseVNode("button", {
-              text: "",
-              type: "button",
-              id: "more-button",
-              title: "更多",
-              class: "common-button rounded-lg p-0.5",
-              "data-license": "isc-gnc",
-              onClick: _cache[3] || (_cache[3] = (...args) => _ctx.onMoreButtonClick && _ctx.onMoreButtonClick(...args)),
-              ref: "questionInputButtonsMore"
-            }, _hoisted_30, 512),
-            createBaseVNode("button", {
-              text: "",
-              type: "button",
-              id: "ask-button",
-              title: "提交",
-              class: "common-button ask-button rounded-lg p-0.5",
-              onClick: _cache[4] || (_cache[4] = (...args) => _ctx.onAskButtonClick && _ctx.onAskButtonClick(...args)),
-              disabled: !_ctx.questionInput || _ctx.questionInput.length === 0
-            }, _hoisted_33, 8, _hoisted_31)
-          ], 512), [
-            [vShow, _ctx.questionInputButtonsVisible]
-          ])
-        ]),
+          _: 1
+        }),
         createVNode(_component_context_menu, {
           show: _ctx.moreContextMenu.show,
-          "onUpdate:show": _cache[5] || (_cache[5] = ($event) => _ctx.moreContextMenu.show = $event),
+          "onUpdate:show": _cache[4] || (_cache[4] = ($event) => _ctx.moreContextMenu.show = $event),
           options: _ctx.moreContextMenu.option
         }, {
           default: withCtx(() => [
             createVNode(_component_context_menu_item, {
-              label: "新的聊天",
+              label: "新的对话",
               onClick: _ctx.onClearClick
             }, {
               icon: withCtx(() => [
-                createVNode(_component_IconPlusSvg)
+                createVNode(_component_el_icon, null, {
+                  default: withCtx(() => [
+                    createVNode(_component_Plus)
+                  ]),
+                  _: 1
+                })
               ]),
               _: 1
             }, 8, ["onClick"]),
@@ -92642,16 +93086,21 @@ ${content}</tr>
               onClick: _ctx.onExportConversation
             }, {
               icon: withCtx(() => [
-                createVNode(_component_IconDownloadSvg)
+                createVNode(_component_el_icon, null, {
+                  default: withCtx(() => [
+                    createVNode(_component_Download)
+                  ]),
+                  _: 1
+                })
               ]),
               _: 1
             }, 8, ["onClick"])) : createCommentVNode("", true)
           ]),
           _: 1
         }, 8, ["show", "options"])
-      ], 2);
+      ], 64);
     }
-    const ChatView = /* @__PURE__ */ _export_sfc$1(_sfc_main$2, [["render", _sfc_render]]);
+    const ChatView = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render]]);
     const _sfc_main$1 = {
       extends: ChatView,
       setup(props, ctx) {
@@ -92690,6 +93139,10 @@ ${content}</tr>
               message2.cmd = message2.type;
               this.busEventHandler(message2);
               break;
+            default:
+              message2.cmd = message2.type;
+              this.busEventHandler(message2);
+              break;
           }
         }
       },
@@ -92714,11 +93167,21 @@ ${content}</tr>
         const $bus2 = inject("$bus");
         const ideType = ref("chatOnly");
         const store = useStore();
+        const moreMenuOption = ref({
+          show: false,
+          theme: "dark",
+          option: {
+            zIndex: 300,
+            //minWidth: 130,
+            x: 500,
+            y: 200
+          }
+        });
         onMounted(() => {
           getIDEType();
-          store.setIdeType(ideType.value);
         });
-        function getIDEType() {
+        const getIDEType = () => {
+          var _a7;
           const ide = useRoute().query.ide;
           switch (ide) {
             case "chatOnly":
@@ -92726,69 +93189,177 @@ ${content}</tr>
               break;
             case "idea":
               ideType.value = ide;
-              store.setIdeaMode(true);
               break;
             default:
               try {
                 const vscode = window.acquireVsCodeApi();
                 window.vscodeInstance = vscode;
-                store.setVsCodeMode(vscode ? true : false);
                 ideType.value = "vscode";
               } catch (error2) {
                 console.log("不在vscode内:" + error2);
               }
               break;
           }
-          if (ideType.value === "vscode") {
+          store.setIdeType(ideType.value);
+          if (store.isVsCodeMode) {
             document.documentElement.style.setProperty("--tc-caht-bg", "transparent");
+          } else if (store.isChatOnlyMode) {
+            (_a7 = document.getElementById("app")) == null ? void 0 : _a7.classList.add("chat-box-600");
+            setTimeout(() => {
+              try {
+                let id = localStorage.getItem("toonecodechatappId");
+                if (!id) {
+                  id = v4();
+                  localStorage.setItem("toonecodechatappId", id);
+                }
+                $bus2.emit("executeCmd", { cmd: "appInfo", value: { appId: id, ide: navigator.appVersion || "web broswer" } });
+              } catch (e) {
+                console.error(e);
+              }
+            }, 1e3);
           }
-          console.log(ideType.value);
-        }
-        function newChatClick() {
+        };
+        const newChatClick = () => {
           $bus2.emit("executeCmd", { cmd: "newChat" });
-        }
+        };
+        const moreChatClick = (e) => {
+          e.preventDefault();
+          let rect = e.target.getBoundingClientRect();
+          moreMenuOption.value.option.x = rect.right;
+          moreMenuOption.value.option.y = rect.top + rect.height + 6;
+          moreMenuOption.value.show = true;
+        };
+        const settingClick = () => util.openSetting();
+        const themeClick = (theme) => {
+          store.setTheme(window.changeTheme(theme));
+        };
         return (_ctx, _cache) => {
-          return openBlock(), createBlock(_sfc_main$a, {
-            class: normalizeClass({ "chat-box-600": ideType.value === "chatOnly" })
-          }, {
+          const _component_el_icon = ElIcon;
+          const _component_context_menu_item = resolveComponent("context-menu-item");
+          const _component_context_menu_group = resolveComponent("context-menu-group");
+          const _component_context_menu = resolveComponent("context-menu");
+          return openBlock(), createBlock(_sfc_main$a, null, {
             ai: withCtx(() => [
-              ideType.value === "chatOnly" || ideType.value === "idea" ? (openBlock(), createBlock(ChatView, { key: 0 })) : ideType.value === "vscode" ? (openBlock(), createBlock(_sfc_main$1, { key: 1 })) : createCommentVNode("", true)
+              unref(store).isChatOnlyMode || unref(store).isIdeaMode ? (openBlock(), createBlock(ChatView, { key: 0 })) : unref(store).isVsCodeMode ? (openBlock(), createBlock(_sfc_main$1, { key: 1 })) : createCommentVNode("", true)
             ]),
             aiExt: withCtx(() => [
               withDirectives(createBaseVNode("span", {
                 class: "tab-extends-item",
-                title: "新的聊天",
+                title: "新的对话",
                 onClick: newChatClick
               }, [
-                createVNode(IconPlusSvg)
+                createVNode(_component_el_icon, null, {
+                  default: withCtx(() => [
+                    createVNode(unref(plus_default))
+                  ]),
+                  _: 1
+                })
               ], 512), [
                 [vShow, !unref(store).chatInProgress]
+              ]),
+              withDirectives(createBaseVNode("span", {
+                class: "tab-extends-item",
+                title: "更多",
+                onClick: moreChatClick
+              }, [
+                createVNode(_component_el_icon, null, {
+                  default: withCtx(() => [
+                    createVNode(unref(more_default))
+                  ]),
+                  _: 1
+                }),
+                createVNode(_component_context_menu, {
+                  show: moreMenuOption.value.show,
+                  "onUpdate:show": _cache[2] || (_cache[2] = ($event) => moreMenuOption.value.show = $event),
+                  options: moreMenuOption.value.option
+                }, {
+                  default: withCtx(() => [
+                    unref(store).isInCodeIDE ? (openBlock(), createBlock(_component_context_menu_item, {
+                      key: 0,
+                      label: "设置",
+                      onClick: settingClick
+                    }, {
+                      icon: withCtx(() => [
+                        createVNode(_component_el_icon, null, {
+                          default: withCtx(() => [
+                            createVNode(unref(setting_default))
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    })) : createCommentVNode("", true),
+                    unref(store).isChatOnlyMode ? (openBlock(), createBlock(_component_context_menu_group, {
+                      key: 1,
+                      label: "主题"
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(_component_context_menu_item, {
+                          label: "深色",
+                          onClick: _cache[0] || (_cache[0] = ($event) => themeClick("dark"))
+                        }, createSlots({ _: 2 }, [
+                          unref(store).theme === "dark" ? {
+                            name: "icon",
+                            fn: withCtx(() => [
+                              createVNode(_component_el_icon, null, {
+                                default: withCtx(() => [
+                                  createVNode(unref(select_default))
+                                ]),
+                                _: 1
+                              })
+                            ]),
+                            key: "0"
+                          } : void 0
+                        ]), 1024),
+                        createVNode(_component_context_menu_item, {
+                          label: "浅色",
+                          onClick: _cache[1] || (_cache[1] = ($event) => themeClick("light"))
+                        }, createSlots({ _: 2 }, [
+                          unref(store).theme === "light" ? {
+                            name: "icon",
+                            fn: withCtx(() => [
+                              createVNode(_component_el_icon, null, {
+                                default: withCtx(() => [
+                                  createVNode(unref(select_default))
+                                ]),
+                                _: 1
+                              })
+                            ]),
+                            key: "0"
+                          } : void 0
+                        ]), 1024)
+                      ]),
+                      _: 1
+                    })) : createCommentVNode("", true)
+                  ]),
+                  _: 1
+                }, 8, ["show", "options"])
+              ], 512), [
+                [vShow, unref(store).isChatOnlyMode]
               ])
             ]),
             _: 1
-          }, 8, ["class"]);
+          });
         };
       }
     };
     const router = createRouter({
       history: createWebHashHistory("./"),
-      routes: [
-        {
-          path: "/",
-          name: "chat",
-          component: _sfc_main
-          // children: [
-          //   {
-          //     path: '/tools',
-          //     component: ToolsView
-          //   },
-          //   {
-          //     path: '/tool',
-          //     component: ToolHandlerContainer
-          //   }
-          // ]
-        }
-      ]
+      routes: [{
+        path: "/",
+        name: "chat",
+        component: _sfc_main
+        // children: [
+        //   {
+        //     path: '/tools',
+        //     component: ToolsView
+        //   },
+        //   {
+        //     path: '/tool',
+        //     component: ToolHandlerContainer
+        //   }
+        // ]
+      }]
     });
     function mitt(n) {
       return { all: n = n || /* @__PURE__ */ new Map(), on: function(t, e) {
@@ -93219,8 +93790,20 @@ ${content}</tr>
     var vue3ContextMenu_umdExports = vue3ContextMenu_umd.exports;
     const ContextMenu = /* @__PURE__ */ getDefaultExportFromCjs(vue3ContextMenu_umdExports);
     const $bus = new mitt();
+    window.exportVar = function(data) {
+      $bus.emit("executeCmd", data);
+    };
+    window.changeTheme = (theme) => {
+      if (!theme)
+        theme = localStorage.getItem("codeTheme") || "dark";
+      document.documentElement.setAttribute("class", theme);
+      document.documentElement.setAttribute("theme", theme);
+      document.getElementsByTagName("html")[0].dataset.codeTheme = theme;
+      localStorage.setItem("codeTheme", theme);
+      return theme;
+    };
     const pinia = createPinia();
-    const app = createApp(_sfc_main$L);
+    const app = createApp(_sfc_main$Q);
     app.use(pinia);
     app.use(router);
     app.use(ContextMenu);
@@ -93228,21 +93811,7 @@ ${content}</tr>
     app.provide("$bus", $bus);
     app.config.globalProperties.$bus = $bus;
     app.mount("#app");
-    window.exportVar = function(data) {
-      $bus.emit("executeCmd", data);
-    };
-    window.changeTheme = (val) => {
-      if (!val) {
-        document.documentElement.setAttribute("class", "light");
-        document.documentElement.setAttribute("theme", "light");
-        document.getElementsByTagName("html")[0].dataset.codeTheme = "light";
-      } else {
-        document.documentElement.setAttribute("class", "dark");
-        document.documentElement.removeAttribute("theme");
-        document.getElementsByTagName("html")[0].dataset.codeTheme = "dark";
-      }
-    };
-    window.changeTheme(true);
   }
 });
 export default require_index();
+//# sourceMappingURL=index.js.map

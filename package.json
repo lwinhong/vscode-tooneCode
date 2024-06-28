@@ -3,7 +3,7 @@
   "displayName": "vscode-toone-code",
   "publisher": "Toone",
   "description": "Toone toonecode",
-  "version": "0.0.6",
+  "version": "1.0.0",
   "icon": "images/ai-logo.png",
   "engines": {
     "vscode": "^1.68.0"
@@ -133,7 +133,8 @@
           "type": "string",
           "default": "为以上代码生成单元测试",
           "description": "允许您选中代码后，让助手针对此代码提供测试的快速 Prompt 前缀。",
-          "order": 2
+          "order": 2,
+          "readOnly": true
         },
         "toonecode.promptPrefix.addTests-enabled": {
           "type": "boolean",
@@ -145,7 +146,8 @@
           "type": "string",
           "default": "解释以上代码",
           "description": "允许您选中代码后，让助手针对此代码分析功能的快速 Prompt 前缀。",
-          "order": 4
+          "order": 4,
+          "readOnly": true
         },
         "toonecode.promptPrefix.explain-enabled": {
           "type": "boolean",
@@ -157,7 +159,8 @@
           "type": "string",
           "default": "生成优化建议，并生成优化之后的代码",
           "description": "允许您选中代码后，让助手针对此代码生成优化建议功能的快速 Prompt 前缀。",
-          "order": 6
+          "order": 6,
+          "readOnly": true
         },
         "toonecode.promptPrefix.optimize-enabled": {
           "type": "boolean",
@@ -169,7 +172,8 @@
           "type": "string",
           "default": "为以上每一行代码加上注释",
           "description": "允许您选中代码后，让助手针对此代码添加注释的快速 Prompt 前缀。",
-          "order": 8
+          "order": 8,
+          "readOnly": true
         },
         "toonecode.promptPrefix.addComments-enabled": {
           "type": "boolean",
