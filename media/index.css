@@ -292,6 +292,9 @@ html.light .el-empty {
     --el-empty-fill-color-9: #18181a
 } */
 
+/* @import "./assets/theme-red.css";
+@import "./assets/theme-purple.css"; */
+
 /**
  * @author Ali Gençay
  * https://github.com/gencay/vscode-chatgpt

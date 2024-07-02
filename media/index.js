@@ -87386,6 +87386,41 @@ ${content}</tr>
           a.dispatchEvent(event);
         };
         image.src = imgsrc;
+      },
+      getIP(callback) {
+        let recode = {};
+        let RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+        if (!RTCPeerConnection) {
+          let win = iframe.contentWindow;
+          RTCPeerConnection = win.RTCPeerConnection || win.mozRTCPeerConnection || win.webkitRTCPeerConnection;
+        }
+        let pc = new RTCPeerConnection();
+        function handleCandidate(candidate) {
+          let ip_regexp = /([0-9]{1,3}(\.[0-9]{1,3}){3}|([a-f0-9]{1,4}((:[a-f0-9]{1,4}){7}|:+[a-f0-9]{1,4}){6}))/;
+          let ip_isMatch = candidate.match(ip_regexp)[1];
+          if (!recode[ip_isMatch]) {
+            callback(ip_isMatch);
+            recode[ip_isMatch] = true;
+          }
+        }
+        pc.onicecandidate = (ice) => {
+          if (ice.candidate) {
+            handleCandidate(ice.candidate.candidate);
+          }
+        };
+        pc.createDataChannel("");
+        pc.createOffer((res) => {
+          pc.setLocalDescription(res);
+        }, () => {
+        });
+        setTimeout(() => {
+          let lines = pc.localDescription.sdp.split("\n");
+          lines.forEach((item) => {
+            if (item.indexOf("a=candidate:") === 0) {
+              handleCandidate(item);
+            }
+          });
+        }, 1e3);
       }
     };
     let getRandomValues;
@@ -87546,6 +87581,39 @@ ${content}</tr>
       });
     })(FileSaver_min);
     var FileSaver_minExports = FileSaver_min.exports;
+    const TelemetryService = {
+      pluginStatistics: () => {
+        return new Promise(async (resolve2, reject) => {
+          let url = "/statistics/plugin";
+          {
+            url = "http://codegen.t.vtoone.com" + url;
+          }
+          try {
+            const param = await TelemetryService.getAppInfo();
+            fetch(url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(param)
+            }).then((response) => {
+              if (response.ok) {
+                response.json().then((data) => {
+                  console.log("save_appInfo:" + JSON.stringify(data || {}));
+                  resolve2(data);
+                });
+                return;
+              }
+              reject(`error:${response.status},${response.statusText}`);
+            }).catch(reject);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      },
+      async getAppInfo() {
+        const use = useStore();
+        return use.appInfo;
+      }
+    };
     class FileHandlerCore {
       async uploadFile(url, file, options, dataType) {
         if (!url) {
@@ -87558,6 +87626,7 @@ ${content}</tr>
         formData.append("file", file);
         formData.append("options", JSON.stringify(options));
         formData.append("dataType", dataType);
+        formData.append("appInfo", TelemetryService.getAppInfo());
         const response = await fetch(url, {
           method: "POST",
           body: formData
@@ -92325,34 +92394,6 @@ ${content}</tr>
       hiddenTextarea = void 0;
       return result;
     }
-    const TelemetryService = {
-      pluginStatistics: () => {
-        return new Promise(async (resolve2, reject) => {
-          const use = useStore();
-          let url = "/statistics/plugin";
-          {
-            url = "http://codegen.t.vtoone.com/generator" + url;
-          }
-          try {
-            const param = Object.assign(use.appInfo || {}, {
-              appId: use.appId,
-              ide: use.IdeType,
-              ideVersion: "",
-              pluginVersion: "1.0.0"
-            });
-            await fetch(url, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(param)
-            });
-          } catch (e) {
-            console.log(e);
-            reject(e);
-          }
-          resolve2();
-        });
-      }
-    };
     const viewType = { introduction: "introduction", qa: "qa" };
     const ChatView$1 = /* @__PURE__ */ defineComponent({
       name: "ChatView",
@@ -93212,7 +93253,14 @@ ${content}</tr>
                   id = v4();
                   localStorage.setItem("toonecodechatappId", id);
                 }
-                $bus2.emit("executeCmd", { cmd: "appInfo", value: { appId: id, ide: navigator.appVersion || "web broswer" } });
+                $bus2.emit("executeCmd", {
+                  cmd: "appInfo",
+                  value: {
+                    appId: id,
+                    ide: ideType.value,
+                    ideVersion: navigator.appVersion || "web broswer"
+                  }
+                });
               } catch (e) {
                 console.error(e);
               }

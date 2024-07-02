@@ -5,6 +5,7 @@ import chatApi from './toone-code/chat-api.js';
 import inlineCompletionProvider1 from "./provider/inlineCompletionProvider1";
 import inlineCompletionProviderWithCommand from "./provider/inlineCompletionProviderWithCommand.js";
 import Path from 'path';
+import os from "os";
 
 export default class ToontCodeViewProvider implements vscode.WebviewViewProvider {
 	private webView?: vscode.WebviewView;
@@ -88,12 +89,29 @@ export default class ToontCodeViewProvider implements vscode.WebviewViewProvider
 			}
 		});
 		this.sendMessage({
-			type: 'appId', value: {
+			type: 'appInfo', value: {
 				appId: this.context.globalState.get("toonecodePluginAppId"),
-				ide: "vscode", pluginVersion: vscode.extensions.getExtension("toone.vscode-toonecode")?.packageJSON?.version || "",
-				ideVersion: vscode.version
+				ide: "vscode", appVersion: vscode.extensions.getExtension("toone.vscode-toonecode")?.packageJSON?.version || "",
+				ideVersion: vscode.version,
+				ip: this.getIpAddress(), os: os.platform(), hostName: os.hostname()
 			}
 		});
+	}
+
+	/**
+	 * 获取当前机器的ip地址
+	 */
+	getIpAddress() {
+		var ifaces = os.networkInterfaces();
+		for (var dev in ifaces) {
+			let iface1: any = ifaces[dev];
+			for (let i = 0; i < iface1.length; i++) {
+				let { family, address, internal } = iface1[i];
+				if (family === 'IPv4' && address !== '127.0.0.1' && !internal) {
+					return address;
+				}
+			}
+		}
 	}
 
 	//获取页面

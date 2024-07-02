@@ -3,7 +3,7 @@
   "displayName": "vscode-toone-code",
   "publisher": "Toone",
   "description": "Toone toonecode",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "icon": "images/ai-logo.png",
   "engines": {
     "vscode": "^1.68.0"
